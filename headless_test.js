@@ -28,6 +28,7 @@ const fakeCanvas = {
 globalThis.document = {
   getElementById: () => fakeCanvas,
   createElement: () => ({ width:0, height:0, getContext: () => makeCtx(), style:{} }),
+  addEventListener: () => {},
 };
 globalThis.window = globalThis;
 globalThis.devicePixelRatio = 1;

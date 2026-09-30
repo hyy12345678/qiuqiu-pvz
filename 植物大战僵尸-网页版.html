@@ -2,11 +2,11 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>球球的植物大战僵尸 · 网页版</title>
 <style>
-  html,body{margin:0;padding:0;height:100%;background:#0d1410;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;}
-  canvas{display:block;width:min(100vw,calc(100vh*1.6));height:auto;box-shadow:0 10px 60px rgba(0,0,0,.6);border-radius:6px;touch-action:none;cursor:default;-webkit-user-select:none;user-select:none;}
+  html,body{margin:0;padding:0;height:100%;background:#0d1410;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif;overscroll-behavior:none;}
+  canvas{display:block;width:min(100vw,calc(100vh*1.6));height:auto;box-shadow:0 10px 60px rgba(0,0,0,.6);border-radius:6px;touch-action:none;-webkit-touch-callout:none;cursor:default;-webkit-user-select:none;user-select:none;}
 </style>
 </head>
 <body>
@@ -2528,7 +2528,7 @@ function renderHelp(){
   drawMenuScene();
   ctx.fillStyle = 'rgba(10,16,10,0.6)';
   ctx.fillRect(0,0,W,H);
-  const pw = 660, ph = 462, px = W/2-pw/2, py = H/2-ph/2-10;
+  const pw = 660, ph = 470, px = W/2-pw/2, py = H/2-ph/2-10;
   let g = ctx.createLinearGradient(0,py,0,py+ph);
   g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090');
   ctx.fillStyle = 'rgba(15,25,8,0.45)';
@@ -2541,19 +2541,20 @@ function renderHelp(){
   }
   drawText('操 作 说 明', W/2, py+44, 30, '#42280f', 'rgba(255,246,220,0.7)', 4, 'center', '900');
   const lines = [
+    '· 支持鼠标和触屏（平板/手机）操作',
     '· 点击天上掉落的阳光或向日葵产出的阳光，收集阳光资源',
-    '· 点击上方卡片选择植物，再点击草坪格子种下（右键取消选择）',
+    '· 点击上方卡片选择植物，再点击草坪格子种下（再点一次卡片取消选择）',
     '· 数字键 1-8 可快速选择对应卡片',
     '· 铲子可以移除已种下的植物（点击铲子后再点植物）',
     '· 豌豆射手家族会自动攻击本行前方的僵尸',
-    '· 球球是核心输出：扔小皮球又快又狠，但造价不菲',
+    '· 球球是核心输出：加特林扫射，还有概率发射范围导弹',
     '· 火炬树桩能让穿过的豌豆变成双倍伤害的火豌豆',
     '· 樱桃炸弹 / 土豆雷威力巨大，但土豆雷需要时间成长',
     '· 每行最左侧的小推车是最后防线，被突破则游戏失败',
-    '· 消灭本关全部僵尸即可过关，P 键暂停，ESC 取消选择',
+    '· 消灭本关全部僵尸即可过关，P 键暂停（触屏点右上角按钮）',
   ];
   for(let i=0;i<lines.length;i++){
-    drawText(lines[i], px+42, py+94+i*31, 16.5, '#3c2a10', null, 0, 'left', '600');
+    drawText(lines[i], px+42, py+94+i*29, 16, '#3c2a10', null, 0, 'left', '600');
   }
   drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
 }
@@ -2787,8 +2788,8 @@ function toCanvas(e){
   return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
 }
 
-cv.addEventListener('mousemove', e=>{
-  const p = toCanvas(e);
+// 统一输入层：鼠标与触屏共用
+function handleMove(p){
   G.mouse = p;
   G.hoverCell = null;
   if(G.state==='play'){
@@ -2800,12 +2801,10 @@ cv.addEventListener('mousemove', e=>{
     if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){ pointer = true; break; }
   }
   cv.style.cursor = pointer ? 'pointer' : ((G.shovel || G.sel>=0) ? 'crosshair' : 'default');
-});
+}
 
-cv.addEventListener('mousedown', e=>{
-  if(e.button === 2) return;
+function handlePress(p){
   SFX.ensure(); SFX.resume();
-  const p = toCanvas(e);
   G.mouse = p;
   for(let i=G.hotspots.length-1;i>=0;i--){
     const h = G.hotspots[i];
@@ -2847,7 +2846,29 @@ cv.addEventListener('mousedown', e=>{
       G.sel = -1;
     }
   }
+}
+
+// ---- 鼠标输入 ----
+cv.addEventListener('mousemove', e=> handleMove(toCanvas(e)));
+cv.addEventListener('mousedown', e=>{
+  if(e.button === 2) return;
+  handlePress(toCanvas(e));
 });
+// ---- 触屏输入（平板/手机） ----
+cv.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  const p = toCanvas(t);
+  handleMove(p);
+  handlePress(p);
+}, {passive:false});
+cv.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  handleMove(toCanvas(e.changedTouches[0]));
+}, {passive:false});
+cv.addEventListener('touchend', e=> e.preventDefault(), {passive:false});
+// iOS 捏合缩放
+document.addEventListener('gesturestart', e=> e.preventDefault());
 
 cv.addEventListener('contextmenu', e=>{
   e.preventDefault();

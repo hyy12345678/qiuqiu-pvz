@@ -2,10 +2,10 @@
 //
 // 两种模式：
 //   默认（src 模式）   逐行规范化后比较 —— 严格，适用于 source-to-source 搬迁
-//   --dist（token 模式）
-//                      先把 legacy 脚本体过**同一个 esbuild 配置**得到基线 bundle，再和 dist 内联脚本比
-//                      token。直接拿「未打包的 legacy」比「打包后的 dist」是不对的：esbuild 会做
-//                      const→var、0x..→十进制、同名符号消歧重命名（g→g2），全是假阳性。
+//   --dist（字节模式）  产物内联脚本必须等于「当前 src 重新打一遍包」的结果，逐字节比较。
+//                      不与 legacy 直接比：esbuild 会 const→var、十六进制→十进制、同名符号消歧重命名
+//                      （g→g2），拿未打包的 legacy 比打包后的 dist 全是假阳性。
+//                      链条：legacy ≡ src（行级） 且 bundle(src) ≡ 产物（字节级） ⇒ 产物 ≡ legacy
 //
 // 用法：
 //   node scripts/check-parity.js              # legacy vs src/**
@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 const { esbuildOpts } = require('./esbuild-opts');
-const { escapeForInline } = require('./inline');
+const { escapeForInline, ENTRY } = require('./inline');
 
 const ROOT = path.join(__dirname, '..');
 const BASELINE = path.join(ROOT, 'legacy', '植物大战僵尸-网页版.html');
@@ -52,18 +52,54 @@ function stripComments(src) {
   return out;
 }
 
-const MODULE_LINE = /^\s*(import|export\s+(default\s+)?[({*]|export\s+(const|let|var|function|class|async)\b)/;
+// 只有「纯模块化样板」可以整行忽略：import 语句、以及 re-export 形式。
+// `export const/function …` 必须剥掉关键字后照常参与比较，否则整行逃逸检查，
+// 单行函数（如 loadUnlocked）里的改动就看不见了。
+const IMPORT_LINE = /^(import\b|export\s+(default\s+)?[({*])/;
 
 // esbuild 的 iife 包装必然引入的这些 token 不参与比较
 const WRAPPER_TOKENS = new Set(['use strict', 'function', 'void', 'arguments']);
+
+// P2 授权差异：方案 §6-P2 约定的唯一一处「行为等价但签名变化」——
+// 波次与题目的随机源从 Math.random 改为可注入的 rng（默认值仍是 Math.random）。
+// 逐行精确列举：任何其它差异一律 FAIL，新增可注入点也必须先来这里挂号。
+const AUTHORIZED_LEGACY_ONLY = [
+  'function makeQuiz(){',
+  'if(Math.random() < 0.5){',
+  'function shuffle(arr){',
+  'const j = randi(0, i);',
+  'shuffle(opts);',
+  'function pickType(lv, prog){',
+  'function buildSpawns(lv){',
+  'let sum = pool.reduce((a,p)=>a+p[1],0), r = Math.random()*sum;',
+  'if(progress > 0.15) size += (Math.random() < 0.26 + 0.3*progress ? 1 : 0);',
+  'if(progress > 0.55) size += (Math.random() < 0.35 ? 1 : 0);',
+  "const type = spawned < 3 ? 'normal' : pickType(lv, Math.max(0, progress-0.2));",
+  "ev.push({ t: finalT + k*0.4, type: k===0 ? 'flag' : pickType(lv, 1) });",
+];
+const AUTHORIZED_SRC_ONLY = [
+  'function makeQuiz(rng = Math.random){',
+  'const randi = (a, b) => Math.floor(a + rng() * (b - a + 1));',
+  'if(rng() < 0.5){',
+  'function shuffle(arr, rng = Math.random){',
+  'const j = Math.floor(rng() * (i + 1));',
+  'shuffle(opts, rng);',
+  'function pickType(lv, prog, rng){',
+  'let sum = pool.reduce((a,p)=>a+p[1],0), r = rng()*sum;',
+  'function buildSpawns(lv, rng = Math.random){',
+  'const rand = (a, b) => a + rng() * (b - a);',
+  'if(progress > 0.15) size += (rng() < 0.26 + 0.3*progress ? 1 : 0);',
+  'if(progress > 0.55) size += (rng() < 0.35 ? 1 : 0);',
+  "const type = spawned < 3 ? 'normal' : pickType(lv, Math.max(0, progress-0.2), rng);",
+  "ev.push({ t: finalT + k*0.4, type: k===0 ? 'flag' : pickType(lv, 1, rng) });",
+];
 
 function normalize(src) {
   return stripComments(src)
     .split('\n')
     .map(l => l.trim().replace(/\s+/g, ' '))
     .filter(l => l.length > 0)
-    // 模块化必然新增的行：import 语句、export 关键字、装配入口的 require
-    .filter(l => !MODULE_LINE.test(l))
+    .filter(l => !IMPORT_LINE.test(l))
     .map(l => l.replace(/^export\s+default\s+/, '').replace(/^export\s+/, ''))
     .filter(l => l.length > 0)
     .sort();
@@ -117,43 +153,79 @@ function multisetDiff(a, b) {
   return { onlyA: onlyA.sort(), onlyB: onlyB.sort() };
 }
 
-// 用与构建完全相同的 esbuild 配置打包一段源码文本，作为 dist 模式的基线侧。
-async function bundleStdin(code) {
-  const r = await esbuild.build({
-    ...esbuildOpts([]),
-    stdin: { contents: code, loader: 'js', resolveDir: ROOT },
-    write: false,
-  });
-  return r.outputFiles[0].text;
+// 与 scripts/build.js 完全相同的配置重新打一遍包 —— 配置一旦漂移，这个检查就失去意义，
+// 所以 esbuildOpts 与 ENTRY 都必须从构建侧共享的模块里取。
+async function bundleEntry() {
+  const r = await esbuild.build({ ...esbuildOpts([ENTRY]), write: false, outbase: path.join(ROOT, 'src') });
+  return { outputText: r.outputFiles[0].text };
+}
+
+// 消耗掉「已授权」的差异行；剩余任何一项都仍然是 FAIL。
+function consumeAuthorized(list, authorized) {
+  const allow = new Map();
+  for (const l of authorized) allow.set(l, (allow.get(l) || 0) + 1);
+  const rest = [];
+  for (const l of list) {
+    const n = allow.get(l) || 0;
+    if (n > 0) { allow.set(l, n - 1); continue; }
+    rest.push(l);
+  }
+  return { rest, used: list.length - rest.length };
+}
+
+// dist 模式：产物内联脚本必须与「当前 src 的 bundle」逐字节一致（只允许可可证伪的构建戳差异）。
+// 这一侧不再扯上 legacy —— 源码是否忠实由 line 模式单独负责，两者串起来就是完整链条：
+//   legacy ≡ src（行级）  且  bundle(src) ≡ 产物（字节级）  ⇒  产物 ≡ legacy
+async function checkDist() {
+  const expected = escapeForInline((await bundleEntry()).outputText);
+  const raw = extractScript(fs.readFileSync(DIST, 'utf8')).replace(/^\s*\/\* build:[\s\S]*?\*\/\n/, '');
+  const actual = raw.trim();
+  console.log('parity[byte]: esbuild(src/main.js) vs dist/植物大战僵尸-网页版.html 内联脚本');
+  if (actual === expected.trim()) {
+    console.log('PASS —— 产物与当前源码的 bundle 逐字节一致（' + (expected.length / 1024).toFixed(1) + ' KB）');
+    return true;
+  }
+  let i = 0;
+  while (i < Math.min(actual.length, expected.length) && actual[i] === expected[i]) i++;
+  const cut = s => JSON.stringify(s.slice(Math.max(0, i - 60), i + 60));
+  console.log('FAIL —— 首个差异在第 ' + i + ' 字符');
+  console.log('  期望: ' + cut(expected));
+  console.log('  实际: ' + cut(actual));
+  const { onlyA, onlyB } = multisetDiff(normalizeTokens(expected), normalizeTokens(actual));
+  if (onlyA.length || onlyB.length) {
+    console.log('  token 层面：bundle 独有 ' + onlyA.length + '，产物独有 ' + onlyB.length);
+    onlyA.slice(0, 10).forEach(t => console.log('    - ' + t));
+    onlyB.slice(0, 10).forEach(t => console.log('    + ' + t));
+  }
+  return false;
 }
 
 async function main() {
   const args = new Set(process.argv.slice(2));
   const verbose = args.has('--verbose');
-  const useDist = args.has('--dist');
-  const unit = useDist ? 'token' : '行';
-
-  const legacyBody = extractScript(fs.readFileSync(BASELINE, 'utf8'));
-  let base, cur, curLabel;
-  if (useDist) {
-    // 两侧都做同样的「内联转义」，否则字符串里的 </script 只在 dist 侧被改写，会报假差异
-    base = normalizeTokens(escapeForInline(await bundleStdin(legacyBody)));
-    curLabel = 'dist/植物大战僵尸-网页版.html 内联脚本';
-    cur = normalizeTokens(extractScript(fs.readFileSync(DIST, 'utf8')));
-  } else {
-    base = normalize(legacyBody);
-    curLabel = 'src/** 源码';
-    const files = walkJs(SRC_DIR, []);
-    cur = normalize(files.map(f => fs.readFileSync(f, 'utf8')).join('\n'));
+  if (args.has('--dist')) {
+    process.exitCode = (await checkDist()) ? 0 : 1;
+    return;
   }
 
-  const { onlyA, onlyB } = multisetDiff(base, cur);
+  const unit = '行';
+  const base = normalize(extractScript(fs.readFileSync(BASELINE, 'utf8')));
+  const curLabel = 'src/** 源码';
+  const files = walkJs(SRC_DIR, []);
+  const cur = normalize(files.map(f => fs.readFileSync(f, 'utf8')).join('\n'));
+
+  const { onlyA: a0, onlyB: b0 } = multisetDiff(base, cur);
+  const a = consumeAuthorized(a0, AUTHORIZED_LEGACY_ONLY);
+  const b = consumeAuthorized(b0, AUTHORIZED_SRC_ONLY);
+  const onlyA = a.rest, onlyB = b.rest;
+  const authorizedUsed = a.used + b.used;
   const limit = verbose ? onlyA.length + onlyB.length : 20;
 
-  console.log('parity[' + (useDist ? 'token' : 'line') + ']: legacy(' + base.length + ' ' + unit
+  console.log('parity[line]: legacy(' + base.length + ' ' + unit
     + ') vs ' + curLabel + '(' + cur.length + ' ' + unit + ')');
   if (onlyA.length === 0 && onlyB.length === 0) {
-    console.log('PASS —— 无逻辑差异，本阶段仅为代码移动');
+    console.log('PASS —— 无逻辑差异，本阶段仅为代码移动'
+      + (authorizedUsed ? '（已授权 ' + authorizedUsed + ' 行 rng 注入签名变化）' : ''));
     return;
   }
   console.log('FAIL —— 基线独有 ' + onlyA.length + ' ' + unit + '，当前独有 ' + onlyB.length + ' ' + unit);

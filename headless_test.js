@@ -8,12 +8,20 @@
 // 用法：
 //   node headless_test.js                       # 默认测 legacy 单文件基线
 //   node headless_test.js src/main.js           # 测模块源码头（拼接后）
-const fs = require('fs'), vm = require('vm');
+const fs = require('fs'), vm = require('vm'), path = require('path');
+const esbuild = require('esbuild');
+const { esbuildOpts } = require('./scripts/esbuild-opts');
 
 const target = process.argv[2] || require('path').join(__dirname, 'legacy', '植物大战僵尸-网页版.html');
-let js;
+let js, label = target;
 if (target.endsWith('.js')) {
   js = fs.readFileSync(target, 'utf8');
+  if (/^\s*import\b/m.test(js)) {
+    // src 已模块化，先用与构建同一套 esbuild 配置打成单文件。
+    // 用 esm 而非 iife：iife 的闭包会把 G/ZTYPES 藏起来，驱动就读不到游戏状态了。
+    js = esbuild.buildSync({ ...esbuildOpts([target]), write: false, format: 'esm' }).outputFiles[0].text;
+    label = target + '（esbuild esm 打包后）';
+  }
 } else {
   const html = fs.readFileSync(require('path').isAbsolute(target) ? target : require('path').join(__dirname, target), 'utf8');
   js = html.split('<script>')[1].split('</script>')[0];
@@ -23,7 +31,7 @@ if (/^\s*(?:\/\*[\s\S]*?\*\/\s*)*\(\s*(?:\(\)\s*=>|\(\s*\)\s*=>|function)/.test(
     + '本驱动无法注入。请改用 npm run test:smoke（测 src/main.js）。');
   process.exit(2);
 }
-console.log('smoke source: ' + target);
+console.log('smoke source: ' + label);
 
 // ---- 桩环境 ----
 globalThis.__tNow = 0;

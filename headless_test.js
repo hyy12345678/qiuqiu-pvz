@@ -1,7 +1,29 @@
 // 无头冒烟测试：用桩对象模拟 DOM/Canvas，驱动游戏逻辑跑完整关卡
+//
+// 只能测「脚本形态」的代码：驱动脚本与被测代码跑在同一个 vm 上下文里，靠的是顶层
+// var/const 变成全局。esbuild 的 iife 产物把所有符号关在闭包中，驱动看不到 G，
+// 所以发布产物用 npm run check:dist（离线自包含 + 语法）与 parity:dist 把关，
+// 行为覆盖测 src/main.js；等 P6 拆成模块后再给产物加一个测试入口。
+//
+// 用法：
+//   node headless_test.js                       # 默认测 legacy 单文件基线
+//   node headless_test.js src/main.js           # 测模块源码头（拼接后）
 const fs = require('fs'), vm = require('vm');
-const html = fs.readFileSync(require('path').join(__dirname, '植物大战僵尸-网页版.html'), 'utf8');
-const js = html.split('<script>')[1].split('</script>')[0];
+
+const target = process.argv[2] || require('path').join(__dirname, 'legacy', '植物大战僵尸-网页版.html');
+let js;
+if (target.endsWith('.js')) {
+  js = fs.readFileSync(target, 'utf8');
+} else {
+  const html = fs.readFileSync(require('path').isAbsolute(target) ? target : require('path').join(__dirname, target), 'utf8');
+  js = html.split('<script>')[1].split('</script>')[0];
+}
+if (/^\s*(?:\/\*[\s\S]*?\*\/\s*)*\(\s*(?:\(\)\s*=>|\(\s*\)\s*=>|function)/.test(js)) {
+  console.error('拒绝执行：' + target + ' 是 iife 打包产物，内部符号（G/ZTYPES/…）不在全局，\n'
+    + '本驱动无法注入。请改用 npm run test:smoke（测 src/main.js）。');
+  process.exit(2);
+}
+console.log('smoke source: ' + target);
 
 // ---- 桩环境 ----
 globalThis.__tNow = 0;

@@ -74,15 +74,17 @@ const ZTYPES = {
   bucket:{ name:'铁桶僵尸', hp:200, acc:1100, speed:17 },
   flag:  { name:'旗帜僵尸', hp:200, acc:0,    speed:21 },
   vault: { name:'撑杆僵尸', hp:500, acc:0,    speed:36 },
+  newspaper:{ name:'报纸僵尸', hp:200, acc:400, speed:13 }, // 报纸是护盾，被打掉会狂暴加速
 };
 
 const LEVELS = [
   { name:'第 1 关 · 前院草坪', count:20, slots:6, types:[['normal',8],['cone',2]] },
-  { name:'第 2 关 · 来者不善', count:32, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1]] },
-  { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2]] },
+  { name:'第 2 关 · 来者不善', count:32, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
+  { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
+  { name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
 ];
 
-function loadUnlocked(){ try{ return clamp(parseInt(localStorage.getItem('pvzweb_unlocked'))||1,1,3); }catch(e){ return 1; } }
+function loadUnlocked(){ try{ return clamp(parseInt(localStorage.getItem('pvzweb_unlocked'))||1,1,LEVELS.length); }catch(e){ return 1; } }
 function saveUnlocked(n){ try{ localStorage.setItem('pvzweb_unlocked', String(n)); }catch(e){} }
 
 // ---------------- 音频系统 ----------------
@@ -196,6 +198,8 @@ const SFX = {
   hop(){ this.tone(280, 620, 0.22, 'triangle', 0.1); },
   horn(){ this.tone(98, 98, 0.7, 'sawtooth', 0.11); this.tone(147, 147, 0.7, 'sawtooth', 0.07, 0.02); },
   error(){ this.tone(150, 110, 0.14, 'square', 0.08); },
+  paperTear(){ this.noise(0.18, 0.16, 5200); this.tone(1400, 420, 0.16, 'sawtooth', 0.05); },
+  angry(){ this.tone(150, 62, 0.4, 'sawtooth', 0.14); this.noise(0.32, 0.09, 620, 0.04); },
   click(){ this.tone(620, 620, 0.05, 'sine', 0.08); },
   select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },
   win(){ const seq=[523.25,659.25,783.99,1046.5]; seq.forEach((f,i)=>this.tone(f,f,0.22,'triangle',0.11,i*0.14)); },
@@ -215,7 +219,7 @@ const G = {
   grid:null, plants:[], zombies:[], peas:[], suns:[], mowers:[], parts:[], decals:[],
   events:[], evIdx:0, total:0, killed:0,
   skyTimer:5, groanTimer:4, lastRows:[],
-  waveText:null,
+  waveText:null, nightHint:0,
   winT:0, loseZombie:null,
   shake:0, flash:0, quiz:null,
   hoverCell:null, mouse:{x:-99,y:-99},
@@ -233,6 +237,7 @@ function startLevel(li){
 function beginPlay(startSun){
   startSun = (startSun === undefined) ? 50 : startSun;
   const lv = LEVELS[G.level];
+  if(lv.night) startSun += 100;   // 夜战没有天降太阳，开局多给一些补偿
   G.state = 'play';
   G.paused = false;
   G.t = -3.2;
@@ -247,6 +252,7 @@ function beginPlay(startSun){
   G.evIdx = 0; G.killed = 0;
   G.skyTimer = 2; G.groanTimer = 4;
   G.waveText = null; G.winT = 0; G.loseZombie = null;
+  G.nightHint = lv.night ? 8 : 0;
   G.sel = -1; G.shovel = false;
   G.shake = 0; G.flash = 0;
   SFX.click();
@@ -323,6 +329,7 @@ function pickType(lv, prog){
     let ww = w;
     if(t==='bucket'||t==='vault') ww += prog*3;
     if(t==='cone') ww += prog*1.5;
+    if(t==='newspaper') ww += prog*2;
     return [t, ww];
   });
   let sum = pool.reduce((a,p)=>a+p[1],0), r = Math.random()*sum;
@@ -442,6 +449,15 @@ function damageZombie(z, d){
   } else {
     z.hp -= d;
   }
+  // 报纸僵尸：报纸（护盾）被打掉后狂暴
+  if(z.type==='newspaper' && !z.angry && z.acc <= 0 && z.state !== 'dying'){
+    z.angry = true;
+    z.speed = 34 * rand(0.94,1.08);
+    z.slowT = 0;
+    addPaperShreds(z.x, LY + (z.row+1)*CH - 76);
+    SFX.paperTear();
+    SFX.angry();
+  }
   if(z.hp <= 0 && z.state !== 'dying'){
     z.state = 'dying'; z.deathT = 0;
     G.killed++;
@@ -464,6 +480,7 @@ function spawnZombie(type){
     hp: def.hp, acc: def.acc, maxHp: def.hp + def.acc,
     state:'walk', animT: rand(0,TAU), eatT:0, slowT:0,
     poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null, dustT:0,
+    paper: type==='newspaper' ? ZTYPES.newspaper.acc : 0, angry:false,
   });
 }
 
@@ -490,6 +507,8 @@ function triggerMower(row){
 function updatePlay(dt){
   G.t += dt;
   const t = G.t;
+  const lv = LEVELS[G.level];
+  if(G.nightHint > 0) G.nightHint -= dt;
 
   if(t > 0){
     while(G.evIdx < G.events.length && G.events[G.evIdx].t <= t){
@@ -499,10 +518,13 @@ function updatePlay(dt){
         SFX.horn();
       } else spawnZombie(e.type);
     }
-    G.skyTimer -= dt;
-    if(G.skyTimer <= 0){
-      G.skyTimer = rand(4.5, 6.5);
-      spawnSun(rand(LX+30, LX+COLS*CW-30), -30, rand(LY+60, LY+ROWS*CH-40), true);
+    // 夜间关卡：天上不会掉太阳，只能靠向日葵
+    if(!lv.night){
+      G.skyTimer -= dt;
+      if(G.skyTimer <= 0){
+        G.skyTimer = rand(4.5, 6.5);
+        spawnSun(rand(LX+30, LX+COLS*CW-30), -30, rand(LY+60, LY+ROWS*CH-40), true);
+      }
     }
   }
 
@@ -631,7 +653,8 @@ function updatePlay(dt){
     if(t <= 0) continue;
 
     if(z.state==='walk'){
-      z.animT += dt * slowMul * (z.type==='vault' && !z.poleLost ? 1.7 : 1);
+      const animMul = (z.type==='vault' && !z.poleLost) ? 1.7 : (z.angry ? 2.1 : 1);
+      z.animT += dt * slowMul * animMul;
       z.x -= z.speed * slowMul * dt;
       // 脚步扬尘
       z.dustT = (z.dustT||0) + dt;
@@ -762,7 +785,7 @@ function updatePlay(dt){
     G.winT += dt;
     if(G.winT > 1.0){
       G.state = 'won';
-      if(G.level + 2 > G.unlocked){ G.unlocked = clamp(G.level+2, 1, 3); saveUnlocked(G.unlocked); }
+      if(G.level + 2 > G.unlocked){ G.unlocked = clamp(G.level+2, 1, LEVELS.length); saveUnlocked(G.unlocked); }
       SFX.win();
     }
   }
@@ -783,25 +806,35 @@ function addDirtPuff(x,y){
 function addFlamePuff(x,y){
   for(let k=0;k<6;k++) G.parts.push({ x, y, vx:rand(-35,35), vy:rand(-80,-20), g:-50, life:rand(0.2,0.45), max:0.45, size:rand(2,5), color:['#ffb347','#ff8a2e'][k%2] });
 }
+// 报纸被撕碎飞散
+function addPaperShreds(x, y){
+  for(let k=0;k<14;k++) G.parts.push({ x:x+rand(-10,10), y:y+rand(-12,12), vx:rand(-110,70), vy:rand(-140,-30), g:260,
+    life:rand(0.45,0.95), max:0.95, size:rand(3,6), color:['#f4f0e2','#ded8c4','#c9c2ac'][k%3] });
+  for(let k=0;k<4;k++) G.parts.push({ x:x+rand(-8,8), y:y+rand(-6,6), vx:rand(-40,40), vy:rand(-60,-20), g:200,
+    life:rand(0.3,0.6), max:0.6, size:rand(2,3.5), color:'#5a5a52' });
+}
 function addPeaSplat(x,y,type){
   const cols = type==='snow' ? ['#bfe9ff','#8fd0f2'] : (type==='fire' ? ['#ff9a2e','#ffd23e'] : (type==='ball' ? ['#e8483c','#ffd23e'] : (type==='bullet' ? ['#e8edf2','#8d949c'] : ['#8fd44a','#b8e88a'])));
   for(let k=0;k<9;k++) G.parts.push({ x, y, vx:rand(-100,100), vy:rand(-100,45), g:250, life:rand(0.2,0.45), max:0.45, size:rand(2,5.5), color:cols[k%2] });
 }
 
 // ---------------- 预渲染背景 ----------------
-let bgCanvas = null;
+let bgCanvas = null, bgTheme = null;
+function isNight(){ return !!(LEVELS[G.level] && LEVELS[G.level].night); }
 function ensureBG(){
-  if(bgCanvas) return;
+  const theme = isNight() ? 'night' : 'day';
+  if(bgCanvas && bgTheme === theme) return;
+  bgTheme = theme;
   bgCanvas = document.createElement('canvas');
   bgCanvas.width = W*DPR; bgCanvas.height = H*DPR;
   const bgc = bgCanvas.getContext('2d');
   bgc.scale(DPR, DPR);
   const saved = ctx;
   ctx = bgc;
-  paintBattleBG();
+  paintBattleBG(theme==='night');
   ctx = saved;
 }
-function paintBattleBG(){
+function paintBattleBG(night){
   const R = mulberry32(20260814);
   // 天空
   let g = ctx.createLinearGradient(0,0,0,LY);
@@ -953,11 +986,95 @@ function paintBattleBG(){
       ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-2,y-5); ctx.moveTo(x,y); ctx.lineTo(x+2,y-6); ctx.stroke();
     }
   }
+
+  // ---- 夜色处理（仅夜间关卡） ----
+  if(night){
+    // 整体压成冷调夜色
+    ctx.save();
+    ctx.globalCompositeOperation = 'multiply';
+    g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#46588e'); g.addColorStop(0.28,'#3a4774'); g.addColorStop(1,'#243050');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+    ctx.restore();
+    // 星空
+    for(let k=0;k<80;k++){
+      const sx = R()*W, sy = 6 + R()*(LY-56), tw = 0.45 + R()*0.55;
+      ctx.fillStyle = 'rgba(255,252,232,'+(0.3+tw*0.55).toFixed(3)+')';
+      ctx.beginPath(); ctx.arc(sx, sy, 0.8+tw*1.4, 0, TAU); ctx.fill();
+      if(tw > 0.9){
+        ctx.strokeStyle = 'rgba(255,252,232,0.5)'; ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx-3.2, sy); ctx.lineTo(sx+3.2, sy);
+        ctx.moveTo(sx, sy-3.2); ctx.lineTo(sx, sy+3.2);
+        ctx.stroke();
+      }
+    }
+    // 月亮与月晕
+    g = ctx.createRadialGradient(884,64,10, 884,64,130);
+    g.addColorStop(0,'rgba(214,230,255,0.5)'); g.addColorStop(1,'rgba(214,230,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(884,64,130,0,TAU); ctx.fill();
+    g = ctx.createRadialGradient(876,56,5, 884,64,28);
+    g.addColorStop(0,'#fffdf0'); g.addColorStop(1,'#cdd6ea');
+    ctx.beginPath(); ctx.arc(884,64,26,0,TAU);
+    O(g, '#9aa6c4', 1.6);
+    ctx.fillStyle = 'rgba(158,170,200,0.5)';
+    ctx.beginPath(); ctx.arc(875,55,5.2,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(893,70,3.4,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(879,74,2.6,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(890,52,2.2,0,TAU); ctx.fill();
+    // 草地雾气
+    ctx.fillStyle = 'rgba(188,212,255,0.10)';
+    for(let k=0;k<11;k++){
+      const fx = R()*W, fy = LY + 22 + R()*(ROWS*CH-26);
+      ctx.beginPath(); ctx.ellipse(fx, fy, 58+R()*74, 6+R()*5, 0, 0, TAU); ctx.fill();
+    }
+    // 房屋窗户透出暖光
+    for(const wy of [LY+34, LY+ROWS*CH-140]){
+      g = ctx.createLinearGradient(62,wy,62,wy+92);
+      g.addColorStop(0,'#ffeab0'); g.addColorStop(1,'#f0b04a');
+      ctx.fillStyle = g;
+      ctx.fillRect(62, wy+2, 80, 90);
+      ctx.strokeStyle = '#4a3a24'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(102, wy+2); ctx.lineTo(102, wy+92);
+      ctx.moveTo(62, wy+47); ctx.lineTo(142, wy+47); ctx.stroke();
+      g = ctx.createRadialGradient(102, wy+47, 8, 102, wy+47, 104);
+      g.addColorStop(0,'rgba(255,214,124,0.42)'); g.addColorStop(1,'rgba(255,214,124,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(102, wy+47, 104, 0, TAU); ctx.fill();
+    }
+    // 门廊壁灯光晕
+    g = ctx.createRadialGradient(175, y0+48, 3, 175, y0+48, 70);
+    g.addColorStop(0,'rgba(255,226,146,0.7)'); g.addColorStop(1,'rgba(255,226,146,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(175, y0+48, 70, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#ffe89a';
+    ctx.beginPath(); ctx.arc(175, y0+48, 5.2, 0, TAU); ctx.fill();
+    // 月光在地面的冷高光
+    g = ctx.createLinearGradient(0, LY+ROWS*CH, 0, H);
+    g.addColorStop(0,'rgba(170,200,255,0.10)'); g.addColorStop(1,'rgba(170,200,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, LY+ROWS*CH+4, W, H-(LY+ROWS*CH)-4);
+  }
 }
 
 function drawBackground(){
   ensureBG();
   ctx.drawImage(bgCanvas, 0, 0, W, H);
+  if(isNight()){
+    // 萤火虫 + 星光微微闪
+    ctx.save();
+    for(let k=0;k<10;k++){
+      const x = ((AT*(6+k*1.4) + k*163) % (W+80)) - 40;
+      const y = LY + 34 + ((k*101) % (ROWS*CH-56)) + Math.sin(AT*0.85+k*2.1)*16;
+      const a = clamp(0.30 + Math.sin(AT*2.3+k*1.4)*0.34, 0, 1);
+      if(a < 0.06) continue;
+      ctx.globalAlpha = a*0.28;
+      ctx.fillStyle = '#e9ff9a';
+      ctx.beginPath(); ctx.arc(x, y, 7, 0, TAU); ctx.fill();
+      ctx.globalAlpha = a;
+      ctx.beginPath(); ctx.arc(x, y, 2, 0, TAU); ctx.fill();
+    }
+    ctx.restore();
+    return;
+  }
   // 花粉光斑
   ctx.save();
   for(let k=0;k<7;k++){
@@ -1577,6 +1694,8 @@ function drawZombieEntity(z, fyOverride){
   const armSway = walk ? Math.sin(ph+1.1)*3 : (eat ? Math.sin(z.eatT*9)*2.4 : 0);
   const mouth = eat ? Math.abs(Math.sin(z.eatT*9))*7 : 2;
   const lunge = eat ? Math.abs(Math.sin(z.eatT*9))*5 : 0;
+  const angry = z.type==='newspaper' && !!z.angry;   // 报纸被打掉后暴怒
+  const reading = z.type==='newspaper' && !angry;    // 正在看报
 
   ctx.save();
   ctx.translate(z.x, fy);
@@ -1590,6 +1709,7 @@ function drawZombieEntity(z, fyOverride){
   ctx.beginPath(); ctx.ellipse(0, 2, 23, 6.5, 0, 0, TAU); ctx.fill();
 
   ctx.rotate(swing*0.035);
+  if(angry && walk) ctx.rotate(-0.11);   // 暴怒前冲
   ctx.translate(-lunge*0.35, -bob);
 
   // 后手臂（躯干后）
@@ -1769,6 +1889,84 @@ function drawZombieEntity(z, fyOverride){
   }
   ctx.restore();
 
+  // 报纸（举在身前，遮住半张脸）
+  if(reading){
+    const wob = Math.sin(at*2.6)*0.05 + (walk ? swing*0.03 : 0);
+    ctx.save();
+    ctx.translate(-34, -78);
+    ctx.rotate(-0.22 + wob);
+    // 对开页：左页略折
+    ctx.beginPath(); ctx.moveTo(-24,-19); ctx.lineTo(0,-16); ctx.lineTo(0,18); ctx.lineTo(-24,21); ctx.closePath();
+    O('#e6e0d0', '#6e6858', 2);
+    ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(23,-19); ctx.lineTo(23,21); ctx.lineTo(0,18); ctx.closePath();
+    O('#f4efe2', '#6e6858', 2);
+    // 中缝
+    ctx.strokeStyle = '#8d8676'; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(0,18); ctx.stroke();
+    // 报头色块
+    ctx.fillStyle = '#5a5245';
+    ctx.fillRect(3,-15, 17, 3.4);
+    ctx.fillStyle = 'rgba(90,82,69,0.75)';
+    // 正文线条
+    for(let k=0;k<5;k++){
+      const yy = -9 + k*5.4;
+      ctx.fillRect(3.5, yy, 16 - (k===4?6:0), 1.8);
+      ctx.fillRect(-21, yy+0.8, 16 - (k===3?5:0), 1.8);
+    }
+    // 图片框
+    ctx.fillStyle = 'rgba(120,112,96,0.55)';
+    ctx.fillRect(-21, 12, 8, 5);
+    ctx.restore();
+    // 握报的手
+    ctx.fillStyle = C.skin; ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(-13,-60,5,0,TAU); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-52,-70,4.6,0,TAU); ctx.fill(); ctx.stroke();
+  }
+
+  // 暴怒：发红的眼与头顶青筋
+  if(angry){
+    ctx.save();
+    ctx.translate(-7, -96);
+    ctx.fillStyle = 'rgba(200,40,30,0.35)';
+    ctx.beginPath(); ctx.arc(0,0,16.5,0,TAU); ctx.fill();
+    ctx.fillStyle = '#c03028';
+    ctx.beginPath(); ctx.ellipse(-8.5,-3.5,3.6,4.2,0,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(2.5,-3.5,3.2,3.9,0,0,TAU); ctx.fill();
+    ctx.strokeStyle = '#6e1810'; ctx.lineWidth = 2.6; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(-14,-9); ctx.lineTo(-4,-5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(7,-9.5); ctx.lineTo(-1,-5.5); ctx.stroke();
+    // 青筋
+    ctx.strokeStyle = '#8e2018'; ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(4,-19); ctx.lineTo(4,-24); ctx.moveTo(1,-21.5); ctx.lineTo(7,-21.5);
+    ctx.stroke();
+    // 怒吼的血盆大口
+    ctx.fillStyle = '#3a0e0a';
+    ctx.beginPath(); ctx.ellipse(-5, 10, 9, 6.2, -0.08, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#ddd8c6';
+    ctx.beginPath(); ctx.moveTo(-12,5.6); ctx.lineTo(-8.4,5.6); ctx.lineTo(-10.2,10.5); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-5.5,5.8); ctx.lineTo(-1.8,5.8); ctx.lineTo(-3.6,10.5); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    // 怒气符号
+    const ang = Math.sin(AT*9)*2;
+    ctx.save();
+    ctx.translate(14, -118 + ang*0.4);
+    ctx.strokeStyle = '#e0382a'; ctx.lineWidth = 4.6; ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(-7,-7); ctx.lineTo(-2.4,-2.4); ctx.moveTo(0,-9); ctx.lineTo(0,-3);
+    ctx.moveTo(7,-7); ctx.lineTo(2.4,-2.4); ctx.moveTo(-5,0); ctx.lineTo(5,0);
+    ctx.stroke();
+    ctx.restore();
+    // 疾驰残影
+    if(walk){
+      ctx.strokeStyle = 'rgba(255,240,220,0.22)'; ctx.lineWidth = 3; ctx.lineCap='round';
+      for(let k=0;k<3;k++){
+        const yy = -30 - k*22;
+        ctx.beginPath(); ctx.moveTo(30+k*6, yy); ctx.lineTo(52+k*10, yy); ctx.stroke();
+      }
+    }
+  }
+
   // 减速冰霜
   if(slowed){
     ctx.fillStyle = 'rgba(170,225,255,0.65)';
@@ -1821,6 +2019,17 @@ function drawZombieHeadIcon(x, y, s, acc){
     ctx.beginPath(); ctx.moveTo(-16,11); ctx.lineTo(16,-24); ctx.stroke();
     ctx.strokeStyle = '#b8b2a2'; ctx.lineWidth = 2.4;
     ctx.beginPath(); ctx.moveTo(-16,11); ctx.lineTo(16,-24); ctx.stroke();
+  } else if(acc==='newspaper'){
+    ctx.save();
+    ctx.translate(-7, 6); ctx.rotate(-0.2);
+    ctx.beginPath(); rr(-11,-9,22,17,1.5);
+    g = ctx.createLinearGradient(-11,-9,11,8);
+    g.addColorStop(0,'#f4efe2'); g.addColorStop(1,'#d8d2be');
+    O(g, '#6e6858', 1.8);
+    ctx.fillStyle = '#5a5245'; ctx.fillRect(-9,-7,18,2.4);
+    ctx.fillStyle = 'rgba(90,82,69,0.7)';
+    for(let k=0;k<3;k++) ctx.fillRect(-9,-2.4+k*3, 17, 1.2);
+    ctx.restore();
   }
   ctx.restore();
 }
@@ -2298,6 +2507,28 @@ function renderPlay(){
   drawWaveText();
   drawIntro();
 
+  // 夜战提示条
+  if(G.nightHint > 0 && isNight()){
+    const a = clamp(G.nightHint/1.4, 0, 1);
+    const bw = 520, bh = 44, bx = W/2-bw/2, by = 150;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.fillStyle = 'rgba(15,22,48,0.42)';
+    ctx.beginPath(); rr(bx+3, by+5, bw, bh, 22); ctx.fill();
+    let ng = ctx.createLinearGradient(0,by,0,by+bh);
+    ng.addColorStop(0,'rgba(38,52,96,0.94)'); ng.addColorStop(1,'rgba(22,30,60,0.94)');
+    ctx.beginPath(); rr(bx, by, bw, bh, 22);
+    O(ng, '#8fa4d8', 2.4);
+    // 小月亮
+    ctx.fillStyle = '#f6eec6'; ctx.strokeStyle = '#b8a860'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.arc(bx+27, by+bh/2, 9, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(184,168,96,0.55)';
+    ctx.beginPath(); ctx.arc(bx+24, by+bh/2-2.6, 2.1, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx+30.5, by+bh/2+2.8, 1.5, 0, TAU); ctx.fill();
+    drawText('夜战 · 天上不会掉太阳，快种向日葵！', bx+bw/2+14, by+bh/2+1, 17, '#eaf0ff', '#1b2440', 4, 'center', '800');
+    ctx.restore();
+  }
+
   if(G.shovel && G.mouse.x >= 0){
     ctx.save();
     ctx.globalAlpha = 0.9;
@@ -2417,15 +2648,18 @@ function drawMenuScene(){
   ctx.save(); ctx.translate(110, H-36); ctx.scale(1.55,1.55); drawSunflower(AT, 0); ctx.restore();
   ctx.save(); ctx.translate(225, H-28); ctx.scale(1.35,1.35); drawShooter(AT, 2, 'pea', 0, 0); ctx.restore();
   ctx.save(); ctx.translate(315, H-24); ctx.scale(1.15,1.15); drawWallnut(1, AT, 4); ctx.restore();
-  ctx.save(); ctx.translate(545, H-14); ctx.scale(1.12,1.12); drawQiuqiu(AT, 5, 0); ctx.restore();
+  ctx.save(); ctx.translate(465, H-14); ctx.scale(1.12,1.12); drawQiuqiu(AT, 5, 0); ctx.restore();
   ctx.save(); ctx.translate(W-140, H-26); ctx.scale(1.55,1.55);
   drawZombieEntity({ type:'normal', row:0, x:0, vy:0, state:'walk', animT:AT, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
   ctx.restore();
-  ctx.save(); ctx.translate(W-260, H-18); ctx.scale(1.3,1.3);
+  ctx.save(); ctx.translate(W-262, H-18); ctx.scale(1.3,1.3);
   drawZombieEntity({ type:'cone', row:0, x:0, vy:0, state:'walk', animT:AT+2, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
   ctx.restore();
-  ctx.save(); ctx.translate(W-370, H-14); ctx.scale(1.12,1.12);
+  ctx.save(); ctx.translate(W-372, H-14); ctx.scale(1.12,1.12);
   drawZombieEntity({ type:'bucket', row:0, x:0, vy:0, state:'walk', animT:AT+4, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
+  ctx.restore();
+  ctx.save(); ctx.translate(W-470, H-16); ctx.scale(1.2,1.2);
+  drawZombieEntity({ type:'newspaper', row:0, x:0, vy:0, state:'walk', animT:AT+1.2, eatT:0, slowT:0, deathT:0, dustT:0, paper:400, angry:false }, 0);
   ctx.restore();
 }
 
@@ -2479,9 +2713,10 @@ function renderMenu(){
   drawText(sub, W/2, 206, 21, '#fff4d8', '#6e2408', 3.5, 'center', '800');
 
   // 关卡卡片
-  const cardW = 230, cardH = 150, gap = 40;
-  const x0 = W/2 - (3*cardW + 2*gap)/2;
-  for(let i=0;i<3;i++){
+  const cardW = 214, cardH = 150, gap = 22;
+  const nLv = LEVELS.length;
+  const x0 = W/2 - (nLv*cardW + (nLv-1)*gap)/2;
+  for(let i=0;i<nLv;i++){
     const lv = LEVELS[i];
     const locked = i+1 > G.unlocked;
     const x = x0 + i*(cardW+gap), y = 258;
@@ -2498,7 +2733,19 @@ function renderMenu(){
     O(bg, locked ? '#2c2c28' : '#6b4c20', 3);
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.fillRect(x+6, y+4, cardW-12, 7);
-    drawText(lv.name, x+cardW/2, y+28, 20, locked ? '#8a8a80' : '#42280f', locked?null:'rgba(255,246,220,0.6)', 2.5, 'center', '800');
+    drawText(lv.name, x+cardW/2, y+28, 18, locked ? '#8a8a80' : '#42280f', locked?null:'rgba(255,246,220,0.6)', 2.5, 'center', '800');
+    if(lv.night && !locked){
+      // 夜间关标记：左上角小月亮
+      const mx = x+15, my = y+22;
+      g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);
+      g.addColorStop(0,'rgba(255,246,200,0.6)'); g.addColorStop(1,'rgba(255,246,200,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mx, my, 12, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(mx, my, 6.6, 0, TAU);
+      O('#f6eec6', '#b8a860', 1.4);
+      ctx.fillStyle = 'rgba(184,168,96,0.5)';
+      ctx.beginPath(); ctx.arc(mx-2.2, my-1.8, 1.5, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(mx+2.4, my+2.2, 1.1, 0, TAU); ctx.fill();
+    }
     if(locked){
       ctx.fillStyle = '#2c2c28';
       ctx.beginPath(); rr(x+cardW/2-15, y+72, 30, 26, 5); ctx.fill();
@@ -2508,13 +2755,13 @@ function renderMenu(){
       ctx.beginPath(); ctx.arc(x+cardW/2, y+83, 3, 0, TAU); ctx.fill();
       drawText('通关上一关解锁', x+cardW/2, y+124, 13, '#9a9a90', null, 0, 'center', '600');
     } else {
-      const zs = lv.types.map(t=>t[0]).slice(0,4);
-      const zx0 = x+cardW/2 - (zs.length-1)*26;
+      const zs = lv.types.map(t=>t[0]).slice(0,5);
+      const zx0 = x+cardW/2 - (zs.length-1)*21;
       for(let k=0;k<zs.length;k++){
         const acc = zs[k]==='normal' ? null : zs[k];
-        drawZombieHeadIcon(zx0+k*52, y+80, 0.98, acc);
+        drawZombieHeadIcon(zx0+k*42, y+80, 0.86, acc);
       }
-      drawText('僵尸 × ' + lv.count, x+cardW/2, y+126, 15, '#6b4c20', null, 0, 'center', '700');
+      drawText('僵尸 × ' + lv.count + (lv.night ? ' · 夜间' : ''), x+cardW/2, y+126, 14, '#6b4c20', null, 0, 'center', '700');
     }
     ctx.restore();
   }
@@ -2528,7 +2775,7 @@ function renderHelp(){
   drawMenuScene();
   ctx.fillStyle = 'rgba(10,16,10,0.6)';
   ctx.fillRect(0,0,W,H);
-  const pw = 660, ph = 470, px = W/2-pw/2, py = H/2-ph/2-10;
+  const pw = 660, ph = 520, px = W/2-pw/2, py = H/2-ph/2-10;
   let g = ctx.createLinearGradient(0,py,0,py+ph);
   g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090');
   ctx.fillStyle = 'rgba(15,25,8,0.45)';
@@ -2550,11 +2797,13 @@ function renderHelp(){
     '· 球球是核心输出：加特林扫射，还有概率发射范围导弹',
     '· 火炬树桩能让穿过的豌豆变成双倍伤害的火豌豆',
     '· 樱桃炸弹 / 土豆雷威力巨大，但土豆雷需要时间成长',
+    '· 报纸僵尸：报纸是它的护盾，打掉报纸它会暴怒加速冲过来！',
+    '· 夜间关卡：天上不会掉太阳，只能靠向日葵（开局多给 100 阳光）',
     '· 每行最左侧的小推车是最后防线，被突破则游戏失败',
     '· 消灭本关全部僵尸即可过关，P 键暂停（触屏点右上角按钮）',
   ];
   for(let i=0;i<lines.length;i++){
-    drawText(lines[i], px+42, py+94+i*29, 16, '#3c2a10', null, 0, 'left', '600');
+    drawText(lines[i], px+42, py+94+i*27, 15.5, '#3c2a10', null, 0, 'left', '600');
   }
   drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
 }
@@ -2582,7 +2831,7 @@ function renderSelect(){
   ctx.restore();
 
   drawText('选 择 你 的 植 物', W/2, 40, 30, '#f5e6b8', '#2c1c08', 6, 'center', '900');
-  drawText(lv.name + '　·　可携带 ' + lv.slots + ' 种植物', W/2, 96, 16, '#e8d2a0', null, 0, 'center', '700');
+  drawText(lv.name + '　·　可携带 ' + lv.slots + ' 种植物' + (lv.night ? '　·　夜战：开局 +100 阳光' : ''), W/2, 96, 16, '#e8d2a0', null, 0, 'center', '700');
 
   const slotW = 72, slotH = 100;
   const sx0 = W/2 - (lv.slots*(slotW+10))/2 + 5;
@@ -2651,19 +2900,23 @@ function renderSelect(){
   gi.addColorStop(0,'#4a3418'); gi.addColorStop(1,'#33220e');
   ctx.beginPath(); rr(zx, zy, 330, 220, 10);
   O(gi, '#20140a', 2.5);
-  for(let k=0;k<lv.types.length;k++){
+  const nIco = lv.types.length;
+  const izx0 = zx + 165 - (nIco-1)*31;
+  for(let k=0;k<nIco;k++){
     const zt = lv.types[k][0];
     const acc = zt==='normal' ? null : zt;
-    drawZombieHeadIcon(zx+44+k*70, zy+44, 1.18, acc);
+    drawZombieHeadIcon(izx0+k*62, zy+44, 1.1, acc);
   }
   const tips = [
     '普通僵尸：最基础的敌人。',
     '路障 / 铁桶僵尸：头戴护具，非常耐打。',
     '撑杆僵尸：跑得快，还会跳过第一株植物！',
+    '报纸僵尸：看报时很慢，报纸被打掉会暴怒加速！',
     '旗帜僵尸：出现在总攻的最前线。',
+    lv.night ? '夜战：天上不掉太阳，全靠向日葵！' : '消灭全部僵尸即可过关，小心小推车。',
   ];
   for(let i2=0;i2<tips.length;i2++){
-    drawText(tips[i2], zx+22, zy+92+i2*30, 13.5, '#d8c090', null, 0, 'left', '600');
+    drawText(tips[i2], zx+22, zy+92+i2*21, 12.5, '#d8c090', null, 0, 'left', '600');
   }
 
   drawButton(88, H-88, 150, 46, '返回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
@@ -2744,10 +2997,11 @@ function renderEndOverlay(){
     ctx.restore();
     drawText('关 卡 完 成 ！', W/2, py+62, 44, '#3c7a18', '#1e3c0a', 8, 'center', '900');
     drawText('消灭僵尸：' + G.killed + ' 只　　剩余阳光：' + G.sun, W/2, py+122, 19, '#4a3414', null, 0, 'center', '700');
-    if(G.level < 2) drawText('新的关卡已解锁！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
-    else drawText('你通关了全部关卡，草坪安全了！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
-    const leftLabel = G.level < 2 ? '下一关' : '再玩一次';
-    const leftCb = G.level < 2 ? ()=>startLevel(G.level+1) : ()=>startLevel(G.level);
+    const lastLv = G.level >= LEVELS.length-1;
+    if(!lastLv) drawText('新的关卡已解锁！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
+    else drawText('你通关了全部 ' + LEVELS.length + ' 个关卡，草坪安全了！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
+    const leftLabel = lastLv ? '再玩一次' : '下一关';
+    const leftCb = lastLv ? ()=>startLevel(G.level) : ()=>startLevel(G.level+1);
     drawButton(W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftCb, {});
     drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
   } else {

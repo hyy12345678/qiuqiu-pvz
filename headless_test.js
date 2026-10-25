@@ -54,7 +54,8 @@ function makeZombie(type, row, x){
   const def = ZTYPES[type];
   return { type, row, x, speed: def.speed, hp: def.hp, acc: def.acc,
     maxHp: def.hp + def.acc, state:'walk', animT:0, eatT:0, slowT:0,
-    poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null };
+    poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null,
+    paper: type==='newspaper' ? def.acc : 0, angry:false };
 }
 
 // ===== 场景 A：无人防守，应当触发小推车并最终失败 =====
@@ -182,6 +183,57 @@ answerQuiz(G.quiz.questions[0].answer + 999);
 pump(1);
 if(G.state !== 'play') throw new Error('F6: wrong answer did not start battle');
 if(G.sun !== 50) throw new Error('F7: wrong answer energy should be 50, got ' + G.sun);
+
+// ===== 场景 G：报纸僵尸（报纸=护盾，被打掉后暴怒加速） =====
+startLevel(1);
+G.slots = [];
+G.slots.push({type:'repeater',cool:0});
+beginPlay();
+G.sun = 9999; G.t = 1;
+if(ZTYPES.newspaper.acc <= 0) throw new Error('G0: newspaper zombie has no paper shield');
+// G-a: 出怪时自带报纸护盾
+spawnZombie('newspaper');
+const spawned = G.zombies[G.zombies.length-1];
+if(spawned.type !== 'newspaper' || spawned.paper !== ZTYPES.newspaper.acc || spawned.angry)
+  throw new Error('G-a: spawnZombie did not equip paper shield');
+const nz = makeZombie('newspaper', 0, cellCX(4));
+const spdBefore = nz.speed;
+damageZombie(nz, 200);
+if(nz.acc !== 200 || nz.hp !== ZTYPES.newspaper.hp) throw new Error('G1: paper should absorb damage (acc=' + nz.acc + ' hp=' + nz.hp + ')');
+if(nz.angry) throw new Error('G2: went angry while paper still alive');
+damageZombie(nz, 250);          // 打爆报纸，溢出 50 点伤害
+if(!nz.angry) throw new Error('G3: paper destroyed but zombie not enraged');
+if(nz.acc !== 0) throw new Error('G4: acc should be 0 after paper lost, got ' + nz.acc);
+if(nz.hp !== 150) throw new Error('G5: spillover damage wrong, hp=' + nz.hp);
+if(!(nz.speed > spdBefore)) throw new Error('G6: angry zombie not faster (' + spdBefore + ' -> ' + nz.speed + ')');
+pump(1);                        // 渲染暴怒状态
+damageZombie(nz, 150);
+if(nz.state !== 'dying') throw new Error('G7: enraged zombie did not die');
+pump(1);
+// G-b: 两种姿态绘制不报错
+const nzDraw = makeZombie('newspaper', 2, cellCX(3));
+drawZombieEntity(nzDraw);                       // 看报
+nzDraw.angry = true; nzDraw.acc = 0; nzDraw.speed = 34;
+drawZombieEntity(nzDraw);                       // 暴怒
+drawZombieHeadIcon(100, 100, 1, 'newspaper');   // 图鉴头像
+
+// ===== 场景 H：夜间关卡（无天降太阳、开局补偿阳光） =====
+if(LEVELS.length !== 4) throw new Error('H0: expected 4 levels, got ' + LEVELS.length);
+if(!LEVELS[3].night) throw new Error('H1: level 4 is not a night level');
+startLevel(3); pump(0.2);            // 渲染夜战选卡界面
+beginPlay(50);
+if(G.sun !== 150) throw new Error('H2: night start sun should be 50+100, got ' + G.sun);
+if(G.nightHint <= 0) throw new Error('H4: night hint banner not armed');
+G.t = 1;
+pump(28);
+if(G.suns.some(s => s.fromSky)) throw new Error('H3: night level spawned sky sun');
+if(bgTheme !== 'night') throw new Error('H5: night background not rendered');
+// 白天关卡应正常天降太阳
+startLevel(0); G.slots = []; G.slots.push({type:'sunflower',cool:0}); beginPlay(50);
+if(G.sun !== 50) throw new Error('H6: day level should not get the night bonus, got ' + G.sun);
+G.t = 1; pump(20);
+if(!G.suns.some(s => s.fromSky)) throw new Error('H7: day level produced no sky sun');
+if(bgTheme !== 'day') throw new Error('H8: day background not restored');
 
 globalThis.__result = 'ALL TESTS PASSED';
 `, { filename: 'driver.js' });

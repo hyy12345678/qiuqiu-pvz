@@ -1,6 +1,6 @@
 // 战斗模拟的行为不变量（1~8 是重构安全网，9~11 是蘑菇 / 阳光菇 / 咖啡豆这批新植物带进来的规则）。
 // 这一组测试是 P3「先搬后改」的安全网：它只依赖 core/ 里的纯逻辑，
-// 不需要 canvas / DOM 桩 —— SFX 在 ctx 为 null 时全部提前返回，persist 的 localStorage 访问已被 try/catch 包住。
+// 不需要 canvas / DOM 桩 —— 默认端口不发声、不写存储，粒子只进 world.visual。
 // 断言写成「不变量」而不是「某一帧的具体数值」，所以随机数不影响可复现性。
 import test from 'node:test';
 import assert from 'node:assert';
@@ -33,7 +33,7 @@ function reset(level = 0) {
   G.zombies.length = G.peas.length = G.suns.length = 0;
   G.plants.length = 0;
   for (let r = 0; r < ROWS; r++) G.grid[r].fill(null);
-  G.parts.length = G.decals.length = 0;
+  G.visual.parts.length = G.visual.decals.length = 0;
   G.evIdx = 0;                       // 首个出怪事件在 26s 之后，短测试不会碰到
   G.state = 'play';
   G.winT = 0; G.loseZombie = null; G.skyTimer = 1e9; // 天降阳光单独在不变量 7 里测
@@ -105,14 +105,14 @@ test('不变量2 报纸僵尸：acc 归零那一击触发狂暴，加速并清�
   assert.strictEqual(z.angry, false, '报纸未掉不狂暴');
   assert.strictEqual(z.slowT, 6, '未狂暴不应清掉减速');
 
-  const paperBefore = G.parts.length;
+  const paperBefore = G.visual.parts.length;
   damageZombie(G, z, 1); // 恰好打空护盾
   assert.strictEqual(z.acc, 0);
   assert.strictEqual(z.angry, true, '报纸被打掉应狂暴');
   assert.ok(z.speed >= 34 * 0.94 && z.speed <= 34 * 1.08,
     `狂暴后速度应落在 34×[0.94,1.08]，实际 ${z.speed}`);
   assert.strictEqual(z.slowT, 0, '狂暴应立刻解除减速');
-  assert.ok(G.parts.length > paperBefore, '撕报纸应喷出纸屑粒子');
+  assert.ok(G.visual.parts.length > paperBefore, '撕报纸应喷出纸屑粒子');
   assert.strictEqual(z.hp, 200, '打掉护盾的那一击不该顺带伤本体');
 
   // 已濒死的僵尸不再狂暴（否则会出现「尸体冲刺」）
@@ -282,20 +282,20 @@ test('不变量7 夜战：开局补偿 +100 阳光、8 秒提示倒计时自行�
   G.level = nightLevel;
   beginPlay(G);
   assert.strictEqual(G.sun, 150, '夜战开局阳光 = 基础 50 + 补偿 100');
-  assert.strictEqual(G.nightHint, 8, '夜战开场提示倒计时 8 秒');
+  assert.strictEqual(G.visual.nightHint, 8, '夜战开场提示倒计时 8 秒');
 
   // 跑起来：不掉太阳、连天降计时的都不推进、提示与模拟时间同步递减
   reset(nightLevel);
   G.skyTimer = 5;
-  const hint0 = G.nightHint;
+  const hint0 = G.visual.nightHint;
   assert.ok(hint0 > 4 && hint0 < 8, `开场倒计时跑完后提示剩余应在 4~8 秒之间，实际 ${hint0}`);
   step(2);
   assert.strictEqual(G.suns.length, 0, '夜间没有向日葵就不该有任何阳光');
   assert.strictEqual(G.skyTimer, 5, '夜间不该推进天降阳光的计时器');
-  assert.ok(Math.abs(G.nightHint - (hint0 - 2)) < 2 * DT,
-    `提示倒计时应与模拟时间同步递减，实际 ${G.nightHint}`);
+  assert.ok(Math.abs(G.visual.nightHint - (hint0 - 2)) < 2 * DT,
+    `提示倒计时应与模拟时间同步递减，实际 ${G.visual.nightHint}`);
   step(6);
-  assert.ok(G.nightHint <= 0, '提示应自行结束');
+  assert.ok(G.visual.nightHint <= 0, '提示应自行结束');
   assert.strictEqual(G.suns.length, 0, '夜间全程不掉天降阳光');
 
   // 对照：白天照常掉太阳
@@ -361,12 +361,12 @@ test('不变量9 蘑菇：白天种下即打盹（不开火不产阳光），夜
   assert.strictEqual(z.hp, hp0, '打盹的蘑菇不该开火');
   assert.strictEqual(G.peas.length, 0, '打盹的蘑菇不该产生弹道');
 
-  assert.strictEqual(applyCoffee(shroom), true, '咖啡豆应叫醒打盹的蘑菇');
+  assert.strictEqual(applyCoffee(G, shroom), true, '咖啡豆应叫醒打盹的蘑菇');
   assert.strictEqual(shroom.asleep, false);
   step(3);
   assert.ok(z.hp < hp0, '叫醒后应恢复开火');
-  assert.strictEqual(applyCoffee(shroom), false, '已经醒着的蘑菇不该被再次叫醒');
-  assert.strictEqual(applyCoffee(null), false, '点空格子不该消耗咖啡豆');
+  assert.strictEqual(applyCoffee(G, shroom), false, '已经醒着的蘑菇不该被再次叫醒');
+  assert.strictEqual(applyCoffee(G, null), false, '点空格子不该消耗咖啡豆');
 
   // 打盹的阳光菇不产阳光，叫醒后恢复
   reset(0);
@@ -374,14 +374,14 @@ test('不变量9 蘑菇：白天种下即打盹（不开火不产阳光），夜
   assert.strictEqual(sh.asleep, true);
   step(12);                          // 超过向日葵 8~10 秒的最大产出间隔
   assert.strictEqual(G.suns.length, 0, '打盹的阳光菇不该产阳光');
-  applyCoffee(sh);
+  applyCoffee(G, sh);
   step(12);
   assert.ok(G.suns.length > 0, '叫醒后的阳光菇应恢复产阳光');
 
   // 非蘑菇不受影响：坚果墙没有打盹一说
   const wall = plant('wallnut', 4, 4);
   assert.strictEqual(wall.asleep, false, '非蘑菇不该被打盹标记');
-  assert.strictEqual(applyCoffee(wall), false, '咖啡豆对非蘑菇无效');
+  assert.strictEqual(applyCoffee(G, wall), false, '咖啡豆对非蘑菇无效');
 
   // 夜战（第 4 关）：蘑菇落地即开工
   reset(3);

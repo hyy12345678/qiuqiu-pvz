@@ -57,7 +57,7 @@ function runScenario(seed, mode){
         for(let k = 0; k < 9; k++) w.fxRng();      // 模拟“多画几帧 / 多抽几次表现随机”
       } else if(mode === 'no-fx'){
         w.fxRng = () => 0.5;                       // 表现抽样退化成常量
-        w.parts.length = 0; w.decals.length = 0;   // 并禁用表现产出
+        w.visual.parts.length = 0; w.visual.decals.length = 0;   // 并禁用表现产出
       } else if(mode === 'audio'){
         for(let k = 0; k < 3; k++) Math.random();  // 音频局部源的消耗
       }
@@ -124,7 +124,7 @@ test('分布抽查：固定 seed 下 600 发球球的导弹比例落在 10%~21%'
   let shots = 0, missiles = 0;
   for(let i = 0; i < 600; i++){
     p.fireT = 0;
-    w.parts.length = 0; w.decals.length = 0;
+    w.visual.parts.length = 0; w.visual.decals.length = 0;
     updatePlay(w, DT);
     if(p.fireT === 0.4 && w.peas.length > 0){
       shots++;

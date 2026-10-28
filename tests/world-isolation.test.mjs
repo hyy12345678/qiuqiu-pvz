@@ -24,9 +24,13 @@ function fresh(unlocked = 1){
 test('隔离0 工厂返回的初始容器互不共享（不依赖 beginPlay 重建）', () => {
   const a = createWorld({ unlocked: 1, unlockAll: false });
   const b = createWorld({ unlocked: 1, unlockAll: false });
-  for (const key of ['plants','zombies','peas','suns','mowers','parts','decals','events','slots','lastRows']){
+  for (const key of ['plants','zombies','peas','suns','mowers','events','slots','lastRows']){
     assert.notStrictEqual(a[key], b[key], `初始 ${key} 不应共享同一个数组`);
   }
+  for (const key of ['parts','decals']){
+    assert.notStrictEqual(a.visual[key], b.visual[key], `初始 visual.${key} 不应共享同一个数组`);
+  }
+  assert.notStrictEqual(a.visual, b.visual, 'visual 顶层不应共享');
   assert.notStrictEqual(a.mouse, b.mouse, '初始鼠标状态不应共享');
   assert.strictEqual(a.quiz, null);
   assert.strictEqual(b.quiz, null);
@@ -35,8 +39,11 @@ test('隔离0 工厂返回的初始容器互不共享（不依赖 beginPlay 重�
 test('隔离1 两个世界不共享任何容器或行数组', () => {
   const a = fresh();
   const b = fresh();
-  for (const key of ['plants','zombies','peas','suns','mowers','parts','decals','events','slots','lastRows']){
+  for (const key of ['plants','zombies','peas','suns','mowers','events','slots','lastRows']){
     assert.notStrictEqual(a[key], b[key], key + ' 不应共享同一个数组');
+  }
+  for (const key of ['parts','decals']){
+    assert.notStrictEqual(a.visual[key], b.visual[key], 'visual.' + key + ' 不应共享同一个数组');
   }
   assert.notStrictEqual(a.grid, b.grid, 'grid 顶层不应共享');
   for (let r = 0; r < a.grid.length; r++){
@@ -60,8 +67,8 @@ test('隔离2 在 A 种植只扣 A 的阳光、只写 A 的格子与粒子', () 
   assert.strictEqual(b.plants.length, 0);
   assert.strictEqual(a.sun, 450, '只扣 A 的阳光');
   assert.strictEqual(b.sun, 500, 'B 的阳光不受影响');
-  assert.ok(a.parts.length > 0, '种植土尘应进入 A 的粒子数组');
-  assert.strictEqual(b.parts.length, 0, 'B 不应收到 A 的粒子');
+  assert.ok(a.visual.parts.length > 0, '种植土尘应进入 A 的粒子数组');
+  assert.strictEqual(b.visual.parts.length, 0, 'B 不应收到 A 的粒子');
 });
 
 test('隔离3 在 A 击杀僵尸只改 A 的击杀数', () => {
@@ -94,8 +101,8 @@ test('隔离4 A、B 交错推进：各按自己的速度移动，粒子和状态
 
   for (let i = 0; i < 60; i++){
     updatePlay(a, DT); updatePlay(b, DT);
-    for (const p of a.parts) aSeen.add(p);
-    for (const p of b.parts) bSeen.add(p);
+    for (const p of a.visual.parts) aSeen.add(p);
+    for (const p of b.visual.parts) bSeen.add(p);
   }
 
   assert.ok(Math.abs((ax0 - za.x) - 30) < 1e-6, `A 的僵尸应按自己的速度走 30px，实际 ${ax0 - za.x}`);
@@ -116,7 +123,7 @@ test('隔离5 重开关卡换新容器，旧局实体不被保留，B 完全不�
   a.sun = 999;
   placePlant(a, 'wallnut', 1, 1);
   const oldPlant = a.grid[1][1];
-  const oldPlants = a.plants, oldGrid = a.grid, oldMowers = a.mowers, oldParts = a.parts, oldSlots = a.slots;
+  const oldPlants = a.plants, oldGrid = a.grid, oldMowers = a.mowers, oldParts = a.visual.parts, oldSlots = a.slots;
   b.sun = 321;
   const bPlants = b.plants, bGrid = b.grid, bSun = b.sun;
 
@@ -125,7 +132,7 @@ test('隔离5 重开关卡换新容器，旧局实体不被保留，B 完全不�
   assert.notStrictEqual(a.plants, oldPlants, '重开应换新的 plants 数组');
   assert.notStrictEqual(a.grid, oldGrid, '重开应换新的 grid');
   assert.notStrictEqual(a.mowers, oldMowers, '重开应换新的小推车数组');
-  assert.notStrictEqual(a.parts, oldParts, '重开应换新的粒子数组');
+  assert.notStrictEqual(a.visual.parts, oldParts, '重开应换新的粒子数组');
   assert.notStrictEqual(a.slots, oldSlots, '重开应换新的卡槽数组');
   assert.strictEqual(a.plants.length, 0);
   assert.strictEqual(a.grid[1][1], null);

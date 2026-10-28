@@ -300,7 +300,7 @@ if(!LEVELS[3].night) throw new Error('H1: level 4 is not a night level');
 startLevel(G, 3); pump(0.2);            // 渲染夜战选卡界面
 beginPlay(G, 50);
 if(G.sun !== 150) throw new Error('H2: night start sun should be 50+100, got ' + G.sun);
-if(G.nightHint <= 0) throw new Error('H4: night hint banner not armed');
+if(G.visual.nightHint <= 0) throw new Error('H4: night hint banner not armed');
 G.t = 1;
 pump(28);
 if(G.suns.some(s => s.fromSky)) throw new Error('H3: night level spawned sky sun');
@@ -337,7 +337,7 @@ if(G.sel !== -1) throw new Error('I7: 用过的咖啡豆应取消选卡');
 G.sun = 9999; G.sel = 1; press(cellCX(6), cellFY(3) - 40);
 const shroom = G.grid[3][6];
 if(!shroom || shroom.type !== 'sunshroom') throw new Error('I8: 没能种下阳光菇');
-applyCoffee(shroom);
+applyCoffee(G, shroom);
 G.suns.length = 0;
 pump(11);
 if(!G.suns.some(s => !s.fromSky && s.value === 25)) throw new Error('I9: 阳光菇应产 25 阳光');

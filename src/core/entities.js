@@ -4,7 +4,6 @@ import { CH, COLS, CW, LX, LY, ROWS, TAU, W } from './constants.js';
 import { rand, randi } from './util.js';
 import { PLANTS } from './data/plants.js';
 import { ZTYPES } from './data/zombies.js';
-import { SFX } from '../audio/sfx.js';
 import { isNight } from './world.js';
 import { addDirtPuff, addPaperShreds } from './particles.js';
 
@@ -24,15 +23,15 @@ export function placePlant(world, type, row, col){
   };
   world.grid[row][col] = p;
   world.plants.push(p);
-  SFX.plant();
+  world.ports.sound('plant');
   addDirtPuff(world, p.cx, p.fy);
 }
 
 // 咖啡豆：不是种下去的植物，而是把一株正在打盹的蘑菇叫醒。返回 false 表示用错了对象（卡片不消耗）。
-export function applyCoffee(p){
+export function applyCoffee(world, p){
   if(!p || !p.asleep) return false;
   p.asleep = false;
-  SFX.select();
+  world.ports.sound('select');
   return true;
 }
 
@@ -47,18 +46,18 @@ export function spawnSun(world, x,y,ty,fromSky,value){
 }
 
 export function explode(world, x, row, big){
-  world.shake = Math.max(world.shake, big?0.55:0.4);
-  world.flash = big ? 0.3 : 0.2;
-  SFX.boom();
-  world.decals.push({ x, fy: LY + row*CH + CH/2, ttl:6, max:6, r: big?95:55 });
+  world.visual.shake = Math.max(world.visual.shake, big?0.55:0.4);
+  world.visual.flash = big ? 0.3 : 0.2;
+  world.ports.sound('boom');
+  world.visual.decals.push({ x, fy: LY + row*CH + CH/2, ttl:6, max:6, r: big?95:55 });
   for(let i=0;i<46;i++){
     const a = rand(world.fxRng,0,TAU), sp = rand(world.fxRng,40, big?340:210);
-    world.parts.push({ x, y: LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-70, g:230,
+    world.visual.parts.push({ x, y: LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-70, g:230,
       life:rand(world.fxRng,0.3,0.85), max:0.85, size:rand(world.fxRng,3,10),
       color: ['#fff3b0','#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(world.fxRng,0,4)] });
   }
   for(let k=0;k<6;k++){
-    world.parts.push({ x:x+rand(world.fxRng,-20,20), y:LY+row*CH+CH/2, vx:rand(world.fxRng,-15,15), vy:rand(world.fxRng,-70,-35), g:-30,
+    world.visual.parts.push({ x:x+rand(world.fxRng,-20,20), y:LY+row*CH+CH/2, vx:rand(world.fxRng,-15,15), vy:rand(world.fxRng,-70,-35), g:-30,
       life:rand(world.fxRng,0.7,1.2), max:1.2, size:rand(world.fxRng,9,16), color:'rgba(90,85,80,0.5)' });
   }
   for(const z of world.zombies){
@@ -71,13 +70,13 @@ export function explode(world, x, row, big){
 
 // 加特林导弹：3x3 格子（九格）范围爆炸
 export function explodeMissile(world, x, row, col){
-  world.shake = Math.max(world.shake, 0.3);
-  world.flash = Math.max(world.flash, 0.15);
-  SFX.boom();
-  world.decals.push({ x, fy: LY + row*CH + CH/2, ttl:4, max:4, r:72 });
+  world.visual.shake = Math.max(world.visual.shake, 0.3);
+  world.visual.flash = Math.max(world.visual.flash, 0.15);
+  world.ports.sound('boom');
+  world.visual.decals.push({ x, fy: LY + row*CH + CH/2, ttl:4, max:4, r:72 });
   for(let i=0;i<30;i++){
     const a = rand(world.fxRng,0,TAU), sp = rand(world.fxRng,30,240);
-    world.parts.push({ x, y:LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-50, g:240,
+    world.visual.parts.push({ x, y:LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-50, g:240,
       life:rand(world.fxRng,0.25,0.6), max:0.6, size:rand(world.fxRng,2,6),
       color:['#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(world.fxRng,0,3)] });
   }
@@ -104,13 +103,13 @@ export function damageZombie(world, z, d){
     z.speed = 34 * rand(world.rng,0.94,1.08);
     z.slowT = 0;
     addPaperShreds(world, z.x, LY + (z.row+1)*CH - 76);
-    SFX.paperTear();
-    SFX.angry();
+    world.ports.sound('paperTear');
+    world.ports.sound('angry');
   }
   if(z.hp <= 0 && z.state !== 'dying'){
     z.state = 'dying'; z.deathT = 0;
     world.killed++;
-    SFX.groan();
+    world.ports.sound('groan');
   }
 }
 
@@ -148,7 +147,7 @@ export function findEatTarget(world, z){
 
 export function triggerMower(world, row){
   const m = world.mowers.find(m=>m.row===row && m.state==='idle');
-  if(m){ m.state = 'run'; SFX.mower(); return true; }
+  if(m){ m.state = 'run'; world.ports.sound('mower'); return true; }
   return false;
 }
 

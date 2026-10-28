@@ -4,8 +4,6 @@ import { CH, COLS, CW, LX, LY, ROWS, W } from './constants.js';
 import { clamp, easeOut, lerp, rand } from './util.js';
 import { ZTYPES } from './data/zombies.js';
 import { LEVELS } from './data/levels.js';
-import { saveUnlocked } from './persist.js';
-import { SFX } from '../audio/sfx.js';
 import { damageZombie, explode, explodeMissile, findEatTarget, removePlant, spawnSun, spawnZombie, triggerMower } from './entities.js';
 import { addDirtPuff, addFlamePuff, addLeafBurst, addPeaSplat } from './particles.js';
 
@@ -13,14 +11,15 @@ export function updatePlay(world, dt){
   world.t += dt;
   const t = world.t;
   const lv = LEVELS[world.level];
-  if(world.nightHint > 0) world.nightHint -= dt;
+  const v = world.visual;
+  if(v.nightHint > 0) v.nightHint -= dt;
 
   if(t > 0){
     while(world.evIdx < world.events.length && world.events[world.evIdx].t <= t){
       const e = world.events[world.evIdx++];
       if(e.announce){
-        world.waveText = { text:'一大波僵尸正在接近！', t:0 };
-        SFX.horn();
+        v.waveText = { text:'一大波僵尸正在接近！', t:0 };
+        world.ports.sound('horn');
       } else spawnZombie(world, e.type);
     }
     // 夜间关卡：天上不会掉太阳，只能靠向日葵
@@ -69,12 +68,12 @@ export function updatePlay(world, dt){
             const dmg = isMissile ? 90 : 25;
             const vx = isMissile ? 300 : 520;
             world.peas.push({ x:p.cx+52, y:py, row:p.row, type, dmg, vx, prevX:p.cx+52 });
-            if(isMissile) SFX.missile(); else SFX.gatling();
+            if(isMissile) world.ports.sound('missile'); else world.ports.sound('gatling');
           } else if(p.type==='puff'){
             p.fireT = 1.5; p.recoil = 1; p.flash = 0.09;
             const py = p.fy - 28;
             world.peas.push({ x:p.cx+14, y:py, row:p.row, type:'spore', dmg:20, vx:300, prevX:p.cx+14 });
-            SFX.shoot();
+            world.ports.sound('shoot');
           } else {
             p.fireT = 1.4; p.recoil = 1; p.flash = 0.09;
             const py = p.fy - 52;
@@ -83,7 +82,7 @@ export function updatePlay(world, dt){
             if(p.type==='repeater'){
               world.peas.push({ x:p.cx+12, y:py+6, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+12 });
             }
-            if(kind==='snow') SFX.snowShoot(); else SFX.shoot();
+            if(kind==='snow') world.ports.sound('snowShoot'); else world.ports.sound('shoot');
           }
         }
         break;
@@ -118,7 +117,7 @@ export function updatePlay(world, dt){
     pea.prevX = pea.x;
     pea.x += pea.vx * dt;
     if(pea.type==='fire' && world.fxRng()<0.6){
-      world.parts.push({ x:pea.x-8, y:pea.y+rand(world.fxRng,-3,3), vx:rand(world.fxRng,-30,-10), vy:rand(world.fxRng,-25,5), g:-60, life:rand(world.fxRng,0.15,0.3), max:0.3, size:rand(world.fxRng,2,4), color:'#ffb347' });
+      v.parts.push({ x:pea.x-8, y:pea.y+rand(world.fxRng,-3,3), vx:rand(world.fxRng,-30,-10), vy:rand(world.fxRng,-25,5), g:-60, life:rand(world.fxRng,0.15,0.3), max:0.3, size:rand(world.fxRng,2,4), color:'#ffb347' });
     }
     if(pea.type === 'pea' || pea.type === 'snow'){
       for(const p of world.plants){
@@ -146,7 +145,7 @@ export function updatePlay(world, dt){
           }
         }
         addPeaSplat(world, pea.x, pea.y, pea.type);
-        if(pea.type==='bullet') SFX.bulletHit(); else SFX.splat();
+        if(pea.type==='bullet') world.ports.sound('bulletHit'); else world.ports.sound('splat');
         hit = true;
         break;
       }
@@ -175,7 +174,7 @@ export function updatePlay(world, dt){
       z.dustT = (z.dustT||0) + dt;
       if(z.dustT > 0.5 && z.x > LX-30 && z.x < W){
         z.dustT = 0;
-        world.parts.push({ x:z.x+rand(world.fxRng,-6,10), y:LY+(z.row+1)*CH-6, vx:rand(world.fxRng,-14,6), vy:rand(world.fxRng,-22,-8), g:30, life:rand(world.fxRng,0.3,0.55), max:0.55, size:rand(world.fxRng,2,4), color:'rgba(150,140,110,0.4)' });
+        v.parts.push({ x:z.x+rand(world.fxRng,-6,10), y:LY+(z.row+1)*CH-6, vx:rand(world.fxRng,-14,6), vy:rand(world.fxRng,-22,-8), g:30, life:rand(world.fxRng,0.3,0.55), max:0.55, size:rand(world.fxRng,2,4), color:'rgba(150,140,110,0.4)' });
       }
       if(z.type==='vault' && !z.poleLost){
         let target = null;
@@ -186,7 +185,7 @@ export function updatePlay(world, dt){
         if(target){
           z.state = 'vault'; z.vt = 0; z.fromX = z.x;
           z.toX = Math.max(target.cx - CW + 18, LX - 10);
-          SFX.hop();
+          world.ports.sound('hop');
           continue;
         }
       }
@@ -208,7 +207,7 @@ export function updatePlay(world, dt){
       }
     } else if(z.state==='eat'){
       z.eatT += dt;
-      if(Math.floor(z.eatT/0.62) !== Math.floor((z.eatT-dt)/0.62)) SFX.chomp();
+      if(Math.floor(z.eatT/0.62) !== Math.floor((z.eatT-dt)/0.62)) world.ports.sound('chomp');
       const p = z.eatPlant;
       if(!p || p.hp <= 0 || world.grid[z.row][p.col] !== p){
         z.state = 'walk'; z.eatPlant = null;
@@ -218,7 +217,7 @@ export function updatePlay(world, dt){
           addLeafBurst(world, p.cx, p.fy-30);
           removePlant(world, p);
           z.state = 'walk'; z.eatPlant = null;
-          SFX.chomp();
+          world.ports.sound('chomp');
         }
       }
     }
@@ -230,7 +229,7 @@ export function updatePlay(world, dt){
   }
   if(lost){
     world.state = 'lost';
-    SFX.lose();
+    world.ports.sound('lose');
     return;
   }
 
@@ -239,7 +238,7 @@ export function updatePlay(world, dt){
     if(m.state==='run'){
       m.x += 330 * dt;
       if(world.fxRng()<0.55){
-        world.parts.push({ x:m.x+rand(world.fxRng,6,26), y:LY+m.row*CH+CH-8, vx:rand(world.fxRng,-60,20), vy:rand(world.fxRng,-140,-60), g:300, life:rand(world.fxRng,0.25,0.5), max:0.5, size:rand(world.fxRng,2,4), color:'#7cc24a' });
+        v.parts.push({ x:m.x+rand(world.fxRng,6,26), y:LY+m.row*CH+CH-8, vx:rand(world.fxRng,-60,20), vy:rand(world.fxRng,-140,-60), g:300, life:rand(world.fxRng,0.25,0.5), max:0.5, size:rand(world.fxRng,2,4), color:'#7cc24a' });
       }
       for(const z of world.zombies){
         if(z.row===m.row && z.state!=='dying' && z.x < m.x+52 && z.x > m.x-70){
@@ -266,7 +265,7 @@ export function updatePlay(world, dt){
       if(s.ft >= 1){
         world.sun = Math.min(9990, world.sun + s.value);
         world.sunFlash = 0.35;
-        SFX.sun();
+        world.ports.sound('sun');
         world.suns.splice(i,1);
       }
     }
@@ -274,39 +273,39 @@ export function updatePlay(world, dt){
   if(world.sunFlash > 0) world.sunFlash -= dt;
 
   // 粒子 / 焦痕
-  for(let i=world.parts.length-1;i>=0;i--){
-    const p = world.parts[i];
+  for(let i=v.parts.length-1;i>=0;i--){
+    const p = v.parts[i];
     p.life -= dt;
-    if(p.life <= 0){ world.parts.splice(i,1); continue; }
+    if(p.life <= 0){ v.parts.splice(i,1); continue; }
     p.x += p.vx*dt; p.y += p.vy*dt;
     if(p.g) p.vy += p.g*dt;
   }
-  for(let i=world.decals.length-1;i>=0;i--){
-    world.decals[i].ttl -= dt;
-    if(world.decals[i].ttl <= 0) world.decals.splice(i,1);
+  for(let i=v.decals.length-1;i>=0;i--){
+    v.decals[i].ttl -= dt;
+    if(v.decals[i].ttl <= 0) v.decals.splice(i,1);
   }
 
   if(world.zombies.length > 0){
-    world.groanTimer -= dt;
-    if(world.groanTimer <= 0){ world.groanTimer = rand(world.fxRng,4,9); SFX.groan(); }
+    v.groanTimer -= dt;
+    if(v.groanTimer <= 0){ v.groanTimer = rand(world.fxRng,4,9); world.ports.sound('groan'); }
   }
 
-  if(world.waveText){
-    world.waveText.t += dt;
-    if(world.waveText.t > 2.6) world.waveText = null;
+  if(v.waveText){
+    v.waveText.t += dt;
+    if(v.waveText.t > 2.6) v.waveText = null;
   }
 
   if(world.evIdx >= world.events.length && world.zombies.length === 0 && t > 0){
     world.winT += dt;
     if(world.winT > 1.0){
       world.state = 'won';
-      if(world.level + 2 > world.unlocked){ world.unlocked = clamp(world.level+2, 1, LEVELS.length); saveUnlocked(world.unlocked); }
-      SFX.win();
+      if(world.level + 2 > world.unlocked){ world.unlocked = clamp(world.level+2, 1, LEVELS.length); world.ports.saveProgress(world.unlocked); }
+      world.ports.sound('win');
     }
   }
 
   for(const s of world.slots) if(s.cool > 0) s.cool = Math.max(0, s.cool - dt);
 
-  if(world.shake > 0) world.shake -= dt;
-  if(world.flash > 0) world.flash = Math.max(0, world.flash - dt*1.4);
+  if(v.shake > 0) v.shake -= dt;
+  if(v.flash > 0) v.flash = Math.max(0, v.flash - dt*1.4);
 }

@@ -333,33 +333,17 @@
     }
   };
 
-  // src/core/persist.js
-  function loadUnlocked() {
-    try {
-      return clamp(parseInt(localStorage.getItem("pvzweb_unlocked")) || 1, 1, LEVELS.length);
-    } catch (e) {
-      return 1;
+  // src/core/ports.js
+  var SILENT = {
+    sound() {
+    },
+    saveProgress() {
+    },
+    saveUnlockAll() {
     }
-  }
-  function saveUnlocked(n) {
-    try {
-      localStorage.setItem("pvzweb_unlocked", String(n));
-    } catch (e) {
-    }
-  }
-  function loadUnlockAll() {
-    try {
-      return localStorage.getItem("pvzweb_unlockall") === "1";
-    } catch (e) {
-      return false;
-    }
-  }
-  function saveUnlockAll(on) {
-    try {
-      if (on) localStorage.setItem("pvzweb_unlockall", "1");
-      else localStorage.removeItem("pvzweb_unlockall");
-    } catch (e) {
-    }
+  };
+  function createPorts(overrides) {
+    return Object.assign({}, SILENT, overrides);
   }
 
   // src/core/quiz.js
@@ -447,11 +431,13 @@
       // 战斗：出怪、速度、射击概率、资源时刻
       fxRng: init.fxRng || mulberry32((seed ^ FX_SEED_XOR) >>> 0),
       // 表现：粒子、动画初相、表现计时
+      ports: createPorts(init.ports),
+      // 声音与存档：装配层注入，核心只发同步调用
       state: "menu",
       // menu | help | select | play | won | lost
       level: 0,
-      unlocked: init.unlocked === void 0 ? loadUnlocked() : init.unlocked,
-      unlockAll: init.unlockAll === void 0 ? loadUnlockAll() : init.unlockAll,
+      unlocked: init.unlocked === void 0 ? 1 : init.unlocked,
+      unlockAll: init.unlockAll === void 0 ? false : init.unlockAll,
       // 主页特殊开关：打开后所有关卡直接进入
       paused: false,
       t: 0,
@@ -467,21 +453,23 @@
       peas: [],
       suns: [],
       mowers: [],
-      parts: [],
-      decals: [],
       events: [],
       evIdx: 0,
       total: 0,
       killed: 0,
       skyTimer: 5,
-      groanTimer: 4,
       lastRows: [],
-      waveText: null,
-      nightHint: 0,
+      visual: {
+        parts: [],
+        decals: [],
+        shake: 0,
+        flash: 0,
+        waveText: null,
+        nightHint: 0,
+        groanTimer: 4
+      },
       winT: 0,
       loseZombie: null,
-      shake: 0,
-      flash: 0,
       quiz: null,
       hoverCell: null,
       mouse: { x: -99, y: -99 },
@@ -494,15 +482,15 @@
     world.slots = [];
     world.sel = -1;
     world.shovel = false;
-    SFX.click();
+    world.ports.sound("click");
   }
   function isNight(world) {
     return !!(LEVELS[world.level] && LEVELS[world.level].night);
   }
   function toggleUnlockAll(world) {
     world.unlockAll = !world.unlockAll;
-    saveUnlockAll(world.unlockAll);
-    SFX.click();
+    world.ports.saveUnlockAll(world.unlockAll);
+    world.ports.sound("click");
   }
   function beginPlay(world, startSun) {
     startSun = startSun === void 0 ? 50 : startSun;
@@ -518,8 +506,8 @@
     world.zombies = [];
     world.peas = [];
     world.suns = [];
-    world.parts = [];
-    world.decals = [];
+    world.visual.parts = [];
+    world.visual.decals = [];
     world.lastRows = [];
     world.mowers = Array.from({ length: ROWS }, (_, r) => ({ row: r, x: LX - 52, state: "idle" }));
     world.slots = world.slots.map((s) => ({ type: s.type, cool: 0 }));
@@ -529,21 +517,21 @@
     world.evIdx = 0;
     world.killed = 0;
     world.skyTimer = 2;
-    world.groanTimer = 4;
-    world.waveText = null;
+    world.visual.groanTimer = 4;
+    world.visual.waveText = null;
     world.winT = 0;
     world.loseZombie = null;
-    world.nightHint = lv.night ? 8 : 0;
+    world.visual.nightHint = lv.night ? 8 : 0;
     world.sel = -1;
     world.shovel = false;
-    world.shake = 0;
-    world.flash = 0;
-    SFX.click();
+    world.visual.shake = 0;
+    world.visual.flash = 0;
+    world.ports.sound("click");
   }
   function startQuiz(world) {
     world.state = "quiz";
     world.quiz = { idx: 0, energy: 50, questions: makeQuiz(world.rng), feedback: 0, correct: true };
-    SFX.click();
+    world.ports.sound("click");
   }
   function answerQuiz(world, a) {
     if (world.state !== "quiz" || world.quiz.feedback > 0) return;
@@ -551,10 +539,10 @@
     if (a === q.questions[q.idx].answer) {
       q.energy *= 2;
       q.correct = true;
-      SFX.select();
+      world.ports.sound("select");
     } else {
       q.correct = false;
-      SFX.error();
+      world.ports.sound("error");
     }
     q.feedback = 0.9;
   }
@@ -586,16 +574,16 @@
 
   // src/core/particles.js
   function addLeafBurst(world, x, y) {
-    for (let k = 0; k < 12; k++) world.parts.push({ x, y: y + rand(world.fxRng, -14, 14), vx: rand(world.fxRng, -80, 80), vy: rand(world.fxRng, -130, -20), g: 270, life: rand(world.fxRng, 0.35, 0.75), max: 0.75, size: rand(world.fxRng, 3, 6), color: ["#63b23f", "#8fd44a", "#4a9330"][k % 3] });
+    for (let k = 0; k < 12; k++) world.visual.parts.push({ x, y: y + rand(world.fxRng, -14, 14), vx: rand(world.fxRng, -80, 80), vy: rand(world.fxRng, -130, -20), g: 270, life: rand(world.fxRng, 0.35, 0.75), max: 0.75, size: rand(world.fxRng, 3, 6), color: ["#63b23f", "#8fd44a", "#4a9330"][k % 3] });
   }
   function addDirtPuff(world, x, y) {
-    for (let k = 0; k < 9; k++) world.parts.push({ x: x + rand(world.fxRng, -16, 16), y, vx: rand(world.fxRng, -45, 45), vy: rand(world.fxRng, -100, -30), g: 280, life: rand(world.fxRng, 0.3, 0.6), max: 0.6, size: rand(world.fxRng, 3, 6), color: ["#8a6b42", "#a5875a"][k % 2] });
+    for (let k = 0; k < 9; k++) world.visual.parts.push({ x: x + rand(world.fxRng, -16, 16), y, vx: rand(world.fxRng, -45, 45), vy: rand(world.fxRng, -100, -30), g: 280, life: rand(world.fxRng, 0.3, 0.6), max: 0.6, size: rand(world.fxRng, 3, 6), color: ["#8a6b42", "#a5875a"][k % 2] });
   }
   function addFlamePuff(world, x, y) {
-    for (let k = 0; k < 6; k++) world.parts.push({ x, y, vx: rand(world.fxRng, -35, 35), vy: rand(world.fxRng, -80, -20), g: -50, life: rand(world.fxRng, 0.2, 0.45), max: 0.45, size: rand(world.fxRng, 2, 5), color: ["#ffb347", "#ff8a2e"][k % 2] });
+    for (let k = 0; k < 6; k++) world.visual.parts.push({ x, y, vx: rand(world.fxRng, -35, 35), vy: rand(world.fxRng, -80, -20), g: -50, life: rand(world.fxRng, 0.2, 0.45), max: 0.45, size: rand(world.fxRng, 2, 5), color: ["#ffb347", "#ff8a2e"][k % 2] });
   }
   function addPaperShreds(world, x, y) {
-    for (let k = 0; k < 14; k++) world.parts.push({
+    for (let k = 0; k < 14; k++) world.visual.parts.push({
       x: x + rand(world.fxRng, -10, 10),
       y: y + rand(world.fxRng, -12, 12),
       vx: rand(world.fxRng, -110, 70),
@@ -606,7 +594,7 @@
       size: rand(world.fxRng, 3, 6),
       color: ["#f4f0e2", "#ded8c4", "#c9c2ac"][k % 3]
     });
-    for (let k = 0; k < 4; k++) world.parts.push({
+    for (let k = 0; k < 4; k++) world.visual.parts.push({
       x: x + rand(world.fxRng, -8, 8),
       y: y + rand(world.fxRng, -6, 6),
       vx: rand(world.fxRng, -40, 40),
@@ -620,7 +608,7 @@
   }
   function addPeaSplat(world, x, y, type) {
     const cols = type === "snow" ? ["#bfe9ff", "#8fd0f2"] : type === "fire" ? ["#ff9a2e", "#ffd23e"] : type === "ball" ? ["#e8483c", "#ffd23e"] : type === "bullet" ? ["#e8edf2", "#8d949c"] : type === "spore" ? ["#dcc0f0", "#b478e0"] : ["#8fd44a", "#b8e88a"];
-    for (let k = 0; k < 9; k++) world.parts.push({ x, y, vx: rand(world.fxRng, -100, 100), vy: rand(world.fxRng, -100, 45), g: 250, life: rand(world.fxRng, 0.2, 0.45), max: 0.45, size: rand(world.fxRng, 2, 5.5), color: cols[k % 2] });
+    for (let k = 0; k < 9; k++) world.visual.parts.push({ x, y, vx: rand(world.fxRng, -100, 100), vy: rand(world.fxRng, -100, 45), g: 250, life: rand(world.fxRng, 0.2, 0.45), max: 0.45, size: rand(world.fxRng, 2, 5.5), color: cols[k % 2] });
   }
 
   // src/core/entities.js
@@ -654,13 +642,13 @@
     };
     world.grid[row][col] = p;
     world.plants.push(p);
-    SFX.plant();
+    world.ports.sound("plant");
     addDirtPuff(world, p.cx, p.fy);
   }
-  function applyCoffee(p) {
+  function applyCoffee(world, p) {
     if (!p || !p.asleep) return false;
     p.asleep = false;
-    SFX.select();
+    world.ports.sound("select");
     return true;
   }
   function removePlant(world, p) {
@@ -672,13 +660,13 @@
     world.suns.push({ x, y, ty, value: value || 50, life: 10, state: "fall", t: 0, fromSky, sx: x, ft: 0 });
   }
   function explode(world, x, row, big) {
-    world.shake = Math.max(world.shake, big ? 0.55 : 0.4);
-    world.flash = big ? 0.3 : 0.2;
-    SFX.boom();
-    world.decals.push({ x, fy: LY + row * CH + CH / 2, ttl: 6, max: 6, r: big ? 95 : 55 });
+    world.visual.shake = Math.max(world.visual.shake, big ? 0.55 : 0.4);
+    world.visual.flash = big ? 0.3 : 0.2;
+    world.ports.sound("boom");
+    world.visual.decals.push({ x, fy: LY + row * CH + CH / 2, ttl: 6, max: 6, r: big ? 95 : 55 });
     for (let i = 0; i < 46; i++) {
       const a = rand(world.fxRng, 0, TAU), sp = rand(world.fxRng, 40, big ? 340 : 210);
-      world.parts.push({
+      world.visual.parts.push({
         x,
         y: LY + row * CH + CH / 2,
         vx: Math.cos(a) * sp,
@@ -691,7 +679,7 @@
       });
     }
     for (let k = 0; k < 6; k++) {
-      world.parts.push({
+      world.visual.parts.push({
         x: x + rand(world.fxRng, -20, 20),
         y: LY + row * CH + CH / 2,
         vx: rand(world.fxRng, -15, 15),
@@ -711,13 +699,13 @@
     }
   }
   function explodeMissile(world, x, row, col) {
-    world.shake = Math.max(world.shake, 0.3);
-    world.flash = Math.max(world.flash, 0.15);
-    SFX.boom();
-    world.decals.push({ x, fy: LY + row * CH + CH / 2, ttl: 4, max: 4, r: 72 });
+    world.visual.shake = Math.max(world.visual.shake, 0.3);
+    world.visual.flash = Math.max(world.visual.flash, 0.15);
+    world.ports.sound("boom");
+    world.visual.decals.push({ x, fy: LY + row * CH + CH / 2, ttl: 4, max: 4, r: 72 });
     for (let i = 0; i < 30; i++) {
       const a = rand(world.fxRng, 0, TAU), sp = rand(world.fxRng, 30, 240);
-      world.parts.push({
+      world.visual.parts.push({
         x,
         y: LY + row * CH + CH / 2,
         vx: Math.cos(a) * sp,
@@ -753,14 +741,14 @@
       z.speed = 34 * rand(world.rng, 0.94, 1.08);
       z.slowT = 0;
       addPaperShreds(world, z.x, LY + (z.row + 1) * CH - 76);
-      SFX.paperTear();
-      SFX.angry();
+      world.ports.sound("paperTear");
+      world.ports.sound("angry");
     }
     if (z.hp <= 0 && z.state !== "dying") {
       z.state = "dying";
       z.deathT = 0;
       world.killed++;
-      SFX.groan();
+      world.ports.sound("groan");
     }
   }
   function spawnZombie(world, type) {
@@ -811,7 +799,7 @@
     const m = world.mowers.find((m2) => m2.row === row && m2.state === "idle");
     if (m) {
       m.state = "run";
-      SFX.mower();
+      world.ports.sound("mower");
       return true;
     }
     return false;
@@ -822,13 +810,14 @@
     world.t += dt;
     const t = world.t;
     const lv = LEVELS[world.level];
-    if (world.nightHint > 0) world.nightHint -= dt;
+    const v = world.visual;
+    if (v.nightHint > 0) v.nightHint -= dt;
     if (t > 0) {
       while (world.evIdx < world.events.length && world.events[world.evIdx].t <= t) {
         const e = world.events[world.evIdx++];
         if (e.announce) {
-          world.waveText = { text: "一大波僵尸正在接近！", t: 0 };
-          SFX.horn();
+          v.waveText = { text: "一大波僵尸正在接近！", t: 0 };
+          world.ports.sound("horn");
         } else spawnZombie(world, e.type);
       }
       if (!lv.night) {
@@ -886,15 +875,15 @@
               const dmg = isMissile ? 90 : 25;
               const vx = isMissile ? 300 : 520;
               world.peas.push({ x: p.cx + 52, y: py, row: p.row, type, dmg, vx, prevX: p.cx + 52 });
-              if (isMissile) SFX.missile();
-              else SFX.gatling();
+              if (isMissile) world.ports.sound("missile");
+              else world.ports.sound("gatling");
             } else if (p.type === "puff") {
               p.fireT = 1.5;
               p.recoil = 1;
               p.flash = 0.09;
               const py = p.fy - 28;
               world.peas.push({ x: p.cx + 14, y: py, row: p.row, type: "spore", dmg: 20, vx: 300, prevX: p.cx + 14 });
-              SFX.shoot();
+              world.ports.sound("shoot");
             } else {
               p.fireT = 1.4;
               p.recoil = 1;
@@ -905,8 +894,8 @@
               if (p.type === "repeater") {
                 world.peas.push({ x: p.cx + 12, y: py + 6, row: p.row, type: kind, dmg: 20, vx: 340, prevX: p.cx + 12 });
               }
-              if (kind === "snow") SFX.snowShoot();
-              else SFX.shoot();
+              if (kind === "snow") world.ports.sound("snowShoot");
+              else world.ports.sound("shoot");
             }
           }
           break;
@@ -942,7 +931,7 @@
       pea.prevX = pea.x;
       pea.x += pea.vx * dt;
       if (pea.type === "fire" && world.fxRng() < 0.6) {
-        world.parts.push({ x: pea.x - 8, y: pea.y + rand(world.fxRng, -3, 3), vx: rand(world.fxRng, -30, -10), vy: rand(world.fxRng, -25, 5), g: -60, life: rand(world.fxRng, 0.15, 0.3), max: 0.3, size: rand(world.fxRng, 2, 4), color: "#ffb347" });
+        v.parts.push({ x: pea.x - 8, y: pea.y + rand(world.fxRng, -3, 3), vx: rand(world.fxRng, -30, -10), vy: rand(world.fxRng, -25, 5), g: -60, life: rand(world.fxRng, 0.15, 0.3), max: 0.3, size: rand(world.fxRng, 2, 4), color: "#ffb347" });
       }
       if (pea.type === "pea" || pea.type === "snow") {
         for (const p of world.plants) {
@@ -973,8 +962,8 @@
             }
           }
           addPeaSplat(world, pea.x, pea.y, pea.type);
-          if (pea.type === "bullet") SFX.bulletHit();
-          else SFX.splat();
+          if (pea.type === "bullet") world.ports.sound("bulletHit");
+          else world.ports.sound("splat");
           hit = true;
           break;
         }
@@ -999,7 +988,7 @@
         z.dustT = (z.dustT || 0) + dt;
         if (z.dustT > 0.5 && z.x > LX - 30 && z.x < W) {
           z.dustT = 0;
-          world.parts.push({ x: z.x + rand(world.fxRng, -6, 10), y: LY + (z.row + 1) * CH - 6, vx: rand(world.fxRng, -14, 6), vy: rand(world.fxRng, -22, -8), g: 30, life: rand(world.fxRng, 0.3, 0.55), max: 0.55, size: rand(world.fxRng, 2, 4), color: "rgba(150,140,110,0.4)" });
+          v.parts.push({ x: z.x + rand(world.fxRng, -6, 10), y: LY + (z.row + 1) * CH - 6, vx: rand(world.fxRng, -14, 6), vy: rand(world.fxRng, -22, -8), g: 30, life: rand(world.fxRng, 0.3, 0.55), max: 0.55, size: rand(world.fxRng, 2, 4), color: "rgba(150,140,110,0.4)" });
         }
         if (z.type === "vault" && !z.poleLost) {
           let target = null;
@@ -1015,7 +1004,7 @@
             z.vt = 0;
             z.fromX = z.x;
             z.toX = Math.max(target.cx - CW + 18, LX - 10);
-            SFX.hop();
+            world.ports.sound("hop");
             continue;
           }
         }
@@ -1041,7 +1030,7 @@
         }
       } else if (z.state === "eat") {
         z.eatT += dt;
-        if (Math.floor(z.eatT / 0.62) !== Math.floor((z.eatT - dt) / 0.62)) SFX.chomp();
+        if (Math.floor(z.eatT / 0.62) !== Math.floor((z.eatT - dt) / 0.62)) world.ports.sound("chomp");
         const p = z.eatPlant;
         if (!p || p.hp <= 0 || world.grid[z.row][p.col] !== p) {
           z.state = "walk";
@@ -1053,7 +1042,7 @@
             removePlant(world, p);
             z.state = "walk";
             z.eatPlant = null;
-            SFX.chomp();
+            world.ports.sound("chomp");
           }
         }
       }
@@ -1068,14 +1057,14 @@
     }
     if (lost) {
       world.state = "lost";
-      SFX.lose();
+      world.ports.sound("lose");
       return;
     }
     for (const m of world.mowers) {
       if (m.state === "run") {
         m.x += 330 * dt;
         if (world.fxRng() < 0.55) {
-          world.parts.push({ x: m.x + rand(world.fxRng, 6, 26), y: LY + m.row * CH + CH - 8, vx: rand(world.fxRng, -60, 20), vy: rand(world.fxRng, -140, -60), g: 300, life: rand(world.fxRng, 0.25, 0.5), max: 0.5, size: rand(world.fxRng, 2, 4), color: "#7cc24a" });
+          v.parts.push({ x: m.x + rand(world.fxRng, 6, 26), y: LY + m.row * CH + CH - 8, vx: rand(world.fxRng, -60, 20), vy: rand(world.fxRng, -140, -60), g: 300, life: rand(world.fxRng, 0.25, 0.5), max: 0.5, size: rand(world.fxRng, 2, 4), color: "#7cc24a" });
         }
         for (const z of world.zombies) {
           if (z.row === m.row && z.state !== "dying" && z.x < m.x + 52 && z.x > m.x - 70) {
@@ -1106,37 +1095,37 @@
         if (s.ft >= 1) {
           world.sun = Math.min(9990, world.sun + s.value);
           world.sunFlash = 0.35;
-          SFX.sun();
+          world.ports.sound("sun");
           world.suns.splice(i, 1);
         }
       }
     }
     if (world.sunFlash > 0) world.sunFlash -= dt;
-    for (let i = world.parts.length - 1; i >= 0; i--) {
-      const p = world.parts[i];
+    for (let i = v.parts.length - 1; i >= 0; i--) {
+      const p = v.parts[i];
       p.life -= dt;
       if (p.life <= 0) {
-        world.parts.splice(i, 1);
+        v.parts.splice(i, 1);
         continue;
       }
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       if (p.g) p.vy += p.g * dt;
     }
-    for (let i = world.decals.length - 1; i >= 0; i--) {
-      world.decals[i].ttl -= dt;
-      if (world.decals[i].ttl <= 0) world.decals.splice(i, 1);
+    for (let i = v.decals.length - 1; i >= 0; i--) {
+      v.decals[i].ttl -= dt;
+      if (v.decals[i].ttl <= 0) v.decals.splice(i, 1);
     }
     if (world.zombies.length > 0) {
-      world.groanTimer -= dt;
-      if (world.groanTimer <= 0) {
-        world.groanTimer = rand(world.fxRng, 4, 9);
-        SFX.groan();
+      v.groanTimer -= dt;
+      if (v.groanTimer <= 0) {
+        v.groanTimer = rand(world.fxRng, 4, 9);
+        world.ports.sound("groan");
       }
     }
-    if (world.waveText) {
-      world.waveText.t += dt;
-      if (world.waveText.t > 2.6) world.waveText = null;
+    if (v.waveText) {
+      v.waveText.t += dt;
+      if (v.waveText.t > 2.6) v.waveText = null;
     }
     if (world.evIdx >= world.events.length && world.zombies.length === 0 && t > 0) {
       world.winT += dt;
@@ -1144,19 +1133,53 @@
         world.state = "won";
         if (world.level + 2 > world.unlocked) {
           world.unlocked = clamp(world.level + 2, 1, LEVELS.length);
-          saveUnlocked(world.unlocked);
+          world.ports.saveProgress(world.unlocked);
         }
-        SFX.win();
+        world.ports.sound("win");
       }
     }
     for (const s of world.slots) if (s.cool > 0) s.cool = Math.max(0, s.cool - dt);
-    if (world.shake > 0) world.shake -= dt;
-    if (world.flash > 0) world.flash = Math.max(0, world.flash - dt * 1.4);
+    if (v.shake > 0) v.shake -= dt;
+    if (v.flash > 0) v.flash = Math.max(0, v.flash - dt * 1.4);
+  }
+
+  // src/platform/persist.js
+  function loadUnlocked() {
+    try {
+      return clamp(parseInt(localStorage.getItem("pvzweb_unlocked")) || 1, 1, LEVELS.length);
+    } catch (e) {
+      return 1;
+    }
+  }
+  function saveUnlocked(n) {
+    try {
+      localStorage.setItem("pvzweb_unlocked", String(n));
+    } catch (e) {
+    }
+  }
+  function loadUnlockAll() {
+    try {
+      return localStorage.getItem("pvzweb_unlockall") === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+  function saveUnlockAll(on) {
+    try {
+      if (on) localStorage.setItem("pvzweb_unlockall", "1");
+      else localStorage.removeItem("pvzweb_unlockall");
+    } catch (e) {
+    }
   }
 
   // src/main.js
   var SEED = randomSeed();
-  var G = createWorld({ seed: SEED });
+  var ports = {
+    sound: (name) => SFX[name](),
+    saveProgress: (value) => saveUnlocked(value),
+    saveUnlockAll: (on) => saveUnlockAll(on)
+  };
+  var G = createWorld({ seed: SEED, ports, unlocked: loadUnlocked(), unlockAll: loadUnlockAll() });
   var drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
   var cv = document.getElementById("game");
   var ctx = cv.getContext("2d");
@@ -3825,8 +3848,8 @@
     }
   }
   function drawWaveText() {
-    if (!G.waveText) return;
-    const t = G.waveText.t;
+    if (!G.visual.waveText) return;
+    const t = G.visual.waveText.t;
     let alpha = 1, scale = 1;
     if (t < 0.35) scale = 0.4 + easeOut(t / 0.35) * 0.7;
     if (t > 2.1) alpha = clamp((2.6 - t) / 0.5, 0, 1);
@@ -3835,7 +3858,7 @@
     ctx.translate(W / 2, H / 2 - 40);
     ctx.scale(scale, scale);
     ctx.rotate(Math.sin(AT * 14) * 0.012);
-    drawText(G.waveText.text, 0, 0, 46, "#d02818", "#3a0a04", 9);
+    drawText(G.visual.waveText.text, 0, 0, 46, "#d02818", "#3a0a04", 9);
     ctx.restore();
   }
   function drawIntro() {
@@ -3856,7 +3879,7 @@
   }
   function renderPlay() {
     drawBackground();
-    for (const d of G.decals) {
+    for (const d of G.visual.decals) {
       ctx.save();
       ctx.globalAlpha = clamp(d.ttl / d.max, 0, 1) * 0.55;
       let g = ctx.createRadialGradient(d.x, d.fy, 4, d.x, d.fy, d.r);
@@ -3929,7 +3952,7 @@
       for (const z of zs) drawZombieEntity(z);
     }
     for (const p of G.peas) drawPea(p);
-    for (const p of G.parts) {
+    for (const p of G.visual.parts) {
       ctx.save();
       ctx.globalAlpha = clamp(p.life / p.max, 0, 1);
       ctx.fillStyle = p.color;
@@ -3945,8 +3968,8 @@
     drawText(LEVELS[G.level].name, W - 16, 62, 13, "#f0e2c0", "#3a2410", 3, "right", "700");
     drawWaveText();
     drawIntro();
-    if (G.nightHint > 0 && isNight(G)) {
-      const a = clamp(G.nightHint / 1.4, 0, 1);
+    if (G.visual.nightHint > 0 && isNight(G)) {
+      const a = clamp(G.visual.nightHint / 1.4, 0, 1);
       const bw = 520, bh = 44, bx = W / 2 - bw / 2, by = 150;
       ctx.save();
       ctx.globalAlpha = a;
@@ -3983,8 +4006,8 @@
       drawShovelIcon(G.mouse.x, G.mouse.y - 10, 1.1);
       ctx.restore();
     }
-    if (G.flash > 0) {
-      ctx.fillStyle = "rgba(255,250,230," + clamp(G.flash, 0, 0.35) + ")";
+    if (G.visual.flash > 0) {
+      ctx.fillStyle = "rgba(255,250,230," + clamp(G.visual.flash, 0, 0.35) + ")";
       ctx.fillRect(-20, -20, W + 40, H + 40);
     }
     if (G.paused) {
@@ -4641,8 +4664,8 @@
   function render() {
     G.hotspots.length = 0;
     ctx.save();
-    if (G.shake > 0 && G.state === "play") {
-      ctx.translate(rand(drawRng, -1, 1) * G.shake * 14, rand(drawRng, -1, 1) * G.shake * 14);
+    if (G.visual.shake > 0 && G.state === "play") {
+      ctx.translate(rand(drawRng, -1, 1) * G.visual.shake * 14, rand(drawRng, -1, 1) * G.visual.shake * 14);
     }
     if (G.state === "menu") renderMenu();
     else if (G.state === "help") renderHelp();
@@ -4721,7 +4744,7 @@
           return;
         }
         if (s.type === "coffee") {
-          if (applyCoffee(existing)) {
+          if (applyCoffee(G, existing)) {
             G.sun -= def.cost;
             s.cool = def.cool;
             G.sel = -1;

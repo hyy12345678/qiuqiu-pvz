@@ -16,11 +16,18 @@ import { createWorld, startLevel, startQuiz, answerQuiz, updateQuiz, toggleUnloc
 import { cellCX, cellFY, placePlant, removePlant, applyCoffee } from './core/entities.js';
 import { addLeafBurst } from './core/particles.js';
 import { updatePlay } from './core/sim.js';
+import { loadUnlocked, loadUnlockAll, saveUnlocked, saveUnlockAll } from './platform/persist.js';
 
 // 装配层持有唯一的游戏世界实例；核心模块一律显式接收它。
 // 种子只在这里生成一次：战斗流、表现流、绘制流都由它派生，互不消耗。
+// 声音与存档是浏览器的副作用，同样只在装配层实现，核心通过 ports 同步调用。
 const SEED = randomSeed();
-const G = createWorld({ seed: SEED });
+const ports = {
+  sound: name => SFX[name](),
+  saveProgress: value => saveUnlocked(value),
+  saveUnlockAll: on => saveUnlockAll(on),
+};
+const G = createWorld({ seed: SEED, ports, unlocked: loadUnlocked(), unlockAll: loadUnlockAll() });
 const drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
 
 
@@ -1762,8 +1769,8 @@ function drawTopRightButtons(){
 }
 
 function drawWaveText(){
-  if(!G.waveText) return;
-  const t = G.waveText.t;
+  if(!G.visual.waveText) return;
+  const t = G.visual.waveText.t;
   let alpha = 1, scale = 1;
   if(t < 0.35) scale = 0.4 + easeOut(t/0.35)*0.7;
   if(t > 2.1) alpha = clamp((2.6-t)/0.5, 0, 1);
@@ -1772,7 +1779,7 @@ function drawWaveText(){
   ctx.translate(W/2, H/2 - 40);
   ctx.scale(scale, scale);
   ctx.rotate(Math.sin(AT*14)*0.012);
-  drawText(G.waveText.text, 0, 0, 46, '#d02818', '#3a0a04', 9);
+  drawText(G.visual.waveText.text, 0, 0, 46, '#d02818', '#3a0a04', 9);
   ctx.restore();
 }
 
@@ -1797,7 +1804,7 @@ function drawIntro(){
 function renderPlay(){
   drawBackground();
 
-  for(const d of G.decals){
+  for(const d of G.visual.decals){
     ctx.save();
     ctx.globalAlpha = clamp(d.ttl/d.max, 0, 1) * 0.55;
     let g = ctx.createRadialGradient(d.x, d.fy, 4, d.x, d.fy, d.r);
@@ -1854,7 +1861,7 @@ function renderPlay(){
 
   for(const p of G.peas) drawPea(p);
 
-  for(const p of G.parts){
+  for(const p of G.visual.parts){
     ctx.save();
     ctx.globalAlpha = clamp(p.life/p.max, 0, 1);
     ctx.fillStyle = p.color;
@@ -1872,8 +1879,8 @@ function renderPlay(){
   drawIntro();
 
   // 夜战提示条
-  if(G.nightHint > 0 && isNight(G)){
-    const a = clamp(G.nightHint/1.4, 0, 1);
+  if(G.visual.nightHint > 0 && isNight(G)){
+    const a = clamp(G.visual.nightHint/1.4, 0, 1);
     const bw = 520, bh = 44, bx = W/2-bw/2, by = 150;
     ctx.save();
     ctx.globalAlpha = a;
@@ -1901,8 +1908,8 @@ function renderPlay(){
   }
 
   // 爆炸白闪
-  if(G.flash > 0){
-    ctx.fillStyle = 'rgba(255,250,230,' + clamp(G.flash,0,0.35) + ')';
+  if(G.visual.flash > 0){
+    ctx.fillStyle = 'rgba(255,250,230,' + clamp(G.visual.flash,0,0.35) + ')';
     ctx.fillRect(-20,-20,W+40,H+40);
   }
 
@@ -2384,8 +2391,8 @@ function renderEndOverlay(){
 function render(){
   G.hotspots.length = 0;
   ctx.save();
-  if(G.shake > 0 && G.state==='play'){
-    ctx.translate(rand(drawRng,-1,1)*G.shake*14, rand(drawRng,-1,1)*G.shake*14);
+  if(G.visual.shake > 0 && G.state==='play'){
+    ctx.translate(rand(drawRng,-1,1)*G.visual.shake*14, rand(drawRng,-1,1)*G.visual.shake*14);
   }
   if(G.state==='menu') renderMenu();
   else if(G.state==='help') renderHelp();
@@ -2462,7 +2469,7 @@ function handlePress(p){
       const def = PLANTS[s.type];
       if(s.cool > 0){ SFX.error(); return; }
       if(s.type === 'coffee'){
-        if(applyCoffee(existing)){
+        if(applyCoffee(G, existing)){
           G.sun -= def.cost; s.cool = def.cool; G.sel = -1;
         } else SFX.error();
         return;

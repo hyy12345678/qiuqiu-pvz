@@ -202,6 +202,6 @@
 ### 7.6 仍未完成（R2b）
 
 - **真实绘制未在矩阵里跑**：Node 侧按“绘制对世界唯一的随机接触面”建模（消耗 / 替换表现流），真实 Canvas 路径由轨迹基线与 A–I 冒烟兜底；R4 抽出 `render/renderState` 后可补真正的多绘制对比。
-- `ports` 未做：SFX 仍是模块导入，存档仍直接读写 `localStorage`；音频随机仍是模块局部 `Math.random`。
-- `world.visual` 未做：粒子、焦痕、震屏、闪光、波次文字、呻吟计时仍在原字段。
+- `ports` 未做：SFX 仍是模块导入，存档仍直接读写 `localStorage`；音频随机仍是模块局部 `Math.random`。**前两项已由 [R2b](重构执行计划-R2b.md) 完成**，音频随机按方案 §5.4 留在音频模块。
+- `world.visual` 未做：粒子、焦痕、震屏、闪光、波次文字、呻吟计时仍在原字段。**R2b 已完成**。
 - 绘制流 `drawRng` 目前是 `main.js` 的模块级常量，尚未进入 `renderState`。

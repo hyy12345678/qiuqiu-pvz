@@ -176,7 +176,8 @@
 
 ### 7.6 仍未完成（R3 及以后）
 
-- `mouse / hoverCell / sel / shovel / hotspots` 仍在 world，动作入口未拆（R3）。
+- ~~`mouse / hoverCell / sel / shovel / hotspots` 仍在 world，动作入口未拆（R3）。~~
+  已在 [R3 执行计划](重构执行计划-R3.md) 完成：字段移入 `src/ui/state.js`，动作收进 `src/core/actions.js`。
 - `main.js` 仍持有 `G` 并直接读写，渲染、输入与循环未搬（R4）。
 - 绘制流 `drawRng` 仍是装配层模块常量，未进入 `renderState`（R4）。
 - 音频噪声与呻吟音高仍是音频模块局部 `Math.random`（方案 §5.4 允许）。

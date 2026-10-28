@@ -2,6 +2,7 @@
 // R1b：createWorld() 取代模块级 G；渲染与输入仍只通过传入的实例读写状态。
 // R2a：每个世界带两条互不影响的随机流——rng 决定战斗，fxRng 只影响表现。
 // R2b：声音 / 存档走注入的 ports；粒子与震屏等收进 world.visual。
+// R3：鼠标、悬停、选卡、铲子与热点移入 ui 状态；world 只保留流程与战斗数据。
 
 import { COLS, LX, ROWS } from './constants.js';
 import { LEVELS } from './data/levels.js';
@@ -24,7 +25,6 @@ export function createWorld(init = {}){
     t:0,                    // 关卡时钟（负数为开场白）
     sun:50, sunFlash:0,
     slots:[],
-    sel:-1, shovel:false,
     grid:null, plants:[], zombies:[], peas:[], suns:[], mowers:[],
     events:[], evIdx:0, total:0, killed:0,
     skyTimer:5, lastRows:[],
@@ -34,8 +34,6 @@ export function createWorld(init = {}){
     },
     winT:0, loseZombie:null,
     quiz:null,
-    hoverCell:null, mouse:{x:-99,y:-99},
-    hotspots:[],
   };
 }
 
@@ -43,7 +41,6 @@ export function startLevel(world, li){
   world.level = li;
   world.state = 'select';
   world.slots = [];
-  world.sel = -1; world.shovel = false;
   world.ports.sound('click');
 }
 
@@ -77,7 +74,6 @@ export function beginPlay(world, startSun){
   world.skyTimer = 2; world.visual.groanTimer = 4;
   world.visual.waveText = null; world.winT = 0; world.loseZombie = null;
   world.visual.nightHint = lv.night ? 8 : 0;
-  world.sel = -1; world.shovel = false;
   world.visual.shake = 0; world.visual.flash = 0;
   world.ports.sound('click');
 }
@@ -88,9 +84,11 @@ export function startQuiz(world){
   world.ports.sound('click');
 }
 export function answerQuiz(world, a){
-  if(world.state !== 'quiz' || world.quiz.feedback > 0) return;
+  if(world.state !== 'quiz') return { ok:false, reason:'wrong-state' };
+  if(world.quiz.feedback > 0) return { ok:false, reason:'busy' };
   const q = world.quiz;
-  if(a === q.questions[q.idx].answer){
+  const correct = a === q.questions[q.idx].answer;
+  if(correct){
     q.energy *= 2;
     q.correct = true;
     world.ports.sound('select');
@@ -99,6 +97,7 @@ export function answerQuiz(world, a){
     world.ports.sound('error');
   }
   q.feedback = 0.9;
+  return { ok:true, correct };
 }
 export function updateQuiz(world, dt){
   const q = world.quiz;

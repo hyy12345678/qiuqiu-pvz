@@ -20,7 +20,6 @@
 '普通僵尸：最基础的敌人。',
 '白天蘑菇会打盹，用咖啡豆点它唤醒。',
 '路障 / 铁桶僵尸：头戴护具，非常耐打。',
-()=>{ if(G.slots.length) startQuiz(G); else SFX.error(); },
 : ['#8fd44a','#b8e88a'];
 : ['#c8f0a0','#7cc84e','#3f8a2e'];
 : p.type==='spore' ? ['#f0dcff','#b478e0','#6b3f96']
@@ -32,23 +31,6 @@
 ? { hi:'#cdeefc', main:'#6fb4de', dark:'#3a7ba6', line:'#1e4d6e', mouth:'#123a52' }
 AT += dt;
 E4:329.63, G4:392, A4:440, B4:493.88, C5:523.25, D5:587.33, E5:659.25, G5:783.99 };
-G.hotspots.length = 0;
-G.hotspots.push({ x, y, w, h, id, cb });
-G.hotspots.push({ x, y, w, h, id:b.id, cb:b.cb });
-G.hotspots.push({ x, y, w:cardW, h:cardH, id:'lv'+i, cb: locked ? ()=>{} : (()=>{ const ii=i; return ()=>startLevel(G, ii); })() });
-G.hotspots.push({ x, y, w:cw, h:ch, id:'pick'+type, cb:(()=>{ const tp=type, inT=inTeam, fu=full; return ()=>{
-G.hotspots.push({ x, y, w:slotW, h:slotH, id:'slot'+i, cb:(()=>{ const ii=i; return ()=>{ G.slots.splice(ii,1); if(G.sel===ii)G.sel=-1; else if(G.sel>ii)G.sel--; SFX.click(); }; })() });
-G.hotspots.push({ x, y:y-4, w:CARD_W, h:CARD_H+4, id:'card'+i, cb:(()=>{ const ii=i; return ()=>clickCard(ii); })() });
-G.hotspots.push({ x:bx, y:by, w:bw, h:bh, id:'ans'+i, cb:(()=>{ const a=cur.options[i]; return ()=>answerQuiz(G, a); })() });
-G.hotspots.push({ x:sx, y:sy, w:64, h:72, id:'shovel', cb:()=>{ G.shovel=!G.shovel; G.sel=-1; SFX.click(); } });
-G.hoverCell = null;
-G.mouse = p;
-G.mouse = p;
-G.sel = -1;
-G.sel = -1; G.shovel = false;
-G.sel = i; G.shovel = false;
-G.shovel = false;
-G.sun -= def.cost; s.cool = def.cool; G.sel = -1;
 O('#2e2a24', '#17140f', 1.6);
 O('#2e2a24', '#17140f', 2);
 O('#3c4046', '#2c2f33', 1.8);
@@ -155,9 +137,10 @@ O(pal.dark, pal.line, 2.4);
 O(pal.main, pal.line, 2.6);
 O(pal.mouth, null);
 O(pal.mouth, pal.line, 2);
-SFX.dig();
+SFX.click();
 SFX.ensure(); SFX.resume();
-SFX.select();
+SFX.musicOn = !SFX.musicOn;
+UI.mouse = p;
 [0,'A4',1],[1,'C5',1],[2,'E5',1],[3,'D5',1.5],[4.5,'C5',.5],[5,'B4',1],
 [12,'A4',1],[13,'C5',1],[14,'E5',1],[15,'G5',1.5],[16.5,'E5',.5],[17,'D5',1],
 [18,'C5',1],[19,'B4',1],[20,'A4',2],[22,'E4',1],[23,'G4',1]];
@@ -171,7 +154,15 @@ a = randi(30, 89);
 addDirtPuff(world, p.cx, p.fy);
 addDirtPuff(world, z.x, LY+(z.row+1)*CH-6);
 addFlamePuff(world, p.cx, pea.y);
-addLeafBurst(G, existing.cx, existing.fy-30);
+addHotspot(UI, bx, by, bw, bh, 'ans'+i, { type:'answer', value:cur.options[i] });
+addHotspot(UI, sx, sy, 64, 72, 'shovel', { type:'shovel' });
+addHotspot(UI, x, y, cardW, cardH, 'lv'+i, { type:'level', index:i });
+addHotspot(UI, x, y, cw, ch, 'pick'+type, { type:'plantPick', plant:type });
+addHotspot(UI, x, y, slotW, slotH, 'slot'+i, { type:'slot', index:i });
+addHotspot(UI, x, y, w, h, b.id, b.action);
+addHotspot(UI, x, y, w, h, id, action);
+addHotspot(UI, x, y-4, CARD_W, CARD_H+4, 'card'+i, { type:'pickSlot', index:i });
+addLeafBurst(world, p.cx, p.fy-30);
 addLeafBurst(world, p.cx, p.fy-30);
 addPaperShreds(world, z.x, LY + (z.row+1)*CH - 76);
 addPeaSplat(world, pea.x, pea.y, pea.type);
@@ -199,13 +190,20 @@ break;
 break;
 bucket:{ name:'铁桶僵尸', hp:200, acc:1100, speed:17 },
 bulletHit(){ this.noise(0.05, 0.08, 1600); this.tone(150, 90, 0.05, 'square', 0.04); },
+case 'answer': answerQuiz(G, action.value); return;
 case 'cherry':
 case 'cherry': drawCherry(0.9, AT, 7); break;
 case 'cherry': drawCherry(p.fuse, t, p.phase); break;
 case 'coffee': drawCoffee(AT, 11); break;
 case 'coffee': drawCoffee(t, p.phase); break;
+case 'level': chooseLevel(G, UI, action.index); return;
+case 'music':
+case 'nav': G.state = action.state; SFX.click(); return;
+case 'pause': togglePause(G); return;
 case 'peashooter': drawShooter(AT, 2, 'pea', 0, 0); break;
 case 'peashooter': drawShooter(t, p.phase, 'pea', p.recoil, p.flash); break;
+case 'pickSlot': pickSlot(G, UI, action.index); return;
+case 'plantPick': pickTeamPlant(G, UI, action.plant); return;
 case 'potato':
 case 'potato': drawPotato(p.armed, t, p.phase); break;
 case 'potato': drawPotato(true, AT, 6); break;
@@ -216,8 +214,11 @@ case 'qiuqiu': drawQiuqiu(AT, 1, 0); break;
 case 'qiuqiu': drawQiuqiu(t, p.phase, p.recoil); break;
 case 'repeater': drawShooter(AT, 4, 'repeater', 0, 0); break;
 case 'repeater': drawShooter(t, p.phase, 'repeater', p.recoil, p.flash); break;
+case 'shovel': toggleShovel(G, UI); return;
+case 'slot': removeSlot(G, UI, action.index); return;
 case 'snowpea': drawShooter(AT, 3, 'snow', 0, 0); break;
 case 'snowpea': drawShooter(t, p.phase, 'snow', p.recoil, p.flash); break;
+case 'startQuiz':
 case 'sunflower': case 'sunshroom':
 case 'sunflower': drawSunflower(AT, 1); break;
 case 'sunflower': drawSunflower(t, p.phase); break;
@@ -225,10 +226,13 @@ case 'sunshroom': drawSunshroom(AT, 10, false); break;
 case 'sunshroom': drawSunshroom(t, p.phase, p.asleep); break;
 case 'torch': drawTorch(AT, 8); break;
 case 'torch': drawTorch(t, p.phase); break;
+case 'unlockAll': toggleUnlockAll(G); return;
 case 'wallnut': drawWallnut(1, AT, 5); break;
 case 'wallnut': drawWallnut(p.hp/p.maxHp, t, p.phase); break;
 cherry: { name:'樱桃炸弹', cost:150, hp:300, cool:32, desc:'轰！炸飞一片区域的僵尸' },
 chomp(){ this.noise(0.09, 0.15, 500); this.tone(150, 80, 0.08, 'square', 0.05); },
+clearHotspots(UI);
+clearSelection(UI);
 click(){ this.tone(620, 620, 0.05, 'sine', 0.08); },
 cloud(((AT*6+500)%(W+260))-130, 150, 0.85);
 cloud(((AT*7.5+900)%(W+260))-130, 58, 1.35);
@@ -261,6 +265,7 @@ const SFX = {
 const SILENT = {
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
 const TAU = Math.PI * 2;
+const UI = createUI();
 const W = 1024, H = 640;
 const ZTYPES = {
 const a = (t*13 + k*TAU/5) % TAU;
@@ -274,7 +279,7 @@ const a = rand(world.fxRng,0,TAU), sp = rand(world.fxRng,40, big?340:210);
 const a = spin + k*TAU/6;
 const acc = zs[k]==='normal' ? null : zs[k];
 const acc = zt==='normal' ? null : zt;
-const active = G.shovel;
+const active = UI.shovel;
 const afford = G.sun >= def.cost && s.cool <= 0;
 const ahead = curBeat + 0.7;
 const ang = Math.sin(AT*9)*2;
@@ -308,9 +313,11 @@ const c = (col !== undefined) ? col : Math.floor((x - LX)/CW);
 const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
 const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
 const cardW = 214, cardH = 150, gap = 22;
+const check = inspectUseCard(world, slotIndex, row, col);
 const cloud = (x,y,s)=>{
 const col = p.type==='snow' ? ['#e8f8ff','#8fd0f2','#4a93c9']
 const cols = type==='snow' ? ['#bfe9ff','#8fd0f2']
+const correct = a === q.questions[q.idx].answer;
 const cur = q.questions[q.idx];
 const curBeat = pos / MUSIC_BEAT;
 const cv = document.getElementById('game');
@@ -328,18 +335,18 @@ const def = PLANTS[s.type];
 const def = PLANTS[type];
 const def = PLANTS[type];
 const def = ZTYPES[type];
+const def = check.def;
 const disabled = opts.disabled;
 const dmg = 1 - hpFrac;
 const dmg = isMissile ? 90 : 25;
 const draw = (x,y,r)=>{
 const drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
-const dx = p.x - s.x, dy = p.y - s.y;
+const dx = x - s.x, dy = y - s.y;
 const dy = Math.sin(AT*2 + i*0.9)*4;
 const dy = Math.sin(AT*2 + i*0.9)*4;
 const e = world.events[world.evIdx++];
 const eat = z.state==='eat', walk = z.state==='walk';
 const ev = [];
-const existing = G.grid[r][c];
 const f = rand(Math.random, 75, 120);
 const f = this.ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value = freq||800;
 const finalCount = Math.max(4, Math.round(n*0.33));
@@ -349,7 +356,6 @@ const flame = (h, col, off)=>{
 const flash = G.sunFlash > 0 && Math.sin(AT*30) > 0;
 const food = findEatTarget(world, z);
 const frac = s.cool / def.cool;
-const full = G.slots.length >= lv.slots;
 const fx = R()*W, fy = LY + 22 + R()*(ROWS*CH-26);
 const fx = inner.x + inner.w*(1-frac);
 const fy = fyBase + (z.vy || 0);
@@ -357,23 +363,25 @@ const fyBase = (fyOverride !== undefined) ? fyOverride : LY + (z.row+1)*CH - 4;
 const g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);
 const g = this.ctx.createGain(); g.gain.setValueAtTime(vol, t0);
 const ghost = { type:selType, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0,
-const h = G.hotspots[i];
-const hc = G.hoverCell;
+const h = hitHotspot(UI, p);
+const h = ui.hotspots[i];
+const hc = UI.hoverCell;
 const hop = Math.abs(Math.sin(t*2+ph))*2.5;
 const hop = Math.abs(Math.sin(t*2.6+ph))*2.4;
-const hover = !locked && G.mouse.x>=x && G.mouse.x<=x+cardW && G.mouse.y>=y && G.mouse.y<=y+cardH;
-const hover = G.mouse.x>=bx && G.mouse.x<=bx+bw && G.mouse.y>=by && G.mouse.y<=by+bh;
-const hover = G.mouse.x>=x && G.mouse.x<=x+CARD_W && G.mouse.y>=y && G.mouse.y<=y+CARD_H;
-const hover = G.mouse.x>=x && G.mouse.x<=x+cw && G.mouse.y>=y && G.mouse.y<=y+ch;
-const hover = G.mouse.x>=x && G.mouse.x<=x+w && G.mouse.y>=y && G.mouse.y<=y+h;
-const hover = G.mouse.x>=x && G.mouse.x<=x+w && G.mouse.y>=y && G.mouse.y<=y+h;
-const hoverS = G.mouse.x>=sx && G.mouse.x<=sx+64 && G.mouse.y>=sy && G.mouse.y<=sy+72;
+const hover = !locked && UI.mouse.x>=x && UI.mouse.x<=x+cardW && UI.mouse.y>=y && UI.mouse.y<=y+cardH;
+const hover = UI.mouse.x>=bx && UI.mouse.x<=bx+bw && UI.mouse.y>=by && UI.mouse.y<=by+bh;
+const hover = UI.mouse.x>=x && UI.mouse.x<=x+CARD_W && UI.mouse.y>=y && UI.mouse.y<=y+CARD_H;
+const hover = UI.mouse.x>=x && UI.mouse.x<=x+cw && UI.mouse.y>=y && UI.mouse.y<=y+ch;
+const hover = UI.mouse.x>=x && UI.mouse.x<=x+w && UI.mouse.y>=y && UI.mouse.y<=y+h;
+const hover = UI.mouse.x>=x && UI.mouse.x<=x+w && UI.mouse.y>=y && UI.mouse.y<=y+h;
+const hoverS = UI.mouse.x>=sx && UI.mouse.x<=sx+64 && UI.mouse.y>=sy && UI.mouse.y<=sy+72;
 const hx = -2 - rec, hy = -54 + bob;
 const hx = -7, hy = -96;
 const hx = inner.x + inner.w*(1-p);
 const hx = sway, hy = -60+bob;
 const i = parseInt(e.key)-1;
 const i = world.plants.indexOf(p);
+const idx = world.slots.findIndex(s=>s.type === type);
 const inPhase = t >= -1.4;
 const inTeam = G.slots.some(s=>s.type===type);
 const inner = { x:x0+4, w:(x1-x0)-8 };
@@ -386,7 +394,7 @@ const k = inPhase ? clamp((t+1.4)/0.3, 0, 1) : clamp((t+3.2)/0.3, 0, 1);
 const kind = p.type==='snowpea' ? 'snow' : 'pea';
 const kneeX = (hipX+footX)/2 + 2;
 const lastLv = G.level >= LEVELS.length-1;
-const leftCb = lastLv ? ()=>startLevel(G, G.level) : ()=>startLevel(G, G.level+1);
+const leftAction = { type:'level', index: lastLv ? G.level : G.level+1 };
 const leftLabel = lastLv ? '再玩一次' : '下一关';
 const leg=(x,dy)=>{
 const legDraw = (hipX, footX, lift)=>{
@@ -397,6 +405,7 @@ const long = k%2===0;
 const lunge = eat ? Math.abs(Math.sin(z.eatT*9))*5 : 0;
 const lv = LEVELS[G.level];
 const lv = LEVELS[i];
+const lv = LEVELS[world.level];
 const lv = LEVELS[world.level];
 const lv = LEVELS[world.level];
 const m = world.mowers.find(m=>m.row===row && m.state==='idle');
@@ -411,12 +420,13 @@ const nLv = LEVELS.length;
 const now = this.ctx.currentTime;
 const o = this.ctx.createOscillator(), g = this.ctx.createGain();
 const o = this.ctx.createOscillator(), g = this.ctx.createGain();
-const ok = isCoffee ? !!(target && target.asleep) : !target;
+const ok = inspectUseCard(G, UI.sel, hc.row, hc.col).ok;
 const on = Math.sin(t*7+ph) > 0;
 const opts = [ans];
 const p = G.total ? clamp(G.killed / G.total, 0, 1) : 0;
 const p = toCanvas(t);
 const p = v.parts[i];
+const p = world.grid[row][col];
 const p = world.grid[z.row][c];
 const p = world.grid[z.row][c];
 const p = world.plants[i];
@@ -425,6 +435,7 @@ const p = {
 const pal = kind==='snow'
 const pea = world.peas[i];
 const ph = at*5.2;
+const pointer = !!hitHotspot(UI, p);
 const pool = lv.types.map(([t,w])=>{
 const ports = {
 const pos = ((now - this.loopStart) % MUSIC_LOOP + MUSIC_LOOP) % MUSIC_LOOP;
@@ -447,6 +458,7 @@ const q = world.quiz;
 const qs = [];
 const r = clamp(throwT||0, 0, 1);
 const r = cv.getBoundingClientRect();
+const r = useCard(world, ui.sel, row, col);
 const rand = (a, b) => a + rng() * (b - a);
 const randi = (a, b) => Math.floor(a + rng() * (b - a + 1));
 const reach = p.type==='puff' ? p.cx + CW*2 : W + 50;
@@ -454,17 +466,18 @@ const reading = z.type==='newspaper' && !angry;
 const rec = (recoil||0)*7;
 const rot = Math.sin(AT*1.5 + i)*0.04;
 const run = m.state==='run';
-const s = G.slots[G.sel];
 const s = G.slots[i];
 const s = G.slots[i];
-const s = G.slots[i];
-const s = G.suns[i];
+const s = world.slots[slotIndex];
+const s = world.slots[slotIndex];
+const s = world.slots[slotIndex];
+const s = world.suns[i];
 const s = world.suns[i];
 const saved = ctx;
 const scale = 0.5 + easeOut(k)*0.6 + (inPhase ? Math.sin(AT*10)*0.02 : 0);
 const seed = init.seed === undefined ? randomSeed() : (init.seed >>> 0);
-const selType = G.slots[G.sel].type;
-const selected = G.sel === i;
+const selType = G.slots[UI.sel].type;
+const selected = UI.sel === i;
 const skin='#ffd9ae', skinD='#eeb183', line='#6e4218';
 const slotW = 72, slotH = 100;
 const slowMul = z.slowT > 0 ? 0.45 : 1;
@@ -492,7 +505,7 @@ const t0 = this.ctx.currentTime + (when||0);
 const tGap = 86 * tScale;
 const tScale = title.length > 6 ? 64/86 : 1;
 const tSize = Math.round(86 * tScale);
-const target = G.grid[hc.row][hc.col];
+const target = world.grid[row][col];
 const theme = isNight(G) ? 'night' : 'day';
 const tieWave = Math.sin(at*3.1)*2;
 const tips = [
@@ -1606,7 +1619,7 @@ cv.addEventListener('mousemove', e=> handleMove(toCanvas(e)));
 cv.addEventListener('touchend', e=> e.preventDefault(), {passive:false});
 cv.addEventListener('touchmove', e=>{
 cv.addEventListener('touchstart', e=>{
-cv.style.cursor = pointer ? 'pointer' : ((G.shovel || G.sel>=0) ? 'crosshair' : 'default');
+cv.style.cursor = pointer ? 'pointer' : ((UI.shovel || UI.sel>=0) ? 'crosshair' : 'default');
 cv.width = W * DPR; cv.height = H * DPR;
 cx: cellCX(col), fy: cellFY(row),
 damageZombie(world, z, 1800);
@@ -1622,16 +1635,16 @@ drawBallIcon(-11, 0, 6, p.x*0.11 - 0.5);
 drawBallIcon(-19, 0, 5, p.x*0.11 - 1);
 drawBallIcon(0, 0, 7.5, p.x*0.11);
 drawBallIcon(6,-17,3.6, 0);
-drawButton(88, H-88, 150, 46, '返回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
+drawButton(88, H-88, 150, 46, '返回', 'back', { type:'nav', state:'menu' }, {});
 drawButton(W-286, H-88, 198, 46, G.slots.length ? '开 始 游 戏' : '请先选择植物', 'go',
-drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(G), { size: 18 });
-drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
-drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
-drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', ()=>startLevel(G, G.level), { red:true });
-drawButton(W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftCb, {});
-drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});
-drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
-drawButton(W/2-90, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', ()=>{ SFX.ensure(); SFX.musicOn = !SFX.musicOn; SFX.click(); }, {});
+drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', { type:'unlockAll' }, { size: 18 });
+drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', { type:'nav', state:'menu' }, {});
+drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', { type:'nav', state:'menu' }, {});
+drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', { type:'level', index:G.level }, { red:true });
+drawButton(W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftAction, {});
+drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', { type:'nav', state:'help' }, {});
+drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', { type:'nav', state:'menu' }, {});
+drawButton(W/2-90, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', { type:'music', ensure:true }, {});
 drawGatling(16, -44, spin, muzzle);
 drawIntro();
 drawLeafShape(-2,-7,-1,0.9); drawLeafShape(4,-12,1,0.8);
@@ -1646,7 +1659,7 @@ drawPlantIcon(s.type, x+slotW/2, y+slotH-26, 0.6);
 drawPlantIcon(type, x+cw/2, y+ch-28, 0.52);
 drawProgressBar();
 drawSeedBank();
-drawShovelIcon(G.mouse.x, G.mouse.y - 10, 1.1);
+drawShovelIcon(UI.mouse.x, UI.mouse.y - 10, 1.1);
 drawShovelIcon(sx+32, sy+34, hoverS||active ? 1.08 : 1);
 drawShroomBody(['#c9a2ea','#9459c0','#6b3490'], '#401d5c', 'rgba(255,255,255,0.22)', 'rgba(232,208,255,0.5)');
 drawShroomBody(['#ffe9a0','#f5b63a','#c47a18'], '#7a4a10', 'rgba(255,255,255,0.3)', 'rgba(255,246,200,0.6)');
@@ -1714,16 +1727,15 @@ dt = Math.min(dt, 0.05);
 e.preventDefault();
 e.preventDefault();
 e.preventDefault();
-else SFX.error();
 else drawText('你通关了全部 ' + LEVELS.length + ' 个关卡，草坪安全了！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
-else if(!fu){ G.slots.push({type:tp, cool:0}); SFX.select(); }
 else if(G.state==='help') renderHelp();
 else if(G.state==='quiz') renderQuiz();
 else if(G.state==='quiz') updateQuiz(G, dt);
 else if(G.state==='select') renderSelect();
 else if(e.key==='m' || e.key==='M'){ SFX.musicOn = !SFX.musicOn; }
-else if(e.key==='p' || e.key==='P'){ G.paused = !G.paused; SFX.click(); }
+else if(e.key==='p' || e.key==='P'){ togglePause(G); }
 else if(t >= -1.4) txt = '开始！';
+else if(ui.sel > slotIndex) ui.sel--;
 else if(z.x < LX - 72){ lost = true; world.loseZombie = z; }
 else {
 else { beginPlay(world, q.energy); }
@@ -1754,7 +1766,6 @@ for(const b of btns){
 for(const d of G.visual.decals){
 for(const ex of [-5.5, 5.5]){
 for(const ex of [-9, 7]){
-for(const h of G.hotspots){
 for(const m of G.mowers) drawMower(m);
 for(const m of MELODY){
 for(const m of world.mowers){
@@ -1794,13 +1805,13 @@ for(let i=0;i<n;i++) d[i] = (Math.random()*2-1) * (1-i/n);
 for(let i=0;i<nLv;i++){
 for(let i=0;i<title.length;i++){
 for(let i=0;i<title.length;i++){
-for(let i=G.hotspots.length-1;i>=0;i--){
-for(let i=G.suns.length-1;i>=0;i--){
 for(let i=arr.length-1;i>0;i--){
+for(let i=ui.hotspots.length-1;i>=0;i--){
 for(let i=v.decals.length-1;i>=0;i--){
 for(let i=v.parts.length-1;i>=0;i--){
 for(let i=world.peas.length-1;i>=0;i--){
 for(let i=world.plants.length-1;i>=0;i--){
+for(let i=world.suns.length-1;i>=0;i--){
 for(let i=world.suns.length-1;i>=0;i--){
 for(let i=world.zombies.length-1;i>=0;i--){
 for(let k=0;k<10;k++){
@@ -1855,6 +1866,7 @@ for(let y=y1-26;y<y1;y+=9){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(198,y);
 function O(fill, stroke, lw){
 function addDirtPuff(world,x,y){
 function addFlamePuff(world,x,y){
+function addHotspot(ui, x, y, w, h, id, action){
 function addLeafBurst(world,x,y){
 function addPaperShreds(world, x, y){
 function addPeaSplat(world,x,y,type){
@@ -1864,14 +1876,19 @@ function beginPlay(world, startSun){
 function buildSpawns(lv, rng = Math.random){
 function cellCX(c){ return LX + c*CW + CW/2; }
 function cellFY(r){ return LY + (r+1)*CH - 6; }
+function chooseLevel(world, ui, li){
 function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
-function clickCard(i){
+function clearHotspots(ui){
+function clearSelection(ui){
+function collectSun(world, x, y){
 function createPorts(overrides){
+function createUI(){
 function createWorld(init = {}){
 function damageZombie(world, z, d){
+function dispatch(action){
 function drawBackground(){
 function drawBallIcon(x,y,r,spin){
-function drawButton(x, y, w, h, label, id, cb, opts){
+function drawButton(x, y, w, h, label, id, action, opts){
 function drawCherry(fuse, t, ph){
 function drawCoffee(t, ph){
 function drawGatling(ox, oy, spin, muzzle){
@@ -1911,6 +1928,9 @@ function findEatTarget(world, z){
 function frame(now){
 function handleMove(p){
 function handlePress(p){
+function hitHotspot(ui, p){
+function inBounds(row, col){
+function inspectUseCard(world, slotIndex, row, col){
 function isBlinking(t, ph){ const c = (t+ph)%3.8; return c < 0.12; }
 function isNight(world){ return !!(LEVELS[world.level] && LEVELS[world.level].night); }
 function lerp(a,b,t){ return a+(b-a)*t; }
@@ -1919,12 +1939,16 @@ function loadUnlocked(){ try{ return clamp(parseInt(localStorage.getItem('pvzweb
 function makeQuiz(rng = Math.random){
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function paintBattleBG(night){
+function pickSlot(world, ui, slotIndex){
+function pickTeamPlant(world, ui, type){
 function pickType(lv, prog, rng){
 function placePlant(world, type, row, col){
+function pressCell(world, ui, row, col){
 function rand(rng,a,b){ return a + rng()*(b-a); }
 function randi(rng,a,b){ return Math.floor(rand(rng,a,b+1)); }
 function randomSeed(){ return (Math.random()*0x100000000) >>> 0; }
 function removePlant(world, p){
+function removeSlot(world, ui, slotIndex){
 function render(){
 function renderEndOverlay(){
 function renderHelp(){
@@ -1935,16 +1959,20 @@ function renderSelect(){
 function rr(x,y,w,h,r){
 function saveUnlockAll(on){ try{ if(on) localStorage.setItem('pvzweb_unlockall', '1'); else localStorage.removeItem('pvzweb_unlockall'); }catch(e){} }
 function saveUnlocked(n){ try{ localStorage.setItem('pvzweb_unlocked', String(n)); }catch(e){} }
+function setPointer(ui, p, state){
 function shuffle(arr, rng = Math.random){
 function spawnSun(world, x,y,ty,fromSky,value){
 function spawnZombie(world, type){
 function startLevel(world, li){
 function startQuiz(world){
 function toCanvas(e){
+function togglePause(world){
+function toggleShovel(world, ui){
 function toggleUnlockAll(world){
 function triggerMower(world, row){
 function updatePlay(world, dt){
 function updateQuiz(world, dt){
+function useCard(world, slotIndex, row, col){
 fxRng: init.fxRng || mulberry32((seed ^ FX_SEED_XOR) >>> 0),
 g = ctx.createLinearGradient(-10,-30,10,-10);
 g = ctx.createLinearGradient(-11,-9,11,8);
@@ -2061,7 +2089,6 @@ gatling(){ this.tone(240, 120, 0.06, 'square', 0.07); this.noise(0.05, 0.06, 220
 gi.addColorStop(0,'#4a3418'); gi.addColorStop(1,'#33220e');
 grid:null, plants:[], zombies:[], peas:[], suns:[], mowers:[],
 groan(){
-h.cb();
 handleMove(p);
 handleMove(toCanvas(e.changedTouches[0]));
 handlePress(p);
@@ -2071,45 +2098,48 @@ hit = true;
 hop(){ this.tone(280, 620, 0.22, 'triangle', 0.1); },
 horn(){ this.tone(98, 98, 0.7, 'sawtooth', 0.11); this.tone(147, 147, 0.7, 'sawtooth', 0.07, 0.02); },
 hotspots:[],
-hoverCell:null, mouse:{x:-99,y:-99},
+hoverCell:null,
 hp: def.hp, acc: def.acc, maxHp: def.hp + def.acc,
 i += size;
+if(!(target && target.asleep)) return { ok:false, reason:'invalid-target', def };
 if(!AC) return false;
 if(!G.visual.waveText) return;
+if(!Number.isInteger(li) || li < 0 || li >= LEVELS.length) return { ok:false, reason:'bad-level' };
 if(!afford) ctx.globalAlpha = 0.55;
+if(!applyCoffee(world, world.grid[row][col])) return { ok:false, reason:'invalid-target', def };
 if(!armed){
 if(!asleep){
 if(!best || p.cx > best.cx) best = p;
 if(!blink){
 if(!blink){
+if(!check.ok){
+if(!inBounds(row, col)) return { ok:false, reason:'out-of-bounds' };
+if(!inBounds(row, col)) return { ok:false, reason:'out-of-bounds' };
 if(!lastLv) drawText('新的关卡已解锁！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
 if(!lv.night){
 if(!opts.includes(d)) opts.push(d);
 if(!p || !p.asleep) return false;
 if(!p || p.hp <= 0 || world.grid[z.row][p.col] !== p){
 if(!p) continue;
+if(!p) return { ok:false, reason:'empty' };
 if(!p.armed){
+if(!s) return { ok:false, reason:'no-slot' };
+if(!s) return { ok:false, reason:'no-slot' };
 if(!this.ctx || !this.musicOn) return;
 if(!this.ctx) return;
 if(!this.ctx) return;
 if(!this.ctx) return;
 if(!txt) return;
+if(!world.slots[slotIndex]) return { ok:false, reason:'no-slot' };
+if(!world.unlockAll && li+1 > world.unlocked) return { ok:false, reason:'locked' };
 if(G.paused){
-if(G.sel === i){ G.sel = -1; SFX.click(); return; }
-if(G.sel >= 0){
-if(G.shovel && G.mouse.x >= 0){
-if(G.shovel){
-if(G.shovel){
+if(G.slots.length) startQuiz(G); else SFX.error();
 if(G.state !== 'play' || G.paused) return;
 if(G.state !== 'play' || G.t >= 0) return;
-if(G.state!=='play' || G.paused) return;
 if(G.state==='menu') renderMenu();
 if(G.state==='play' && !G.paused) updatePlay(G, dt);
 if(G.state==='play'){
-if(G.state==='play'){
 if(G.state==='won' || G.state==='lost') renderEndOverlay();
-if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
-if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
 if(G.visual.flash > 0){
 if(G.visual.nightHint > 0 && isNight(G)){
 if(G.visual.shake > 0 && G.state==='play'){
@@ -2117,14 +2147,15 @@ if(Math.abs(z.row - row) <= 1 && Math.abs(zc - c) <= 1){
 if(Math.abs(z.row-row) <= (big?1:0) && Math.abs(z.x-x) < (big?132:58)){
 if(Math.floor(z.eatT/0.62) !== Math.floor((z.eatT-dt)/0.62)) world.ports.sound('chomp');
 if(R()<0.4){
+if(UI.shovel && UI.mouse.x >= 0){
+if(UI.shovel){
 if(a < 0.06) continue;
 if(a <= 0.05) continue;
-if(a === q.questions[q.idx].answer){
 if(acc==='cone'){
+if(action.ensure) SFX.ensure();
 if(ahead < this.lastBeat - 0.5) this.lastBeat = -1;
 if(angry && walk) ctx.rotate(-0.11);
 if(angry){
-if(applyCoffee(G, existing)){
 if(asleep){
 if(b > this.lastBeat && b <= ahead){
 if(bgCanvas && bgTheme === theme) return;
@@ -2134,8 +2165,12 @@ if(blink){
 if(blink){
 if(blink){
 if(c%2){ g.addColorStop(0,'#98cf54'); g.addColorStop(1,'#84bd44'); }
-if(c>=0 && c<COLS && r>=0 && r<ROWS) G.hoverCell = { row:r, col:c };
-if(c>=0 && c<COLS && r>=0 && r<ROWS){
+if(c>=0 && c<COLS && r>=0 && r<ROWS) pressCell(G, UI, r, c);
+if(c>=0 && c<COLS && r>=0 && r<ROWS) ui.hoverCell = { row:r, col:c };
+if(check.kind === 'coffee'){
+if(check.reason === 'not-enough-sun'){
+if(collectSun(G, p.x, p.y).ok) return;
+if(correct){
 if(d < 0) d = ans + randi(1, 9);
 if(disabled){
 if(dmg > 0.33){
@@ -2145,23 +2180,22 @@ if(dx*dx + dy*dy < 36*36){
 if(e.announce){
 if(e.button === 2) return;
 if(e.key >= '1' && e.key <= '8'){
-if(existing){
-if(existing){ SFX.error(); return; }
 if(f1 && f1!==f0) o.frequency.exponentialRampToValueAtTime(Math.max(f1,20), t0+dur);
 if(fill){ ctx.fillStyle = fill; ctx.fill(); }
 if(flash > 0){
 if(food){
 if(fuse < 0.4) s = 1 + Math.abs(Math.sin(fuse*38))*0.24*(0.4-fuse)/0.4 + 0.06;
 if(fuse < 0.7){
+if(h){ dispatch(h.action); return; }
 if(has && p.fireT <= 0 && t > 0){
 if(hc && G.state==='play' && !G.paused){
 if(hit || pea.x > W+60) world.peas.splice(i,1);
 if(hover && !disabled){
 if(hover && !inTeam) ctx.translate(0,-3);
 if(hover) ctx.translate(0,-4);
-if(i < G.slots.length && !G.paused) clickCard(i);
+if(i < G.slots.length && !G.paused) pickSlot(G, UI, i);
 if(i>=0) world.plants.splice(i,1);
-if(inT){ const idx = G.slots.findIndex(s=>s.type===tp); G.slots.splice(idx,1); SFX.click(); }
+if(idx >= 0){
 if(inTeam){
 if(inTeam){ bg.addColorStop(0,'#c4e096'); bg.addColorStop(1,'#94c060'); }
 if(isMissile) world.ports.sound('missile'); else world.ports.sound('gatling');
@@ -2206,8 +2240,7 @@ if(p.type==='qiuqiu'){
 if(p.type==='repeater'){
 if(p.type==='snow'){
 if(p.type==='torch' && p.row===pea.row && pea.prevX < p.cx && pea.x >= p.cx){
-if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){
-if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){ pointer = true; break; }
+if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h) return h;
 if(pea.type === 'pea' || pea.type === 'snow'){
 if(pea.type==='bullet') world.ports.sound('bulletHit'); else world.ports.sound('splat');
 if(pea.type==='fire' && world.fxRng()<0.6){
@@ -2221,19 +2254,20 @@ if(q.correct){
 if(q.feedback <= 0){
 if(q.feedback > 0){
 if(q.feedback > 0){
+if(r.ok) ui.sel = -1;
 if(reading){
 if(rng() < 0.5){
 if(run) ctx.translate(0, Math.sin(AT*42)*1.4);
 if(run){
 if(s){
+if(s.cool > 0) return { ok:false, reason:'cooling', def };
 if(s.cool > 0){
-if(s.cool > 0){ SFX.error(); return; }
-if(s.cool > 0){ SFX.error(); return; }
+if(s.cool > 0){
 if(s.ft >= 1){
 if(s.life <= 0){ world.suns.splice(i,1); }
+if(s.state === 'fly') continue;
 if(s.state==='fall') scale = 0.85 + clamp(s.t*0.5,0,0.15);
 if(s.state==='fall'){
-if(s.state==='fly') continue;
 if(s.state==='fly'){
 if(s.state==='idle' && s.life < 2.5) alpha = clamp(s.life/2.5, 0, 1);
 if(s.type === 'coffee'){
@@ -2241,6 +2275,7 @@ if(s.y >= s.ty){ s.y = s.ty; s.state='idle'; s.t=0; }
 if(selected) ctx.translate(0,-4);
 if(selected){
 if(slowed){
+if(state === 'play'){
 if(stroke){ ctx.lineWidth = sw||4; ctx.strokeStyle = stroke; ctx.lineJoin='round'; ctx.strokeText(text, x, y); }
 if(stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw||2.5; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke(); }
 if(t < 0.35) scale = 0.4 + easeOut(t/0.35)*0.7;
@@ -2252,9 +2287,14 @@ if(t >= -3.2 && t < -1.4) txt = '准备……';
 if(t==='bucket'||t==='vault') ww += prog*3;
 if(t==='cone') ww += prog*1.5;
 if(t==='newspaper') ww += prog*2;
+if(target) return { ok:false, reason:'occupied', def };
 if(target){
 if(this.ctx) return true;
 if(tw > 0.9){
+if(ui.sel === slotIndex) ui.sel = -1;
+if(ui.sel === slotIndex){
+if(ui.sel >= 0){
+if(ui.shovel){
 if(v.decals[i].ttl <= 0) v.decals.splice(i,1);
 if(v.flash > 0) v.flash = Math.max(0, v.flash - dt*1.4);
 if(v.groanTimer <= 0){ v.groanTimer = rand(world.fxRng,4,9); world.ports.sound('groan'); }
@@ -2270,8 +2310,23 @@ if(world.fxRng()<0.55){
 if(world.lastRows.length>3) world.lastRows.length = 3;
 if(world.lastRows.length>=2 && world.lastRows[0]===row && world.lastRows[1]===row){
 if(world.level + 2 > world.unlocked){ world.unlocked = clamp(world.level+2, 1, LEVELS.length); world.ports.saveProgress(world.unlocked); }
+if(world.paused) return { ok:false, reason:'paused' };
+if(world.paused) return { ok:false, reason:'paused' };
+if(world.paused) return { ok:false, reason:'paused' };
+if(world.paused) return { ok:false, reason:'paused' };
+if(world.paused) return { ok:false, reason:'paused' };
+if(world.quiz.feedback > 0) return { ok:false, reason:'busy' };
 if(world.skyTimer <= 0){
-if(world.state !== 'quiz' || world.quiz.feedback > 0) return;
+if(world.slots.length >= lv.slots){
+if(world.state !== 'play') return { ok:false, reason:'wrong-state' };
+if(world.state !== 'play') return { ok:false, reason:'wrong-state' };
+if(world.state !== 'play') return { ok:false, reason:'wrong-state' };
+if(world.state !== 'play') return { ok:false, reason:'wrong-state' };
+if(world.state !== 'play') return { ok:false, reason:'wrong-state' };
+if(world.state !== 'play') return { ok:false, reason:'wrong-state' };
+if(world.state !== 'quiz') return { ok:false, reason:'wrong-state' };
+if(world.sun < def.cost) return { ok:false, reason:'not-enough-sun', def };
+if(world.sun < def.cost){
 if(world.sunFlash > 0) world.sunFlash -= dt;
 if(world.winT > 1.0){
 if(world.zombies.length > 0){
@@ -2355,7 +2410,6 @@ let hit = false;
 let last = performance.now();
 let lost = false;
 let ng = ctx.createLinearGradient(0,by,0,by+bh);
-let pointer = false;
 let row = randi(world.rng,0,ROWS-1);
 let s = 1;
 let size = 1;
@@ -2379,6 +2433,7 @@ lv.night ? '夜战：天上不掉太阳，靠向日葵与阳光菇。' : '消灭
 m.x += 330 * dt;
 missile(){ this.tone(300, 900, 0.25, 'sawtooth', 0.08); this.noise(0.25, 0.05, 900); },
 mnote(f,dur,type,vol,when){
+mouse:{ x:-99, y:-99 },
 mower(){ this.tone(60, 210, 0.9, 'sawtooth', 0.13); this.noise(0.9, 0.09, 700); },
 musicOn:true, lastBeat:-1,
 newspaper:{ name:'报纸僵尸', hp:200, acc:400, speed:13 },
@@ -2418,7 +2473,7 @@ pea.type = 'fire'; pea.dmg *= 2;
 pea.x += pea.vx * dt;
 peashooter: { name:'豌豆射手', cost:100, hp:300, cool:7.5, desc:'发射豌豆攻击前方僵尸' },
 phase: rand(world.fxRng,0,TAU),
-placePlant(G, s.type, r, c);
+placePlant(world, s.type, row, col);
 plant(){ this.tone(170, 95, 0.13, 'sine', 0.16); this.noise(0.06, 0.05, 600); },
 poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null, dustT:0,
 ports: createPorts(init.ports),
@@ -2433,7 +2488,7 @@ qiuqiu: { name:'球球', cost:150, hp:900, cool:20, desc:'5岁的小男孩，加
 qs.push({ text, answer: ans, options: opts });
 quiz:null,
 r = Math.min(r, w/2, h/2);
-removePlant(G, existing);
+removePlant(world, p);
 removePlant(world, p);
 removePlant(world, p);
 removePlant(world, p);
@@ -2448,16 +2503,39 @@ return Object.assign({}, SILENT, overrides);
 return [t, ww];
 return arr;
 return best;
+return check;
 return false;
 return hover;
+return null;
 return qs;
+return r;
+return row>=0 && row<ROWS && col>=0 && col<COLS;
 return true;
 return true;
 return {
+return {
 return { events:ev, total:n };
+return { ok:false, reason:'cooling' };
+return { ok:false, reason:'no-selection' };
+return { ok:false, reason:'no-sun' };
+return { ok:false, reason:'not-enough-sun' };
+return { ok:false, reason:'team-full' };
+return { ok:true };
+return { ok:true };
+return { ok:true };
+return { ok:true };
+return { ok:true };
+return { ok:true };
+return { ok:true };
+return { ok:true, active:ui.shovel };
+return { ok:true, added:false };
+return { ok:true, added:true };
+return { ok:true, correct };
+return { ok:true, deselected:true };
+return { ok:true, kind:'coffee', def };
+return { ok:true, kind:'plant', def };
+return { ok:true, paused:world.paused };
 return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
-return;
-return;
 return;
 return;
 return;
@@ -2479,6 +2557,7 @@ rr(x, LY-30, 14, 30, 3); ctx.fill(); ctx.stroke();
 rr(x, y, CARD_W, CARD_H, 8); ctx.clip();
 rr(x-2, y-2, CARD_W+4, CARD_H+4, 10); ctx.stroke();
 s.cool = def.cool;
+s.cool = def.cool;
 s.ft += dt / 0.42;
 s.life -= dt;
 s.state = 'fly'; s.ft = 0;
@@ -2493,6 +2572,7 @@ scale = 1 - s.ft*0.4;
 seed,
 sel:-1, shovel:false,
 select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },
+setPointer(UI, p, G.state);
 shirt: slowed ? '#9db4c2' : '#b3ac98',
 shoot(){ this.tone(760, 320, 0.09, 'square', 0.08); },
 shuffle(opts, rng);
@@ -2512,6 +2592,7 @@ speed: def.speed * rand(world.rng,0.92,1.08),
 splat(){ this.noise(0.07, 0.13, 900); this.tone(190, 90, 0.07, 'sine', 0.1); },
 src.connect(f); f.connect(g); g.connect(this.master);
 src.start(t0); src.stop(t0+dur+0.02);
+startLevel(world, li);
 startSun = (startSun === undefined) ? 50 : startSun;
 state:'menu',
 state:'walk', animT: rand(world.fxRng,0,TAU), eatT:0, slowT:0,
@@ -2521,6 +2602,7 @@ sun(){ this.tone(1046, 1046, 0.08, 'sine', 0.09); this.tone(1568, 1568, 0.1, 'si
 sun:50, sunFlash:0,
 sunflower: { name:'向日葵', cost:50, hp:300, cool:7.5, desc:'生产阳光，经济的基石' },
 sunshroom: { name:'阳光菇', cost:25, hp:300, cool:7.5, mushroom:true, desc:'比向日葵便宜，产阳光也只有一半' },
+switch(action.type){
 switch(p.type){
 switch(p.type){
 switch(type){
@@ -2550,6 +2632,17 @@ torch: { name:'火炬树桩', cost:175, hp:300, cool:7.5, desc:'让穿过的豌�
 try{
 type, row,
 type, row, col, hp:def.hp, maxHp:def.hp,
+ui.hotspots.length = 0;
+ui.hotspots.push({ x, y, w, h, id, action });
+ui.hoverCell = null;
+ui.mouse = p;
+ui.sel = -1;
+ui.sel = -1;
+ui.sel = -1; ui.shovel = false;
+ui.sel = slotIndex; ui.shovel = false;
+ui.shovel = !ui.shovel; ui.sel = -1;
+ui.shovel = false;
+ui.shovel = false;
 unlockAll: init.unlockAll === undefined ? false : init.unlockAll,
 v.decals[i].ttl -= dt;
 v.groanTimer -= dt;
@@ -2582,6 +2675,7 @@ world.lastRows = [];
 world.lastRows.unshift(row);
 world.level = li;
 world.mowers = Array.from({length:ROWS}, (_,r)=>({row:r, x:LX-52, state:'idle'}));
+world.paused = !world.paused;
 world.paused = false;
 world.peas.push({ x:p.cx+12, y:py+6, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+12 });
 world.peas.push({ x:p.cx+14, y:py, row:p.row, type:'spore', dmg:20, vx:300, prevX:p.cx+14 });
@@ -2598,6 +2692,17 @@ world.ports.sound('click');
 world.ports.sound('click');
 world.ports.sound('click');
 world.ports.sound('click');
+world.ports.sound('click');
+world.ports.sound('click');
+world.ports.sound('click');
+world.ports.sound('click');
+world.ports.sound('click');
+world.ports.sound('dig');
+world.ports.sound('error');
+world.ports.sound('error');
+world.ports.sound('error');
+world.ports.sound('error');
+world.ports.sound('error');
 world.ports.sound('error');
 world.ports.sound('groan');
 world.ports.sound('hop');
@@ -2607,26 +2712,32 @@ world.ports.sound('paperTear');
 world.ports.sound('plant');
 world.ports.sound('select');
 world.ports.sound('select');
+world.ports.sound('select');
+world.ports.sound('select');
 world.ports.sound('shoot');
 world.ports.sound('sun');
 world.ports.sound('win');
 world.quiz = { idx: 0, energy: 50, questions: makeQuiz(world.rng), feedback: 0, correct: true };
-world.sel = -1; world.shovel = false;
-world.sel = -1; world.shovel = false;
 world.skyTimer -= dt;
 world.skyTimer = 2; world.visual.groanTimer = 4;
 world.skyTimer = rand(world.rng,4.5, 6.5);
 world.slots = [];
 world.slots = world.slots.map(s=>({type:s.type, cool:0}));
+world.slots.push({ type, cool:0 });
+world.slots.splice(idx, 1);
+world.slots.splice(slotIndex, 1);
 world.state = 'lost';
 world.state = 'play';
 world.state = 'quiz';
 world.state = 'select';
 world.state = 'won';
 world.sun -= def.cost;
+world.sun -= def.cost;
 world.sun = Math.min(9990, world.sun + s.value);
 world.sun = startSun; world.sunFlash = 0;
 world.sunFlash = 0.35;
+world.sunFlash = 0.5;
+world.sunFlash = 0.5;
 world.suns.push({ x, y, ty, value: value || 50, life:10, state:'fall', t:0, fromSky, sx:x, ft:0 });
 world.suns.splice(i,1);
 world.t += dt;
@@ -2675,12 +2786,13 @@ z.x = Math.max(z.x, food.cx + 40);
 z.x = lerp(z.fromX, z.toX, easeOut(z.vt));
 z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { disabled: !G.slots.length, size:19 });
-{ id:'mute', label: SFX.musicOn ? '音乐开' : '音乐关', cb:()=>{ SFX.musicOn = !SFX.musicOn; SFX.click(); } },
-{ id:'pause', label: G.paused ? '继续' : '暂停', cb:()=>{ G.paused = !G.paused; SFX.click(); } },
+{ id:'mute', label: SFX.musicOn ? '音乐开' : '音乐关', action:{ type:'music' } },
+{ id:'pause', label: G.paused ? '继续' : '暂停', action:{ type:'pause' } },
 { name:'第 1 关 · 前院草坪', count:20, slots:6, types:[['normal',8],['cone',2]] },
 { name:'第 2 关 · 来者不善', count:32, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
 { name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
+{ type:'startQuiz' },
 }
 }
 }
@@ -2969,13 +3081,35 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 }
 }
 }
-} else SFX.error();
-} else if(G.sel >= 0){
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+} else if(UI.sel >= 0){
 } else if(acc==='bucket'){
 } else if(acc==='flag'){
 } else if(acc==='newspaper'){
 } else if(acc==='vault'){
-} else if(e.key==='Escape'){ G.sel=-1; G.shovel=false; }
+} else if(check.reason === 'cooling' || check.reason === 'occupied' || check.reason === 'invalid-target'){
+} else if(e.key==='Escape'){ clearSelection(UI); }
 } else if(hover && afford){
 } else if(opts.red){
 } else if(p.type==='puff'){
@@ -3035,5 +3169,5 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 };
 };
 };
-}; })() });
+};
 }catch(e){ return false; }

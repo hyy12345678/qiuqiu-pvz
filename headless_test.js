@@ -318,23 +318,23 @@ startLevel(G, 0);
 G.slots = [{type:'puff',cool:0},{type:'sunshroom',cool:0},{type:'coffee',cool:0}];
 beginPlay(G);
 G.sun = 9999; G.t = 1;
-G.sel = 0; press(cellCX(4), cellFY(2) - 40);
+UI.sel = 0; press(cellCX(4), cellFY(2) - 40);
 const puffDay = G.grid[2][4];
 if(!puffDay || puffDay.type !== 'puff') throw new Error('I1: 白天没能种下小喷菇');
 if(!puffDay.asleep) throw new Error('I2: 白天种下的蘑菇应当打盹');
 if(PLANTS.puff.cost !== 0) throw new Error('I2b: 小喷菇应当免费');
 // 点空格子：不生效、不消耗、不取消选卡
 const cf = G.slots[2];
-G.sel = 2; press(cellCX(1), cellFY(1) - 40);
+UI.sel = 2; press(cellCX(1), cellFY(1) - 40);
 if(cf.cool > 0) throw new Error('I3: 点错目标的咖啡豆不该进入冷却');
-if(G.sel !== 2) throw new Error('I4: 用错的咖啡豆不该取消选卡');
+if(UI.sel !== 2) throw new Error('I4: 用错的咖啡豆不该取消选卡');
 // 点对打盹的蘑菇：唤醒 + 进冷却 + 取消选卡
-G.sel = 2; press(cellCX(4), cellFY(2) - 40);
+UI.sel = 2; press(cellCX(4), cellFY(2) - 40);
 if(puffDay.asleep) throw new Error('I5: 咖啡豆没能唤醒蘑菇');
 if(cf.cool <= 0) throw new Error('I6: 成功使用后应进入冷却');
-if(G.sel !== -1) throw new Error('I7: 用过的咖啡豆应取消选卡');
+if(UI.sel !== -1) throw new Error('I7: 用过的咖啡豆应取消选卡');
 // 阳光菇产量减半
-G.sun = 9999; G.sel = 1; press(cellCX(6), cellFY(3) - 40);
+G.sun = 9999; UI.sel = 1; press(cellCX(6), cellFY(3) - 40);
 const shroom = G.grid[3][6];
 if(!shroom || shroom.type !== 'sunshroom') throw new Error('I8: 没能种下阳光菇');
 applyCoffee(G, shroom);
@@ -365,7 +365,7 @@ pump(0.2);
 startLevel(G, 3);
 G.slots = [{type:'puff',cool:0}];
 beginPlay(G);
-G.sun = 9999; G.t = 1; G.sel = 0;
+G.sun = 9999; G.t = 1; UI.sel = 0;
 press(cellCX(4), cellFY(2) - 40);
 if(G.grid[2][4].asleep) throw new Error('I11: 夜里种下的蘑菇不该打盹');
 

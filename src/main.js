@@ -12,9 +12,11 @@ import { DRAW_SEED_XOR, mulberry32, randomSeed } from './core/rng.js';
 import { PLANTS, PLANT_ORDER } from './core/data/plants.js';
 import { LEVELS } from './core/data/levels.js';
 import { SFX } from './audio/sfx.js';
-import { createWorld, startLevel, startQuiz, answerQuiz, updateQuiz, toggleUnlockAll, isNight } from './core/world.js';
-import { cellCX, cellFY, placePlant, removePlant, applyCoffee } from './core/entities.js';
-import { addLeafBurst } from './core/particles.js';
+import { createWorld, startQuiz, answerQuiz, updateQuiz, toggleUnlockAll, isNight } from './core/world.js';
+import { cellCX, cellFY } from './core/entities.js';
+import { inspectUseCard, pickSlot, toggleShovel, pressCell, collectSun, chooseLevel, togglePause, removeSlot, pickTeamPlant } from './core/actions.js';
+import { createUI, setPointer, clearSelection } from './ui/state.js';
+import { addHotspot, hitHotspot, clearHotspots } from './ui/hotspots.js';
 import { updatePlay } from './core/sim.js';
 import { loadUnlocked, loadUnlockAll, saveUnlocked, saveUnlockAll } from './platform/persist.js';
 
@@ -28,6 +30,8 @@ const ports = {
   saveUnlockAll: on => saveUnlockAll(on),
 };
 const G = createWorld({ seed: SEED, ports, unlocked: loadUnlocked(), unlockAll: loadUnlockAll() });
+// R3：界面状态与战斗世界分开；热点只保存动作描述，由 dispatch 执行。
+const UI = createUI();
 const drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
 
 
@@ -1618,9 +1622,9 @@ function drawSeedBank(){
     const x = CARD_X0 + i*(CARD_W+CARD_GAP);
     const y = BANK_Y + 2;
     const afford = G.sun >= def.cost && s.cool <= 0;
-    const selected = G.sel === i;
-    const hover = G.mouse.x>=x && G.mouse.x<=x+CARD_W && G.mouse.y>=y && G.mouse.y<=y+CARD_H;
-    G.hotspots.push({ x, y:y-4, w:CARD_W, h:CARD_H+4, id:'card'+i, cb:(()=>{ const ii=i; return ()=>clickCard(ii); })() });
+    const selected = UI.sel === i;
+    const hover = UI.mouse.x>=x && UI.mouse.x<=x+CARD_W && UI.mouse.y>=y && UI.mouse.y<=y+CARD_H;
+    addHotspot(UI, x, y-4, CARD_W, CARD_H+4, 'card'+i, { type:'pickSlot', index:i });
     ctx.save();
     if(selected) ctx.translate(0,-4);
     ctx.fillStyle = 'rgba(30,18,6,0.35)';
@@ -1659,26 +1663,15 @@ function drawSeedBank(){
   }
 
   const sx = CARD_X0 + 8*(CARD_W+CARD_GAP) + 8, sy = BANK_Y+8;
-  const active = G.shovel;
-  const hoverS = G.mouse.x>=sx && G.mouse.x<=sx+64 && G.mouse.y>=sy && G.mouse.y<=sy+72;
-  G.hotspots.push({ x:sx, y:sy, w:64, h:72, id:'shovel', cb:()=>{ G.shovel=!G.shovel; G.sel=-1; SFX.click(); } });
+  const active = UI.shovel;
+  const hoverS = UI.mouse.x>=sx && UI.mouse.x<=sx+64 && UI.mouse.y>=sy && UI.mouse.y<=sy+72;
+  addHotspot(UI, sx, sy, 64, 72, 'shovel', { type:'shovel' });
   let g2 = ctx.createLinearGradient(0,sy,0,sy+72);
   g2.addColorStop(0, active ? '#efd28a' : '#b8946a'); g2.addColorStop(1, active ? '#c8a24e' : '#8a6b42');
   ctx.beginPath(); rr(sx, sy, 64, 72, 8);
   O(g2, active ? '#ffe86e' : '#5f451f', active?3:2.2);
   drawShovelIcon(sx+32, sy+34, hoverS||active ? 1.08 : 1);
   drawText('铲子', sx+32, sy+62, 11, '#42300f', null, 0, 'center', '700');
-}
-
-function clickCard(i){
-  if(G.state!=='play' || G.paused) return;
-  const s = G.slots[i];
-  const def = PLANTS[s.type];
-  if(G.sel === i){ G.sel = -1; SFX.click(); return; }
-  if(s.cool > 0){ SFX.error(); return; }
-  if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
-  G.sel = i; G.shovel = false;
-  SFX.select();
 }
 
 function drawSunIcon(x,y,s){
@@ -1748,16 +1741,16 @@ function drawProgressBar(){
 
 function drawTopRightButtons(){
   const btns = [
-    { id:'pause', label: G.paused ? '继续' : '暂停', cb:()=>{ G.paused = !G.paused; SFX.click(); } },
-    { id:'mute', label: SFX.musicOn ? '音乐开' : '音乐关', cb:()=>{ SFX.musicOn = !SFX.musicOn; SFX.click(); } },
+    { id:'pause', label: G.paused ? '继续' : '暂停', action:{ type:'pause' } },
+    { id:'mute', label: SFX.musicOn ? '音乐开' : '音乐关', action:{ type:'music' } },
   ];
   let x = W - 12;
   for(const b of btns){
     const w = 74;
     x -= w + 8;
     const y = 12, h = 30;
-    const hover = G.mouse.x>=x && G.mouse.x<=x+w && G.mouse.y>=y && G.mouse.y<=y+h;
-    G.hotspots.push({ x, y, w, h, id:b.id, cb:b.cb });
+    const hover = UI.mouse.x>=x && UI.mouse.x<=x+w && UI.mouse.y>=y && UI.mouse.y<=y+h;
+    addHotspot(UI, x, y, w, h, b.id, b.action);
     let g = ctx.createLinearGradient(0,y,0,y+h);
     g.addColorStop(0, hover ? '#9a6b38' : '#7a4c22'); g.addColorStop(1, hover ? '#7a4c22' : '#5f3a18');
     ctx.beginPath(); rr(x, y, w, h, 8);
@@ -1817,20 +1810,19 @@ function renderPlay(){
   for(const m of G.mowers) drawMower(m);
 
   // 悬停高亮 + 幽灵植物
-  const hc = G.hoverCell;
+  const hc = UI.hoverCell;
   if(hc && G.state==='play' && !G.paused){
     const x = LX + hc.col*CW, y = LY + hc.row*CH;
-    if(G.shovel){
+    if(UI.shovel){
       ctx.fillStyle = 'rgba(220,90,45,0.3)';
       ctx.fillRect(x, y, CW, CH);
       ctx.strokeStyle = 'rgba(220,90,45,0.85)'; ctx.lineWidth = 2.5;
       ctx.strokeRect(x+2, y+2, CW-4, CH-4);
-    } else if(G.sel >= 0){
-      const selType = G.slots[G.sel].type;
-      const target = G.grid[hc.row][hc.col];
+    } else if(UI.sel >= 0){
+      const selType = G.slots[UI.sel].type;
       // 咖啡豆反过来：只有「睡着的蘑菇」是合法目标，空格子反而不行
       const isCoffee = selType === 'coffee';
-      const ok = isCoffee ? !!(target && target.asleep) : !target;
+      const ok = inspectUseCard(G, UI.sel, hc.row, hc.col).ok;
       ctx.fillStyle = ok ? 'rgba(255,255,220,0.32)' : 'rgba(200,40,30,0.32)';
       ctx.fillRect(x, y, CW, CH);
       ctx.strokeStyle = ok ? 'rgba(255,250,200,0.9)' : 'rgba(230,60,40,0.9)';
@@ -1900,10 +1892,10 @@ function renderPlay(){
     ctx.restore();
   }
 
-  if(G.shovel && G.mouse.x >= 0){
+  if(UI.shovel && UI.mouse.x >= 0){
     ctx.save();
     ctx.globalAlpha = 0.9;
-    drawShovelIcon(G.mouse.x, G.mouse.y - 10, 1.1);
+    drawShovelIcon(UI.mouse.x, UI.mouse.y - 10, 1.1);
     ctx.restore();
   }
 
@@ -1921,10 +1913,10 @@ function renderPlay(){
   }
 }
 
-function drawButton(x, y, w, h, label, id, cb, opts){
+function drawButton(x, y, w, h, label, id, action, opts){
   opts = opts || {};
-  const hover = G.mouse.x>=x && G.mouse.x<=x+w && G.mouse.y>=y && G.mouse.y<=y+h;
-  G.hotspots.push({ x, y, w, h, id, cb });
+  const hover = UI.mouse.x>=x && UI.mouse.x<=x+w && UI.mouse.y>=y && UI.mouse.y<=y+h;
+  addHotspot(UI, x, y, w, h, id, action);
   const disabled = opts.disabled;
   let g = ctx.createLinearGradient(0,y,0,y+h);
   if(disabled){
@@ -2091,8 +2083,8 @@ function renderMenu(){
     const lv = LEVELS[i];
     const locked = !G.unlockAll && i+1 > G.unlocked;
     const x = x0 + i*(cardW+gap), y = 258;
-    const hover = !locked && G.mouse.x>=x && G.mouse.x<=x+cardW && G.mouse.y>=y && G.mouse.y<=y+cardH;
-    G.hotspots.push({ x, y, w:cardW, h:cardH, id:'lv'+i, cb: locked ? ()=>{} : (()=>{ const ii=i; return ()=>startLevel(G, ii); })() });
+    const hover = !locked && UI.mouse.x>=x && UI.mouse.x<=x+cardW && UI.mouse.y>=y && UI.mouse.y<=y+cardH;
+    addHotspot(UI, x, y, cardW, cardH, 'lv'+i, { type:'level', index:i });
     ctx.save();
     if(hover) ctx.translate(0,-4);
     ctx.fillStyle = 'rgba(20,35,10,0.35)';
@@ -2137,9 +2129,9 @@ function renderMenu(){
     ctx.restore();
   }
 
-  drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});
-  drawButton(W/2-90, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', ()=>{ SFX.ensure(); SFX.musicOn = !SFX.musicOn; SFX.click(); }, {});
-  drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(G), { size: 18 });
+  drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', { type:'nav', state:'help' }, {});
+  drawButton(W/2-90, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', { type:'music', ensure:true }, {});
+  drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', { type:'unlockAll' }, { size: 18 });
   drawText('同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐', W/2, H-20, 12.5, 'rgba(30,50,18,0.75)', null, 0, 'center', '600');
 }
 
@@ -2179,7 +2171,7 @@ function renderHelp(){
   for(let i=0;i<lines.length;i++){
     drawText(lines[i], px+42, py+94+i*24, 15.5, '#3c2a10', null, 0, 'left', '600');
   }
-  drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
+  drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', { type:'nav', state:'menu' }, {});
 }
 
 function renderSelect(){
@@ -2217,7 +2209,7 @@ function renderSelect(){
     O(bg, '#20140a', 2.5);
     const s = G.slots[i];
     if(s){
-      G.hotspots.push({ x, y, w:slotW, h:slotH, id:'slot'+i, cb:(()=>{ const ii=i; return ()=>{ G.slots.splice(ii,1); if(G.sel===ii)G.sel=-1; else if(G.sel>ii)G.sel--; SFX.click(); }; })() });
+      addHotspot(UI, x, y, slotW, slotH, 'slot'+i, { type:'slot', index:i });
       ctx.fillStyle = 'rgba(60,40,15,0.3)';
       ctx.beginPath(); ctx.ellipse(x+slotW/2, y+slotH-26, 18, 4, 0, 0, TAU); ctx.fill();
       drawPlantIcon(s.type, x+slotW/2, y+slotH-26, 0.6);
@@ -2235,13 +2227,8 @@ function renderSelect(){
     const def = PLANTS[type];
     const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+8);
     const inTeam = G.slots.some(s=>s.type===type);
-    const full = G.slots.length >= lv.slots;
-    const hover = G.mouse.x>=x && G.mouse.x<=x+cw && G.mouse.y>=y && G.mouse.y<=y+ch;
-    G.hotspots.push({ x, y, w:cw, h:ch, id:'pick'+type, cb:(()=>{ const tp=type, inT=inTeam, fu=full; return ()=>{
-      if(inT){ const idx = G.slots.findIndex(s=>s.type===tp); G.slots.splice(idx,1); SFX.click(); }
-      else if(!fu){ G.slots.push({type:tp, cool:0}); SFX.select(); }
-      else SFX.error();
-    }; })() });
+    const hover = UI.mouse.x>=x && UI.mouse.x<=x+cw && UI.mouse.y>=y && UI.mouse.y<=y+ch;
+    addHotspot(UI, x, y, cw, ch, 'pick'+type, { type:'plantPick', plant:type });
     ctx.save();
     if(hover && !inTeam) ctx.translate(0,-3);
     ctx.fillStyle = 'rgba(20,12,4,0.35)';
@@ -2294,9 +2281,9 @@ function renderSelect(){
     drawText(tips[i2], zx+22, zy+88+i2*20, 12.5, '#d8c090', null, 0, 'left', '600');
   }
 
-  drawButton(88, H-88, 150, 46, '返回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
+  drawButton(88, H-88, 150, 46, '返回', 'back', { type:'nav', state:'menu' }, {});
   drawButton(W-286, H-88, 198, 46, G.slots.length ? '开 始 游 戏' : '请先选择植物', 'go',
-    ()=>{ if(G.slots.length) startQuiz(G); else SFX.error(); },
+    { type:'startQuiz' },
     { disabled: !G.slots.length, size:19 });
 }
 
@@ -2323,14 +2310,14 @@ function renderQuiz(){
   for(let i=0;i<4;i++){
     const bx = (i%2===0)?bx0:bx1;
     const by = (i<2)?by0:by1;
-    const hover = G.mouse.x>=bx && G.mouse.x<=bx+bw && G.mouse.y>=by && G.mouse.y<=by+bh;
+    const hover = UI.mouse.x>=bx && UI.mouse.x<=bx+bw && UI.mouse.y>=by && UI.mouse.y<=by+bh;
     let bg = ctx.createLinearGradient(0,by,0,by+bh);
     bg.addColorStop(0, hover ? '#96c862' : '#7aa848'); bg.addColorStop(1, hover ? '#649838' : '#4e7a2a');
     ctx.fillStyle='rgba(15,25,8,0.35)'; ctx.beginPath(); rr(bx+2, by+3, bw, bh, 10); ctx.fill();
     ctx.beginPath(); rr(bx, by, bw, bh, 10); O(bg, '#2e4a14', 3);
     ctx.fillStyle='rgba(255,255,255,0.22)'; ctx.fillRect(bx+5, by+3, bw-10, 6);
     drawText(String(cur.options[i]), bx+bw/2, by+bh/2+1, 24, '#fffbe8', '#2e3a10', 4, 'center', '800');
-    G.hotspots.push({ x:bx, y:by, w:bw, h:bh, id:'ans'+i, cb:(()=>{ const a=cur.options[i]; return ()=>answerQuiz(G, a); })() });
+    addHotspot(UI, bx, by, bw, bh, 'ans'+i, { type:'answer', value:cur.options[i] });
   }
   // 反馈
   if(q.feedback > 0){
@@ -2376,20 +2363,20 @@ function renderEndOverlay(){
     if(!lastLv) drawText('新的关卡已解锁！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
     else drawText('你通关了全部 ' + LEVELS.length + ' 个关卡，草坪安全了！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
     const leftLabel = lastLv ? '再玩一次' : '下一关';
-    const leftCb = lastLv ? ()=>startLevel(G, G.level) : ()=>startLevel(G, G.level+1);
-    drawButton(W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftCb, {});
-    drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
+    const leftAction = { type:'level', index: lastLv ? G.level : G.level+1 };
+    drawButton(W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftAction, {});
+    drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', { type:'nav', state:'menu' }, {});
   } else {
     drawText('僵尸吃掉了你的脑子！', W/2, py+66, 37, '#e8554a', '#3a0a04', 8, 'center', '900');
     drawText('消灭僵尸：' + G.killed + ' / ' + G.total, W/2, py+130, 19, '#d8b8c0', null, 0, 'center', '700');
-    drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', ()=>startLevel(G, G.level), { red:true });
-    drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
+    drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', { type:'level', index:G.level }, { red:true });
+    drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', { type:'nav', state:'menu' }, {});
   }
 }
 
 // ---------------- 主渲染 ----------------
 function render(){
-  G.hotspots.length = 0;
+  clearHotspots(UI);
   ctx.save();
   if(G.visual.shake > 0 && G.state==='play'){
     ctx.translate(rand(drawRng,-1,1)*G.visual.shake*14, rand(drawRng,-1,1)*G.visual.shake*14);
@@ -2417,70 +2404,46 @@ function toCanvas(e){
   return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
 }
 
+// ---------------- 动作调度 ----------------
+// 热点只给动作描述；导航 / 静音等装配级行为在这里处理，战斗动作转 core/actions.js。
+function dispatch(action){
+  switch(action.type){
+    case 'nav': G.state = action.state; SFX.click(); return;
+    case 'level': chooseLevel(G, UI, action.index); return;
+    case 'unlockAll': toggleUnlockAll(G); return;
+    case 'pickSlot': pickSlot(G, UI, action.index); return;
+    case 'shovel': toggleShovel(G, UI); return;
+    case 'slot': removeSlot(G, UI, action.index); return;
+    case 'plantPick': pickTeamPlant(G, UI, action.plant); return;
+    case 'startQuiz':
+      if(G.slots.length) startQuiz(G); else SFX.error();
+      return;
+    case 'answer': answerQuiz(G, action.value); return;
+    case 'pause': togglePause(G); return;
+    case 'music':
+      if(action.ensure) SFX.ensure();
+      SFX.musicOn = !SFX.musicOn;
+      SFX.click();
+      return;
+  }
+}
+
 // 统一输入层：鼠标与触屏共用
 function handleMove(p){
-  G.mouse = p;
-  G.hoverCell = null;
-  if(G.state==='play'){
-    const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
-    if(c>=0 && c<COLS && r>=0 && r<ROWS) G.hoverCell = { row:r, col:c };
-  }
-  let pointer = false;
-  for(const h of G.hotspots){
-    if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){ pointer = true; break; }
-  }
-  cv.style.cursor = pointer ? 'pointer' : ((G.shovel || G.sel>=0) ? 'crosshair' : 'default');
+  setPointer(UI, p, G.state);
+  const pointer = !!hitHotspot(UI, p);
+  cv.style.cursor = pointer ? 'pointer' : ((UI.shovel || UI.sel>=0) ? 'crosshair' : 'default');
 }
 
 function handlePress(p){
   SFX.ensure(); SFX.resume();
-  G.mouse = p;
-  for(let i=G.hotspots.length-1;i>=0;i--){
-    const h = G.hotspots[i];
-    if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){
-      h.cb();
-      return;
-    }
-  }
+  UI.mouse = p;
+  const h = hitHotspot(UI, p);
+  if(h){ dispatch(h.action); return; }
   if(G.state !== 'play' || G.paused) return;
-  for(let i=G.suns.length-1;i>=0;i--){
-    const s = G.suns[i];
-    if(s.state==='fly') continue;
-    const dx = p.x - s.x, dy = p.y - s.y;
-    if(dx*dx + dy*dy < 36*36){
-      s.state = 'fly'; s.ft = 0;
-      return;
-    }
-  }
+  if(collectSun(G, p.x, p.y).ok) return;
   const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
-  if(c>=0 && c<COLS && r>=0 && r<ROWS){
-    const existing = G.grid[r][c];
-    if(G.shovel){
-      if(existing){
-        addLeafBurst(G, existing.cx, existing.fy-30);
-        removePlant(G, existing);
-        SFX.dig();
-        G.shovel = false;
-      }
-      return;
-    }
-    if(G.sel >= 0){
-      const s = G.slots[G.sel];
-      const def = PLANTS[s.type];
-      if(s.cool > 0){ SFX.error(); return; }
-      if(s.type === 'coffee'){
-        if(applyCoffee(G, existing)){
-          G.sun -= def.cost; s.cool = def.cool; G.sel = -1;
-        } else SFX.error();
-        return;
-      }
-      if(existing){ SFX.error(); return; }
-      if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
-      placePlant(G, s.type, r, c);
-      s.cool = def.cool;
-      G.sel = -1;
-    }
-  }
+  if(c>=0 && c<COLS && r>=0 && r<ROWS) pressCell(G, UI, r, c);
 }
 
 // ---- 鼠标输入 ----
@@ -2507,16 +2470,16 @@ document.addEventListener('gesturestart', e=> e.preventDefault());
 
 cv.addEventListener('contextmenu', e=>{
   e.preventDefault();
-  G.sel = -1; G.shovel = false;
+  clearSelection(UI);
 });
 
 window.addEventListener('keydown', e=>{
   if(G.state==='play'){
     if(e.key >= '1' && e.key <= '8'){
       const i = parseInt(e.key)-1;
-      if(i < G.slots.length && !G.paused) clickCard(i);
-    } else if(e.key==='Escape'){ G.sel=-1; G.shovel=false; }
-    else if(e.key==='p' || e.key==='P'){ G.paused = !G.paused; SFX.click(); }
+      if(i < G.slots.length && !G.paused) pickSlot(G, UI, i);
+    } else if(e.key==='Escape'){ clearSelection(UI); }
+    else if(e.key==='p' || e.key==='P'){ togglePause(G); }
     else if(e.key==='m' || e.key==='M'){ SFX.musicOn = !SFX.musicOn; }
   }
 });

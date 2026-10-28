@@ -31,7 +31,6 @@ test('隔离0 工厂返回的初始容器互不共享（不依赖 beginPlay 重�
     assert.notStrictEqual(a.visual[key], b.visual[key], `初始 visual.${key} 不应共享同一个数组`);
   }
   assert.notStrictEqual(a.visual, b.visual, 'visual 顶层不应共享');
-  assert.notStrictEqual(a.mouse, b.mouse, '初始鼠标状态不应共享');
   assert.strictEqual(a.quiz, null);
   assert.strictEqual(b.quiz, null);
 });
@@ -49,7 +48,6 @@ test('隔离1 两个世界不共享任何容器或行数组', () => {
   for (let r = 0; r < a.grid.length; r++){
     assert.notStrictEqual(a.grid[r], b.grid[r], `grid 第 ${r} 行不应共享`);
   }
-  assert.notStrictEqual(a.mouse, b.mouse, '鼠标状态不应共享');
   assert.strictEqual(a.quiz, null);
   assert.strictEqual(b.quiz, null);
 });

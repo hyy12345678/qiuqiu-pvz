@@ -40,21 +40,25 @@ export function updatePlay(dt){
     if(p.hp <= 0){ removePlant(p); addLeafBurst(p.cx, p.fy-30); continue; }
     p.recoil = Math.max(0, p.recoil - dt*(p.type==='qiuqiu' ? 4 : 1.4));
     p.flash = Math.max(0, (p.flash||0) - dt);
+    if(p.asleep) continue;   // 白天没被咖啡豆唤醒的蘑菇：占着格子、能被啃，但什么都不干
     switch(p.type){
-      case 'sunflower':
+      case 'sunflower': case 'sunshroom':
         if(t > 0){
           p.sunT -= dt;
           if(p.sunT <= 0){
             p.sunT = rand(8, 10);
-            spawnSun(p.cx + rand(-14,14), p.fy-88, p.fy-30, false);
+            // 阳光菇的代价：产量只有向日葵的一半
+            const small = p.type === 'sunshroom';
+            spawnSun(p.cx + rand(-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
           }
         }
         break;
-      case 'peashooter': case 'snowpea': case 'repeater': case 'qiuqiu': {
+      case 'puff': case 'peashooter': case 'snowpea': case 'repeater': case 'qiuqiu': {
         p.fireT -= dt;
+        const reach = p.type==='puff' ? p.cx + CW*2 : W + 50;   // 小喷菇免费换来的短射程
         let has = false;
         for(const z of G.zombies){
-          if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < W+50){ has = true; break; }
+          if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < reach){ has = true; break; }
         }
         if(has && p.fireT <= 0 && t > 0){
           if(p.type==='qiuqiu'){
@@ -66,6 +70,11 @@ export function updatePlay(dt){
             const vx = isMissile ? 300 : 520;
             G.peas.push({ x:p.cx+52, y:py, row:p.row, type, dmg, vx, prevX:p.cx+52 });
             if(isMissile) SFX.missile(); else SFX.gatling();
+          } else if(p.type==='puff'){
+            p.fireT = 1.5; p.recoil = 1; p.flash = 0.09;
+            const py = p.fy - 28;
+            G.peas.push({ x:p.cx+14, y:py, row:p.row, type:'spore', dmg:20, vx:300, prevX:p.cx+14 });
+            SFX.shoot();
           } else {
             p.fireT = 1.4; p.recoil = 1; p.flash = 0.09;
             const py = p.fy - 52;

@@ -20,7 +20,12 @@ export function addPaperShreds(x, y){
     life:rand(0.3,0.6), max:0.6, size:rand(2,3.5), color:'#5a5a52' });
 }
 export function addPeaSplat(x,y,type){
-  const cols = type==='snow' ? ['#bfe9ff','#8fd0f2'] : (type==='fire' ? ['#ff9a2e','#ffd23e'] : (type==='ball' ? ['#e8483c','#ffd23e'] : (type==='bullet' ? ['#e8edf2','#8d949c'] : ['#8fd44a','#b8e88a'])));
+  const cols = type==='snow' ? ['#bfe9ff','#8fd0f2']
+    : type==='fire' ? ['#ff9a2e','#ffd23e']
+    : type==='ball' ? ['#e8483c','#ffd23e']
+    : type==='bullet' ? ['#e8edf2','#8d949c']
+    : type==='spore' ? ['#dcc0f0','#b478e0']
+    : ['#8fd44a','#b8e88a'];
   for(let k=0;k<9;k++) G.parts.push({ x, y, vx:rand(-100,100), vy:rand(-100,45), g:250, life:rand(0.2,0.45), max:0.45, size:rand(2,5.5), color:cols[k%2] });
 }
 

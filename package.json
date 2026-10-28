@@ -8,11 +8,13 @@
     "build:min": "node scripts/build.js --minify",
     "dev": "node scripts/dev.js",
     "parity": "node scripts/check-parity.js",
+    "parity:legacy": "node scripts/check-parity.js --legacy",
     "parity:dist": "node scripts/check-parity.js --dist",
+    "parity:rebase": "node scripts/check-parity.js --rebase",
     "test": "node --test tests/*.test.mjs",
     "test:smoke": "node headless_test.js src/main.js",
     "test:smoke:legacy": "node headless_test.js",
-    "verify": "npm run test:smoke:legacy && npm run parity && npm run test && npm run build && npm run parity:dist && npm run test:smoke"
+    "verify": "npm run parity && npm run test && npm run build && npm run parity:dist && npm run test:smoke"
   },
   "engines": {
     "node": ">=20"

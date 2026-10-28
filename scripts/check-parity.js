@@ -1,15 +1,25 @@
-// 重构护栏：对比重构基线（legacy）与当前源码/产物，证明某一阶段只做了代码移动。
+// 重构护栏：证明「搬家阶段」只动了代码位置，没动行为。
 //
-// 两种模式：
-//   默认（src 模式）   逐行规范化后比较 —— 严格，适用于 source-to-source 搬迁
+// 三种模式：
+//   默认（快照模式）   当前 src 的规范化行 必须等于 scripts/parity-baseline.txt —— 零容忍。
+//                      基线在 P3c 落定（原 legacy 单文件已完成搬家 + 两处已审改动的行为变化），
+//                      此后每次改动都会立刻显形；确认过要改行为时用 --rebase 重新盖章。
+//   --legacy（溯源模式）与 legacy/ 手写单文件逐行比较。legacy 由 tag pre-refactor-baseline
+//                      固定，是「这个重构最初从哪儿搬来」的证据；改动它没有意义，所以差异
+//                      靠下面的授权清单逐行豁免，清单之外一律 FAIL。
+//                      此模式冻结在 P3c：它证明的是「搬家没改行为」，功能开发开始后就失效了
+//                      （新增植物会带来上百行无法逐条列举的合法新增），所以不在 verify 链里。
 //   --dist（字节模式）  产物内联脚本必须等于「当前 src 重新打一遍包」的结果，逐字节比较。
 //                      不与 legacy 直接比：esbuild 会 const→var、十六进制→十进制、同名符号消歧重命名
 //                      （g→g2），拿未打包的 legacy 比打包后的 dist 全是假阳性。
-//                      链条：legacy ≡ src（行级） 且 bundle(src) ≡ 产物（字节级） ⇒ 产物 ≡ legacy
+//
+// 链条：bundle(src) ≡ 产物（字节） 且 src ≡ 快照（行） ⇒ 产物 ≡ 上次盖章的 src
 //
 // 用法：
-//   node scripts/check-parity.js              # legacy vs src/**
-//   node scripts/check-parity.js --dist       # esbuild(legacy) vs dist 产物内联脚本
+//   node scripts/check-parity.js              # src vs 快照
+//   node scripts/check-parity.js --rebase     # 用当前 src 重写快照（确认过行为变化后才用）
+//   node scripts/check-parity.js --legacy     # legacy vs src（授权清单模式）
+//   node scripts/check-parity.js --dist       # esbuild(src) vs dist 产物内联脚本
 //   node scripts/check-parity.js --verbose    # 打印全部差异
 'use strict';
 const fs = require('fs');
@@ -22,6 +32,7 @@ const ROOT = path.join(__dirname, '..');
 const BASELINE = path.join(ROOT, 'legacy', '植物大战僵尸-网页版.html');
 const DIST = path.join(ROOT, 'dist', '植物大战僵尸-网页版.html');
 const SRC_DIR = path.join(ROOT, 'src');
+const SNAPSHOT = path.join(__dirname, 'parity-baseline.txt');
 const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'legacy', 'scripts', 'tests', 'docs']);
 
 function extractScript(html) {
@@ -92,6 +103,31 @@ const AUTHORIZED_SRC_ONLY = [
   'if(progress > 0.55) size += (rng() < 0.35 ? 1 : 0);',
   "const type = spawned < 3 ? 'normal' : pickType(lv, Math.max(0, progress-0.2), rng);",
   "ev.push({ t: finalT + k*0.4, type: k===0 ? 'flag' : pickType(lv, 1, rng) });",
+];
+
+// P3c 授权差异：主页「全部关卡」开关 + 修复严格模式下未声明的 `g`（两处都是有意为之的行为变化）。
+// 注意 '}' 与 'SFX.click();' 这类通用行按多集合计数豁免，理论上会吞掉一行同名代码；
+// 真正兜住行为漂移的是默认的快照模式（零容忍、不做签名归一化）。
+const P3C_LEGACY_ONLY = [
+  'const locked = i+1 > G.unlocked;',
+  'g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);',
+  "drawButton(W/2-190, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});",
+  "drawButton(W/2+10, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', ()=>{ SFX.ensure(); SFX.musicOn = !SFX.musicOn; SFX.click(); }, {});",
+];
+const P3C_SRC_ONLY = [
+  "function loadUnlockAll(){ try{ return localStorage.getItem('pvzweb_unlockall') === '1'; }catch(e){ return false; } }",
+  "function saveUnlockAll(on){ try{ if(on) localStorage.setItem('pvzweb_unlockall', '1'); else localStorage.removeItem('pvzweb_unlockall'); }catch(e){} }",
+  'unlockAll:loadUnlockAll(),',
+  'function toggleUnlockAll(){',
+  'G.unlockAll = !G.unlockAll;',
+  'saveUnlockAll(G.unlockAll);',
+  'SFX.click();',
+  '}',
+  'const locked = !G.unlockAll && i+1 > G.unlocked;',
+  'const g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);',
+  "drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});",
+  "drawButton(W/2-90, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', ()=>{ SFX.ensure(); SFX.musicOn = !SFX.musicOn; SFX.click(); }, {});",
+  "drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(), { size: 18 });",
 ];
 
 function normalize(src) {
@@ -208,32 +244,57 @@ async function main() {
     return;
   }
 
-  const unit = '行';
-  const base = normalize(extractScript(fs.readFileSync(BASELINE, 'utf8')));
-  const curLabel = 'src/** 源码';
   const files = walkJs(SRC_DIR, []);
   const cur = normalize(files.map(f => fs.readFileSync(f, 'utf8')).join('\n'));
 
-  const { onlyA: a0, onlyB: b0 } = multisetDiff(base, cur);
-  const a = consumeAuthorized(a0, AUTHORIZED_LEGACY_ONLY);
-  const b = consumeAuthorized(b0, AUTHORIZED_SRC_ONLY);
+  if (args.has('--legacy')) {
+    const base = normalize(extractScript(fs.readFileSync(BASELINE, 'utf8')));
+    const { onlyA: a0, onlyB: b0 } = multisetDiff(base, cur);
+    const a = consumeAuthorized(a0, AUTHORIZED_LEGACY_ONLY.concat(P3C_LEGACY_ONLY));
+    const b = consumeAuthorized(b0, AUTHORIZED_SRC_ONLY.concat(P3C_SRC_ONLY));
+    report('parity[legacy]: legacy/植物大战僵尸-网页版.html vs src/**', base.length, cur.length, a, b, verbose);
+    return;
+  }
+
+  // 默认：当前 src 必须与盖章快照逐行相等。快照本身就是 src 的规范化行，所以没有签名归一化，
+  // import/re-export 行也照常参与比较 —— 搬家阶段的任何越界都会显形。
+  const snap = fs.existsSync(SNAPSHOT)
+    ? fs.readFileSync(SNAPSHOT, 'utf8').split('\n').filter(l => l.length > 0)
+    : [];
+  if (args.has('--rebase')) {
+    const { onlyA, onlyB } = multisetDiff(snap, cur);
+    fs.writeFileSync(SNAPSHOT, cur.join('\n') + '\n');
+    console.log('已重新盖章 ' + path.relative(ROOT, SNAPSHOT) + '：' + cur.length + ' 行'
+      + '（本次吸收差异 移除 ' + onlyA.length + ' / 新增 ' + onlyB.length + '）');
+    return;
+  }
+  if (!fs.existsSync(SNAPSHOT)) {
+    console.error('缺少快照 ' + path.relative(ROOT, SNAPSHOT) + '，先跑 node scripts/check-parity.js --rebase');
+    process.exit(1);
+  }
+  const { onlyA, onlyB } = multisetDiff(snap, cur);
+  report('parity[snapshot]: scripts/parity-baseline.txt vs src/**', snap.length, cur.length,
+    { rest: onlyA, used: 0 }, { rest: onlyB, used: 0 }, verbose,
+    '确认过这是想要的改动后：node scripts/check-parity.js --rebase');
+}
+
+function report(title, nBase, nCur, a, b, verbose, hint) {
   const onlyA = a.rest, onlyB = b.rest;
   const authorizedUsed = a.used + b.used;
   const limit = verbose ? onlyA.length + onlyB.length : 20;
-
-  console.log('parity[line]: legacy(' + base.length + ' ' + unit
-    + ') vs ' + curLabel + '(' + cur.length + ' ' + unit + ')');
+  console.log(title + '（基线 ' + nBase + ' 行 / 当前 ' + nCur + ' 行）');
   if (onlyA.length === 0 && onlyB.length === 0) {
-    console.log('PASS —— 无逻辑差异，本阶段仅为代码移动'
-      + (authorizedUsed ? '（已授权 ' + authorizedUsed + ' 行 rng 注入签名变化）' : ''));
+    console.log('PASS —— 与基线逐行一致，无未登记的改动'
+      + (authorizedUsed ? '（已授权 ' + authorizedUsed + ' 行签名/功能变化）' : ''));
     return;
   }
-  console.log('FAIL —— 基线独有 ' + onlyA.length + ' ' + unit + '，当前独有 ' + onlyB.length + ' ' + unit);
+  console.log('FAIL —— 基线独有 ' + onlyA.length + ' 行，当前独有 ' + onlyB.length + ' 行');
   onlyA.slice(0, limit).forEach(l => console.log('  - 丢失: ' + l));
   onlyB.slice(0, limit).forEach(l => console.log('  + 新增: ' + l));
   if (!verbose && (onlyA.length > limit || onlyB.length > limit)) {
     console.log('  （加 --verbose 查看全部 ' + (onlyA.length + onlyB.length) + ' 项差异）');
   }
+  if (hint) console.log('  ' + hint);
   process.exitCode = 1;
 }
 

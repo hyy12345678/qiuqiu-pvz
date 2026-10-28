@@ -5,7 +5,7 @@ import { rand, randi } from './util.js';
 import { PLANTS } from './data/plants.js';
 import { ZTYPES } from './data/zombies.js';
 import { SFX } from '../audio/sfx.js';
-import { G } from './world.js';
+import { G, isNight } from './world.js';
 import { addDirtPuff, addPaperShreds } from './particles.js';
 
 export function cellCX(c){ return LX + c*CW + CW/2; }
@@ -20,11 +20,20 @@ export function placePlant(type, row, col){
     cx: cellCX(col), fy: cellFY(row),
     fireT: rand(0.5,1.3), sunT: rand(6,9), recoil:0, flash:0,
     armed:false, armT:0, fuse: type==='cherry' ? 1.05 : 0,
+    asleep: !!def.mushroom && !isNight(),   // 蘑菇白天种下先打盹，等咖啡豆唤醒
   };
   G.grid[row][col] = p;
   G.plants.push(p);
   SFX.plant();
   addDirtPuff(p.cx, p.fy);
+}
+
+// 咖啡豆：不是种下去的植物，而是把一株正在打盹的蘑菇叫醒。返回 false 表示用错了对象（卡片不消耗）。
+export function applyCoffee(p){
+  if(!p || !p.asleep) return false;
+  p.asleep = false;
+  SFX.select();
+  return true;
 }
 
 export function removePlant(p){
@@ -33,8 +42,8 @@ export function removePlant(p){
   if(i>=0) G.plants.splice(i,1);
 }
 
-export function spawnSun(x,y,ty,fromSky){
-  G.suns.push({ x, y, ty, value:50, life:10, state:'fall', t:0, fromSky, sx:x, ft:0 });
+export function spawnSun(x,y,ty,fromSky,value){
+  G.suns.push({ x, y, ty, value: value || 50, life:10, state:'fall', t:0, fromSky, sx:x, ft:0 });
 }
 
 export function explode(x, row, big){

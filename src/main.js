@@ -12,8 +12,8 @@ import { mulberry32 } from './core/rng.js';
 import { PLANTS, PLANT_ORDER } from './core/data/plants.js';
 import { LEVELS } from './core/data/levels.js';
 import { SFX } from './audio/sfx.js';
-import { G, startLevel, startQuiz, answerQuiz, updateQuiz } from './core/world.js';
-import { cellCX, cellFY, placePlant, removePlant } from './core/entities.js';
+import { G, startLevel, startQuiz, answerQuiz, updateQuiz, toggleUnlockAll, isNight } from './core/world.js';
+import { cellCX, cellFY, placePlant, removePlant, applyCoffee } from './core/entities.js';
 import { addLeafBurst } from './core/particles.js';
 import { updatePlay } from './core/sim.js';
 
@@ -52,7 +52,6 @@ let AT = 0;               // 全局动画时间
 // 粒子辅助
 // ---------------- 预渲染背景 ----------------
 let bgCanvas = null, bgTheme = null;
-function isNight(){ return !!(LEVELS[G.level] && LEVELS[G.level].night); }
 function ensureBG(){
   const theme = isNight() ? 'night' : 'day';
   if(bgCanvas && bgTheme === theme) return;
@@ -678,6 +677,119 @@ function drawTorch(t, ph){
   ctx.globalAlpha = 1;
 }
 
+// ---------------- 绘制：蘑菇与咖啡豆 ----------------
+
+// 蘑菇的脸：醒着睁眼乱瞟，打盹时闭眼撇嘴
+function drawShroomFace(ey, asleep, t, ph){
+  ctx.lineCap = 'round';
+  if(asleep){
+    ctx.strokeStyle = '#3a2a44'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(-5.5, ey-1, 3.6, Math.PI*1.15, Math.PI*1.85); ctx.stroke();
+    ctx.beginPath(); ctx.arc(5.5, ey-1, 3.6, Math.PI*1.15, Math.PI*1.85); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, ey+9, 2.6, Math.PI+0.3, TAU-0.3); ctx.stroke();
+    return;
+  }
+  const blink = Math.sin(t*1.7+ph) > 0.965;
+  for(const ex of [-5.5, 5.5]){
+    ctx.beginPath(); ctx.ellipse(ex, ey, 3.6, blink ? 0.9 : 4.4, 0, 0, TAU);
+    O('#fff', '#3a2a44', 1.5);
+    if(!blink){
+      ctx.fillStyle = '#221822';
+      ctx.beginPath(); ctx.arc(ex+1.2, ey+0.9, 1.8, 0, TAU); ctx.fill();
+    }
+  }
+  ctx.strokeStyle = '#3a2a44'; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.arc(0, ey+8, 3.2, 0.25, Math.PI-0.25); ctx.stroke();
+}
+
+// 打盹中的蘑菇头顶飘着的 Z，提示「需要咖啡豆」
+function drawSleepZzz(t, ph){
+  ctx.save();
+  for(let k=0;k<3;k++){
+    const cyc = (t*0.5 + k*0.34 + ph*0.07) % 1;
+    const a = 1 - cyc;
+    if(a <= 0.05) continue;
+    ctx.globalAlpha = a * 0.95;
+    drawText('z', 17 + cyc*11, -46 - cyc*30, 8 + cyc*7, '#f4f8ff', 'rgba(64,76,120,0.9)', 2.2, 'center', '900');
+  }
+  ctx.restore();
+}
+
+function drawShroomBody(cap, capOut, hi, spots){
+  let g = ctx.createLinearGradient(-8,0,8,-26);
+  g.addColorStop(0,'#f6efdd'); g.addColorStop(1,'#d5c8ab');
+  ctx.beginPath();
+  ctx.moveTo(-7,-1); ctx.quadraticCurveTo(-9.5,-15,-6.5,-25);
+  ctx.lineTo(6.5,-25); ctx.quadraticCurveTo(9.5,-15,7,-1);
+  ctx.quadraticCurveTo(0,3,-7,-1); ctx.closePath();
+  O(g, '#6a5030', 2);
+  g = ctx.createRadialGradient(-6,-40,3, 0,-31,23);
+  g.addColorStop(0, cap[0]); g.addColorStop(0.6, cap[1]); g.addColorStop(1, cap[2]);
+  ctx.beginPath(); ctx.ellipse(0,-31,18,13.5,0,0,TAU);
+  O(g, capOut, 2.4);
+  ctx.fillStyle = hi;
+  ctx.beginPath(); ctx.ellipse(-6,-38,7,3.4,-0.35,0,TAU); ctx.fill();
+  ctx.fillStyle = spots;
+  for(const s of [[8,-36,2.6],[-11.5,-30,2.1],[2.5,-24.5,1.8]]){
+    ctx.beginPath(); ctx.arc(s[0], s[1], s[2], 0, TAU); ctx.fill();
+  }
+}
+
+function drawPuff(t, ph, asleep){
+  ctx.save();
+  ctx.translate(0, Math.sin(t*2.6+ph)*0.9);
+  drawShroomBody(['#c9a2ea','#9459c0','#6b3490'], '#401d5c', 'rgba(255,255,255,0.22)', 'rgba(232,208,255,0.5)');
+  drawShroomFace(-13, asleep, t, ph);
+  ctx.restore();
+}
+
+function drawSunshroom(t, ph, asleep){
+  const pulse = asleep ? 0 : 0.5 + Math.sin(t*3.4+ph)*0.14;
+  ctx.save();
+  if(!asleep){
+    let g = ctx.createRadialGradient(0,-30,4, 0,-30,34);
+    g.addColorStop(0,'rgba(255,220,110,'+(0.26*pulse+0.1)+')');
+    g.addColorStop(1,'rgba(255,200,80,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0,-30,34,0,TAU); ctx.fill();
+  }
+  ctx.translate(0, Math.sin(t*2.2+ph)*0.9);
+  drawShroomBody(['#ffe9a0','#f5b63a','#c47a18'], '#7a4a10', 'rgba(255,255,255,0.3)', 'rgba(255,246,200,0.6)');
+  drawShroomFace(-13, asleep, t, ph);
+  ctx.restore();
+}
+
+function drawCoffee(t, ph){
+  ctx.save();
+  ctx.translate(0, Math.sin(t*2.4+ph)*1.1);
+  let g = ctx.createLinearGradient(-14,-40,14,-2);
+  g.addColorStop(0,'#8a5a2c'); g.addColorStop(0.55,'#6b4220'); g.addColorStop(1,'#3f2410');
+  ctx.beginPath(); ctx.ellipse(0,-21,15.5,20,0.14,0,TAU);
+  O(g, '#241204', 2.4);
+  ctx.strokeStyle = 'rgba(30,16,6,0.8)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(-1,-39); ctx.quadraticCurveTo(6,-24,0,-3); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,230,190,0.22)';
+  ctx.beginPath(); ctx.ellipse(-8,-30,4.5,7,-0.4,0,TAU); ctx.fill();
+  // 顶芽
+  ctx.strokeStyle = '#4a7a28'; ctx.lineWidth = 2.6;
+  ctx.beginPath(); ctx.moveTo(1,-40); ctx.quadraticCurveTo(3,-48,2,-52); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(8,-52,7,3.6,-0.45,0,TAU);
+  O('#7cc24a', '#2c5214', 1.8);
+  // 脸
+  const blink = Math.sin(t*1.9+ph) > 0.96;
+  for(const ex of [-9, 7]){
+    ctx.beginPath(); ctx.ellipse(ex, -24, 3.4, blink ? 0.9 : 4.2, 0, 0, TAU);
+    O('#fff8ec', '#241204', 1.5);
+    if(!blink){
+      ctx.fillStyle = '#241204';
+      ctx.beginPath(); ctx.arc(ex+1.1, -23.2, 1.7, 0, TAU); ctx.fill();
+    }
+  }
+  ctx.strokeStyle = '#241204'; ctx.lineWidth = 1.8;
+  ctx.beginPath(); ctx.arc(-1, -14, 3.4, 0.3, Math.PI-0.3); ctx.stroke();
+  ctx.restore();
+}
+
 // ---- 球球：彩色小皮球 ----
 function drawBallIcon(x,y,r,spin){
   ctx.save(); ctx.translate(x,y); ctx.rotate(spin||0);
@@ -881,7 +993,11 @@ function drawPlantEntity(p){
     case 'potato': drawPotato(p.armed, t, p.phase); break;
     case 'cherry': drawCherry(p.fuse, t, p.phase); break;
     case 'torch': drawTorch(t, p.phase); break;
+    case 'puff': drawPuff(t, p.phase, p.asleep); break;
+    case 'sunshroom': drawSunshroom(t, p.phase, p.asleep); break;
+    case 'coffee': drawCoffee(t, p.phase); break;
   }
+  if(p.asleep) drawSleepZzz(t, p.phase);
   ctx.restore();
 }
 
@@ -899,6 +1015,9 @@ function drawPlantIcon(type, x, y, s){
     case 'potato': drawPotato(true, AT, 6); break;
     case 'cherry': drawCherry(0.9, AT, 7); break;
     case 'torch': drawTorch(AT, 8); break;
+    case 'puff': drawPuff(AT, 9, false); break;
+    case 'sunshroom': drawSunshroom(AT, 10, false); break;
+    case 'coffee': drawCoffee(AT, 11); break;
   }
   ctx.restore();
 }
@@ -1364,7 +1483,9 @@ function drawPea(p){
     ctx.beginPath(); ctx.arc(-13,0,5.5,0,TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(-20,1,3.4,0,TAU); ctx.fill();
   } else {
-    const col = p.type==='snow' ? ['#e8f8ff','#8fd0f2','#4a93c9'] : ['#c8f0a0','#7cc84e','#3f8a2e'];
+    const col = p.type==='snow' ? ['#e8f8ff','#8fd0f2','#4a93c9']
+      : p.type==='spore' ? ['#f0dcff','#b478e0','#6b3f96']
+      : ['#c8f0a0','#7cc84e','#3f8a2e'];
     ctx.globalAlpha = 0.25;
     ctx.beginPath(); ctx.arc(-10,0,6,0,TAU); ctx.fillStyle = col[1]; ctx.fill();
     ctx.globalAlpha = 0.12;
@@ -1692,7 +1813,11 @@ function renderPlay(){
       ctx.strokeStyle = 'rgba(220,90,45,0.85)'; ctx.lineWidth = 2.5;
       ctx.strokeRect(x+2, y+2, CW-4, CH-4);
     } else if(G.sel >= 0){
-      const ok = !G.grid[hc.row][hc.col];
+      const selType = G.slots[G.sel].type;
+      const target = G.grid[hc.row][hc.col];
+      // 咖啡豆反过来：只有「睡着的蘑菇」是合法目标，空格子反而不行
+      const isCoffee = selType === 'coffee';
+      const ok = isCoffee ? !!(target && target.asleep) : !target;
       ctx.fillStyle = ok ? 'rgba(255,255,220,0.32)' : 'rgba(200,40,30,0.32)';
       ctx.fillRect(x, y, CW, CH);
       ctx.strokeStyle = ok ? 'rgba(255,250,200,0.9)' : 'rgba(230,60,40,0.9)';
@@ -1704,10 +1829,11 @@ function renderPlay(){
       ctx.moveTo(x+CW-2, y+CH-2-bl-pu); ctx.lineTo(x+CW-2, y+CH-2); ctx.lineTo(x+CW-2-bl-pu, y+CH-2);
       ctx.moveTo(x+2+bl+pu, y+CH-2); ctx.lineTo(x+2, y+CH-2); ctx.lineTo(x+2, y+CH-2-bl-pu);
       ctx.stroke();
-      if(ok){
+      if(ok && !isCoffee){
         ctx.save();
         ctx.globalAlpha = 0.55;
-        const ghost = { type:G.slots[G.sel].type, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0 };
+        const ghost = { type:selType, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0,
+          asleep: !!PLANTS[selType].mushroom && !isNight() };
         drawPlantEntity(ghost);
         ctx.restore();
       }
@@ -1950,7 +2076,7 @@ function renderMenu(){
   const x0 = W/2 - (nLv*cardW + (nLv-1)*gap)/2;
   for(let i=0;i<nLv;i++){
     const lv = LEVELS[i];
-    const locked = i+1 > G.unlocked;
+    const locked = !G.unlockAll && i+1 > G.unlocked;
     const x = x0 + i*(cardW+gap), y = 258;
     const hover = !locked && G.mouse.x>=x && G.mouse.x<=x+cardW && G.mouse.y>=y && G.mouse.y<=y+cardH;
     G.hotspots.push({ x, y, w:cardW, h:cardH, id:'lv'+i, cb: locked ? ()=>{} : (()=>{ const ii=i; return ()=>startLevel(ii); })() });
@@ -1969,7 +2095,7 @@ function renderMenu(){
     if(lv.night && !locked){
       // 夜间关标记：左上角小月亮
       const mx = x+15, my = y+22;
-      g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);
+      const g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);
       g.addColorStop(0,'rgba(255,246,200,0.6)'); g.addColorStop(1,'rgba(255,246,200,0)');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mx, my, 12, 0, TAU); ctx.fill();
       ctx.beginPath(); ctx.arc(mx, my, 6.6, 0, TAU);
@@ -1998,8 +2124,9 @@ function renderMenu(){
     ctx.restore();
   }
 
-  drawButton(W/2-190, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});
-  drawButton(W/2+10, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', ()=>{ SFX.ensure(); SFX.musicOn = !SFX.musicOn; SFX.click(); }, {});
+  drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});
+  drawButton(W/2-90, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', ()=>{ SFX.ensure(); SFX.musicOn = !SFX.musicOn; SFX.click(); }, {});
+  drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(), { size: 18 });
   drawText('同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐', W/2, H-20, 12.5, 'rgba(30,50,18,0.75)', null, 0, 'center', '600');
 }
 
@@ -2029,13 +2156,15 @@ function renderHelp(){
     '· 球球是核心输出：加特林扫射，还有概率发射范围导弹',
     '· 火炬树桩能让穿过的豌豆变成双倍伤害的火豌豆',
     '· 樱桃炸弹 / 土豆雷威力巨大，但土豆雷需要时间成长',
+    '· 小喷菇免费但射程只有两格；阳光菇只要 25 阳光，产量是向日葵的一半',
+    '· 蘑菇夜里直接开工；白天种下会打盹，点一株蘑菇用咖啡豆唤醒它',
     '· 报纸僵尸：报纸是它的护盾，打掉报纸它会暴怒加速冲过来！',
     '· 夜间关卡：天上不会掉太阳，只能靠向日葵（开局多给 100 阳光）',
     '· 每行最左侧的小推车是最后防线，被突破则游戏失败',
     '· 消灭本关全部僵尸即可过关，P 键暂停（触屏点右上角按钮）',
   ];
   for(let i=0;i<lines.length;i++){
-    drawText(lines[i], px+42, py+94+i*27, 15.5, '#3c2a10', null, 0, 'left', '600');
+    drawText(lines[i], px+42, py+94+i*24, 15.5, '#3c2a10', null, 0, 'left', '600');
   }
   drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
 }
@@ -2086,12 +2215,12 @@ function renderSelect(){
     }
   }
 
-  drawText('植物图鉴（点击加入队伍）', 200, 250, 15, '#e8d2a0', null, 0, 'left', '700');
-  const cw = 108, ch = 100;
+  drawText('植物图鉴（点击加入队伍）', 200, 244, 15, '#e8d2a0', null, 0, 'left', '700');
+  const cw = 108, ch = 92;
   for(let i=0;i<PLANT_ORDER.length;i++){
     const type = PLANT_ORDER[i];
     const def = PLANTS[type];
-    const x = 76 + (i%4)*(cw+12), y = 262 + Math.floor(i/4)*(ch+10);
+    const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+8);
     const inTeam = G.slots.some(s=>s.type===type);
     const full = G.slots.length >= lv.slots;
     const hover = G.mouse.x>=x && G.mouse.x<=x+cw && G.mouse.y>=y && G.mouse.y<=y+ch;
@@ -2145,10 +2274,11 @@ function renderSelect(){
     '撑杆僵尸：跑得快，还会跳过第一株植物！',
     '报纸僵尸：看报时很慢，报纸被打掉会暴怒加速！',
     '旗帜僵尸：出现在总攻的最前线。',
-    lv.night ? '夜战：天上不掉太阳，全靠向日葵！' : '消灭全部僵尸即可过关，小心小推车。',
+    lv.night ? '夜战：天上不掉太阳，靠向日葵与阳光菇。' : '消灭全部僵尸即可过关，小心小推车。',
+    '白天蘑菇会打盹，用咖啡豆点它唤醒。',
   ];
   for(let i2=0;i2<tips.length;i2++){
-    drawText(tips[i2], zx+22, zy+92+i2*21, 12.5, '#d8c090', null, 0, 'left', '600');
+    drawText(tips[i2], zx+22, zy+88+i2*20, 12.5, '#d8c090', null, 0, 'left', '600');
   }
 
   drawButton(88, H-88, 150, 46, '返回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
@@ -2324,8 +2454,14 @@ function handlePress(p){
     if(G.sel >= 0){
       const s = G.slots[G.sel];
       const def = PLANTS[s.type];
-      if(existing){ SFX.error(); return; }
       if(s.cool > 0){ SFX.error(); return; }
+      if(s.type === 'coffee'){
+        if(applyCoffee(existing)){
+          G.sun -= def.cost; s.cool = def.cool; G.sel = -1;
+        } else SFX.error();
+        return;
+      }
+      if(existing){ SFX.error(); return; }
       if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
       placePlant(s.type, r, c);
       s.cool = def.cool;

@@ -8,6 +8,11 @@
 // 用法：
 //   node headless_test.js                       # 默认测 legacy 单文件基线
 //   node headless_test.js src/main.js           # 测模块源码头（拼接后）
+//
+// 注意：跑 legacy 会在场景 D2 失败 —— 那是基线自带的缺陷（renderMenu 的夜间小月亮分支给未声明
+// 的 g 赋值，严格模式抛错打断 rAF 链），P3c 在 src 里修掉了。legacy 是冻结的溯源件，不回头改。
+// 场景 I 依赖新增的蘑菇 / 咖啡豆，legacy 里没有对应实现，跑 legacy 会在 I1 抛错。
+// 因此 npm run verify 不再包含 test:smoke:legacy；它只能验证到 P3c 为止的历史行为。
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const esbuild = require('esbuild');
 const { esbuildOpts } = require('./scripts/esbuild-opts');
@@ -177,6 +182,11 @@ if(szRef.state !== 'dying' && szRef.slowT <= 0) throw new Error('C5: snow pea di
 // ===== 场景 D：各界面渲染 =====
 G.state = 'help'; pump(0.2);
 G.state = 'menu'; pump(0.2);
+// D2: 解锁到最后一关的菜单 —— 夜间关的小月亮分支只有这里才会跑到
+const unlockedSave = G.unlocked;
+G.unlocked = LEVELS.length; pump(0.2);
+G.unlockAll = true; pump(0.2);
+G.unlockAll = false; G.unlocked = unlockedSave;
 startLevel(2); pump(0.2);
 
 // ===== 场景 E：球球（扔小皮球的核心角色） =====
@@ -264,6 +274,63 @@ if(G.sun !== 50) throw new Error('H6: day level should not get the night bonus, 
 G.t = 1; pump(20);
 if(!G.suns.some(s => s.fromSky)) throw new Error('H7: day level produced no sky sun');
 if(bgTheme !== 'day') throw new Error('H8: day background not restored');
+
+// ===== 场景 I：蘑菇与咖啡豆（白天打盹 → 咖啡豆唤醒；夜里落地即开工） =====
+function press(lx, ly){ handlePress({ x:lx, y:ly }); }
+startLevel(0);
+G.slots = [{type:'puff',cool:0},{type:'sunshroom',cool:0},{type:'coffee',cool:0}];
+beginPlay();
+G.sun = 9999; G.t = 1;
+G.sel = 0; press(cellCX(4), cellFY(2) - 40);
+const puffDay = G.grid[2][4];
+if(!puffDay || puffDay.type !== 'puff') throw new Error('I1: 白天没能种下小喷菇');
+if(!puffDay.asleep) throw new Error('I2: 白天种下的蘑菇应当打盹');
+if(PLANTS.puff.cost !== 0) throw new Error('I2b: 小喷菇应当免费');
+// 点空格子：不生效、不消耗、不取消选卡
+const cf = G.slots[2];
+G.sel = 2; press(cellCX(1), cellFY(1) - 40);
+if(cf.cool > 0) throw new Error('I3: 点错目标的咖啡豆不该进入冷却');
+if(G.sel !== 2) throw new Error('I4: 用错的咖啡豆不该取消选卡');
+// 点对打盹的蘑菇：唤醒 + 进冷却 + 取消选卡
+G.sel = 2; press(cellCX(4), cellFY(2) - 40);
+if(puffDay.asleep) throw new Error('I5: 咖啡豆没能唤醒蘑菇');
+if(cf.cool <= 0) throw new Error('I6: 成功使用后应进入冷却');
+if(G.sel !== -1) throw new Error('I7: 用过的咖啡豆应取消选卡');
+// 阳光菇产量减半
+G.sun = 9999; G.sel = 1; press(cellCX(6), cellFY(3) - 40);
+const shroom = G.grid[3][6];
+if(!shroom || shroom.type !== 'sunshroom') throw new Error('I8: 没能种下阳光菇');
+applyCoffee(shroom);
+G.suns.length = 0;
+pump(11);
+if(!G.suns.some(s => !s.fromSky && s.value === 25)) throw new Error('I9: 阳光菇应产 25 阳光');
+if(G.suns.some(s => !s.fromSky && s.value !== 25)) throw new Error('I10: 场上不该出现其它产量的植物阳光');
+// 渲染三种新植物与两种蘑菇姿态、孢子弹道，确认不抛错
+drawPlantEntity(shroom);
+shroom.asleep = true; drawPlantEntity(shroom); shroom.asleep = false;
+drawPlantIcon('puff', 80, 80, 1);
+drawPlantIcon('sunshroom', 80, 80, 1);
+drawPlantIcon('coffee', 80, 80, 1);
+// 拦截 ctx.fillStyle，确认孢子用的是自己的紫色弹道而不是回落到普通豌豆绿
+function peaFills(type){
+  const fills = [];
+  const real = ctx;
+  ctx = new Proxy({}, { get:(t,p)=>real[p],
+    set:(t,p,v)=>{ if(p==='fillStyle' && typeof v==='string') fills.push(v); real[p]=v; return true; } });
+  try { drawPea({ x:300, y:300, row:2, type, dmg:20, vx:300, prevX:300 }); }
+  finally { ctx = real; }
+  return fills;
+}
+if(!peaFills('spore').includes('#b478e0')) throw new Error('I12: 孢子没有按孢子配色渲染');
+if(peaFills('ball').includes('#b478e0')) throw new Error('I13: 非孢子弹道不该用孢子配色');
+pump(0.2);
+// 夜战：落地即开工，无需咖啡豆
+startLevel(3);
+G.slots = [{type:'puff',cool:0}];
+beginPlay();
+G.sun = 9999; G.t = 1; G.sel = 0;
+press(cellCX(4), cellFY(2) - 40);
+if(G.grid[2][4].asleep) throw new Error('I11: 夜里种下的蘑菇不该打盹');
 
 globalThis.__result = 'ALL TESTS PASSED';
 `, { filename: 'driver.js' });

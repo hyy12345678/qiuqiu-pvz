@@ -1,0 +1,3008 @@
+"use strict";
+'· 夜间关卡：天上不会掉太阳，只能靠向日葵（开局多给 100 阳光）',
+'· 小喷菇免费但射程只有两格；阳光菇只要 25 阳光，产量是向日葵的一半',
+'· 报纸僵尸：报纸是它的护盾，打掉报纸它会暴怒加速冲过来！',
+'· 支持鼠标和触屏（平板/手机）操作',
+'· 数字键 1-8 可快速选择对应卡片',
+'· 樱桃炸弹 / 土豆雷威力巨大，但土豆雷需要时间成长',
+'· 每行最左侧的小推车是最后防线，被突破则游戏失败',
+'· 消灭本关全部僵尸即可过关，P 键暂停（触屏点右上角按钮）',
+'· 火炬树桩能让穿过的豌豆变成双倍伤害的火豌豆',
+'· 点击上方卡片选择植物，再点击草坪格子种下（再点一次卡片取消选择）',
+'· 点击天上掉落的阳光或向日葵产出的阳光，收集阳光资源',
+'· 球球是核心输出：加特林扫射，还有概率发射范围导弹',
+'· 蘑菇夜里直接开工；白天种下会打盹，点一株蘑菇用咖啡豆唤醒它',
+'· 豌豆射手家族会自动攻击本行前方的僵尸',
+'· 铲子可以移除已种下的植物（点击铲子后再点植物）',
+'报纸僵尸：看报时很慢，报纸被打掉会暴怒加速！',
+'撑杆僵尸：跑得快，还会跳过第一株植物！',
+'旗帜僵尸：出现在总攻的最前线。',
+'普通僵尸：最基础的敌人。',
+'白天蘑菇会打盹，用咖啡豆点它唤醒。',
+'路障 / 铁桶僵尸：头戴护具，非常耐打。',
+()=>{ if(G.slots.length) startQuiz(); else SFX.error(); },
+: ['#8fd44a','#b8e88a'];
+: ['#c8f0a0','#7cc84e','#3f8a2e'];
+: p.type==='spore' ? ['#f0dcff','#b478e0','#6b3f96']
+: type==='ball' ? ['#e8483c','#ffd23e']
+: type==='bullet' ? ['#e8edf2','#8d949c']
+: type==='fire' ? ['#ff9a2e','#ffd23e']
+: type==='spore' ? ['#dcc0f0','#b478e0']
+: { hi:'#a8e070', main:'#57b03e', dark:'#2f7d24', line:'#1c4d12', mouth:'#17320f' };
+? { hi:'#cdeefc', main:'#6fb4de', dark:'#3a7ba6', line:'#1e4d6e', mouth:'#123a52' }
+AT += dt;
+E4:329.63, G4:392, A4:440, B4:493.88, C5:523.25, D5:587.33, E5:659.25, G5:783.99 };
+G.decals.push({ x, fy: LY + row*CH + CH/2, ttl:4, max:4, r:72 });
+G.decals.push({ x, fy: LY + row*CH + CH/2, ttl:6, max:6, r: big?95:55 });
+G.decals[i].ttl -= dt;
+G.evIdx = 0; G.killed = 0;
+G.events = built.events; G.total = built.total;
+G.flash = Math.max(G.flash, 0.15);
+G.flash = big ? 0.3 : 0.2;
+G.grid = Array.from({length:ROWS}, ()=>Array(COLS).fill(null));
+G.grid[p.row][p.col] = null;
+G.grid[row][col] = p;
+G.groanTimer -= dt;
+G.hotspots.length = 0;
+G.hotspots.push({ x, y, w, h, id, cb });
+G.hotspots.push({ x, y, w, h, id:b.id, cb:b.cb });
+G.hotspots.push({ x, y, w:cardW, h:cardH, id:'lv'+i, cb: locked ? ()=>{} : (()=>{ const ii=i; return ()=>startLevel(ii); })() });
+G.hotspots.push({ x, y, w:cw, h:ch, id:'pick'+type, cb:(()=>{ const tp=type, inT=inTeam, fu=full; return ()=>{
+G.hotspots.push({ x, y, w:slotW, h:slotH, id:'slot'+i, cb:(()=>{ const ii=i; return ()=>{ G.slots.splice(ii,1); if(G.sel===ii)G.sel=-1; else if(G.sel>ii)G.sel--; SFX.click(); }; })() });
+G.hotspots.push({ x, y:y-4, w:CARD_W, h:CARD_H+4, id:'card'+i, cb:(()=>{ const ii=i; return ()=>clickCard(ii); })() });
+G.hotspots.push({ x:bx, y:by, w:bw, h:bh, id:'ans'+i, cb:(()=>{ const a=cur.options[i]; return ()=>answerQuiz(a); })() });
+G.hotspots.push({ x:sx, y:sy, w:64, h:72, id:'shovel', cb:()=>{ G.shovel=!G.shovel; G.sel=-1; SFX.click(); } });
+G.hoverCell = null;
+G.killed++;
+G.lastRows = [];
+G.lastRows.unshift(row);
+G.level = li;
+G.mouse = p;
+G.mouse = p;
+G.mowers = Array.from({length:ROWS}, (_,r)=>({row:r, x:LX-52, state:'idle'}));
+G.nightHint = lv.night ? 8 : 0;
+G.parts.push({ x, y: LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-70, g:230,
+G.parts.push({ x, y:LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-50, g:240,
+G.parts.push({ x:m.x+rand(6,26), y:LY+m.row*CH+CH-8, vx:rand(-60,20), vy:rand(-140,-60), g:300, life:rand(0.25,0.5), max:0.5, size:rand(2,4), color:'#7cc24a' });
+G.parts.push({ x:pea.x-8, y:pea.y+rand(-3,3), vx:rand(-30,-10), vy:rand(-25,5), g:-60, life:rand(0.15,0.3), max:0.3, size:rand(2,4), color:'#ffb347' });
+G.parts.push({ x:x+rand(-20,20), y:LY+row*CH+CH/2, vx:rand(-15,15), vy:rand(-70,-35), g:-30,
+G.parts.push({ x:z.x+rand(-6,10), y:LY+(z.row+1)*CH-6, vx:rand(-14,6), vy:rand(-22,-8), g:30, life:rand(0.3,0.55), max:0.55, size:rand(2,4), color:'rgba(150,140,110,0.4)' });
+G.paused = false;
+G.peas.push({ x:p.cx+12, y:py+6, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+12 });
+G.peas.push({ x:p.cx+14, y:py, row:p.row, type:'spore', dmg:20, vx:300, prevX:p.cx+14 });
+G.peas.push({ x:p.cx+30, y:py, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+30 });
+G.peas.push({ x:p.cx+52, y:py, row:p.row, type, dmg, vx, prevX:p.cx+52 });
+G.plants.push(p);
+G.plants=[]; G.zombies=[]; G.peas=[]; G.suns=[]; G.parts=[]; G.decals=[];
+G.quiz = { idx: 0, energy: 50, questions: makeQuiz(), feedback: 0, correct: true };
+G.sel = -1;
+G.sel = -1; G.shovel = false;
+G.sel = -1; G.shovel = false;
+G.sel = -1; G.shovel = false;
+G.sel = i; G.shovel = false;
+G.shake = 0; G.flash = 0;
+G.shake = Math.max(G.shake, 0.3);
+G.shake = Math.max(G.shake, big?0.55:0.4);
+G.shovel = false;
+G.skyTimer -= dt;
+G.skyTimer = 2; G.groanTimer = 4;
+G.skyTimer = rand(4.5, 6.5);
+G.slots = G.slots.map(s=>({type:s.type, cool:0}));
+G.slots = [];
+G.state = 'lost';
+G.state = 'play';
+G.state = 'quiz';
+G.state = 'select';
+G.state = 'won';
+G.sun -= def.cost;
+G.sun -= def.cost; s.cool = def.cool; G.sel = -1;
+G.sun = Math.min(9990, G.sun + s.value);
+G.sun = startSun; G.sunFlash = 0;
+G.sunFlash = 0.35;
+G.suns.push({ x, y, ty, value: value || 50, life:10, state:'fall', t:0, fromSky, sx:x, ft:0 });
+G.suns.splice(i,1);
+G.t += dt;
+G.t = -3.2;
+G.unlockAll = !G.unlockAll;
+G.waveText = null; G.winT = 0; G.loseZombie = null;
+G.waveText = { text:'一大波僵尸正在接近！', t:0 };
+G.waveText.t += dt;
+G.winT += dt;
+G.zombies.push({
+O('#2e2a24', '#17140f', 1.6);
+O('#2e2a24', '#17140f', 2);
+O('#3c4046', '#2c2f33', 1.8);
+O('#3c4046', '#2c2f33', 2);
+O('#3c6a1c', '#244510', 2);
+O('#4a93c9', '#2c5a7a', 1);
+O('#4a93c9', '#2c5a7a', 1);
+O('#5a5f66', '#2c2f33', 2.2);
+O('#6b7076', '#3c4046', 1.4);
+O('#6b7076', '#3c4046', 1.6);
+O('#7cc24a', '#2c5214', 1.8);
+O('#a3b187', '#4a5238', 1.8);
+O('#a8763c', '#5f3c18', 2.4);
+O('#b02a20', '#5e120c', 1.6);
+O('#b02a20', '#5e120c', 2.2);
+O('#b8895a', '#3c2610', 2.4);
+O('#b8c1c7', '#3f474d', 1.8);
+O('#c03028', '#6e1810', 1.4);
+O('#c03028', '#6e1810', 1.4);
+O('#c03028', '#6e1810', 1.6);
+O('#c03028','#6e1810',2);
+O('#c8542e', '#7a2c10', 2.5);
+O('#c8cdd2', '#5a6066', 1.6);
+O('#e04a3a', '#8a1c12', 1.4);
+O('#e6e0d0', '#6e6858', 2);
+O('#e8483c', '#7a1408', 1.8);
+O('#e89542', '#7a420c', 1.8);
+O('#e8edf2', '#5a6066', 1.4);
+O('#e8edf2', '#8d949c', 1.6);
+O('#f0ae1e', '#c07d10', 1.6);
+O('#f2e6d4', '#7a420c', 1.4);
+O('#f4efe2', '#6e6858', 2);
+O('#f6eec6', '#b8a860', 1.4);
+O('#f7f7f2','#5a5a52',2);
+O('#ff7a1e', '#c04810', 1.8);
+O('#ffca4d', '#8a4c10', 1.6);
+O('#ffca4d', '#8a4c10', 1.6);
+O('#ffd83d', '#d99a12', 1.6);
+O('#fff', '#3a2a44', 1.5);
+O('#fff', '#5a3c10', 1.8);
+O('#fff', '#5a3c10', 1.8);
+O('#fff', '#5f3c14', 1.8);
+O('#fff', '#5f3c14', 1.8);
+O('#fff', pal.line, 1.6);
+O('#fff8ec', '#241204', 1.5);
+O(C.shirt, C.line, 2.4);
+O(C.skin, C.line, 2);
+O(C.skin, C.line, 2.2);
+O(C.skinD, C.line, 1.6);
+O(C.tie, '#6e1c12', 1.4);
+O(C.tie, '#6e1c12', 1.8);
+O(bg, '#20140a', 2.5);
+O(bg, inTeam ? '#3c6a1c' : '#5f451f', inTeam ? 3 : 2.2);
+O(bg, locked ? '#2c2c28' : '#6b4c20', 3);
+O(col||'#5cb444', outline||'#2c6b1c', 2);
+O(g, '#241204', 2.4);
+O(g, '#241204', 2.4);
+O(g, '#39412e', 2.2);
+O(g, '#3a220c', 3);
+O(g, '#3a220c', 4.5);
+O(g, '#3c2610', 2.6);
+O(g, '#3f474d', 2);
+O(g, '#3f474d', 2.2);
+O(g, '#42280f', 2);
+O(g, '#4a525a', 2);
+O(g, '#55401f', 2.2);
+O(g, '#5a3c10', 2.8);
+O(g, '#5e1410', 2.4);
+O(g, '#5f3a12', 2.4);
+O(g, '#5f3c14', 2.6);
+O(g, '#6a5030', 2);
+O(g, '#6b4c20', 4);
+O(g, '#6e0e04', 2.6);
+O(g, '#6e6858', 1.8);
+O(g, '#7a420c', 2);
+O(g, '#7a420c', 2.2);
+O(g, '#8a6b3a', 2.6);
+O(g, '#9aa6c4', 1.6);
+O(g, C.line, 2.2);
+O(g, C.line, 2.2);
+O(g, C.line, 2.4);
+O(g, capOut, 2.4);
+O(g, col[2], 1.8);
+O(g, disabled ? '#3a3a34' : '#2e4a14', 3);
+O(g, pal.line, 2.6);
+O(g, selected ? '#ffe86e' : '#5f451f', selected ? 3.4 : 2.2);
+O(g, won ? '#6b4c20' : '#1c1016', 4);
+O(g,'#1c3a70',2.2);
+O(g,'#6e1810',2.2);
+O(g,'#a05c10',2.2);
+O(g,line,2.4);
+O(g2, active ? '#ffe86e' : '#5f451f', active?3:2.2);
+O(gi, '#20140a', 2.5);
+O(ng, '#8fa4d8', 2.4);
+O(null, '#2c5214', 4.5);
+O(null, '#2c5214', 4.5);
+O(null, '#2c6b1c', 7.5);
+O(null, '#2c6b1c', 8);
+O(null, '#4ea832', 4.5);
+O(null, '#4ea832', 5);
+O(on ? '#ff4b3a' : '#8a281e', '#5a1410', 2);
+O(pal.dark, pal.line, 2.4);
+O(pal.dark, pal.line, 2.4);
+O(pal.main, pal.line, 2.6);
+O(pal.mouth, null);
+O(pal.mouth, pal.line, 2);
+SFX.angry();
+SFX.boom();
+SFX.boom();
+SFX.chomp();
+SFX.click();
+SFX.click();
+SFX.click();
+SFX.click();
+SFX.dig();
+SFX.ensure(); SFX.resume();
+SFX.error();
+SFX.groan();
+SFX.hop();
+SFX.horn();
+SFX.lose();
+SFX.paperTear();
+SFX.plant();
+SFX.select();
+SFX.select();
+SFX.select();
+SFX.shoot();
+SFX.sun();
+SFX.win();
+[0,'A4',1],[1,'C5',1],[2,'E5',1],[3,'D5',1.5],[4.5,'C5',.5],[5,'B4',1],
+[12,'A4',1],[13,'C5',1],[14,'E5',1],[15,'G5',1.5],[16.5,'E5',.5],[17,'D5',1],
+[18,'C5',1],[19,'B4',1],[20,'A4',2],[22,'E4',1],[23,'G4',1]];
+[6,'C5',1],[7,'A4',1],[8,'G4',2],[10,'E4',1],[11,'G4',1],
+];
+];
+];
+];
+a = randi(20, 79);
+a = randi(30, 89);
+addDirtPuff(p.cx, p.fy);
+addDirtPuff(z.x, LY+(z.row+1)*CH-6);
+addFlamePuff(p.cx, pea.y);
+addLeafBurst(existing.cx, existing.fy-30);
+addLeafBurst(p.cx, p.fy-30);
+addPaperShreds(z.x, LY + (z.row+1)*CH - 76);
+addPeaSplat(pea.x, pea.y, pea.type);
+angry(){ this.tone(150, 62, 0.4, 'sawtooth', 0.14); this.noise(0.32, 0.09, 620, 0.04); },
+ans = a + b;
+ans = a - b;
+armed:false, armT:0, fuse: type==='cherry' ? 1.05 : 0,
+asleep: !!PLANTS[selType].mushroom && !isNight() };
+asleep: !!def.mushroom && !isNight(),
+b = randi(10, a - 1);
+b = randi(11, 99 - a);
+bg.addColorStop(0, hover ? '#96c862' : '#7aa848'); bg.addColorStop(1, hover ? '#649838' : '#4e7a2a');
+bg.addColorStop(0,'#4a3418'); bg.addColorStop(1,'#33220e');
+bgCanvas = document.createElement('canvas');
+bgCanvas.width = W*DPR; bgCanvas.height = H*DPR;
+bgTheme = theme;
+bgc.scale(DPR, DPR);
+boom(){ this.noise(0.6, 0.5, 320); this.tone(120, 32, 0.5, 'sine', 0.4); },
+break;
+break;
+break;
+break;
+break;
+break;
+break;
+bucket:{ name:'铁桶僵尸', hp:200, acc:1100, speed:17 },
+bulletHit(){ this.noise(0.05, 0.08, 1600); this.tone(150, 90, 0.05, 'square', 0.04); },
+case 'cherry':
+case 'cherry': drawCherry(0.9, AT, 7); break;
+case 'cherry': drawCherry(p.fuse, t, p.phase); break;
+case 'coffee': drawCoffee(AT, 11); break;
+case 'coffee': drawCoffee(t, p.phase); break;
+case 'peashooter': drawShooter(AT, 2, 'pea', 0, 0); break;
+case 'peashooter': drawShooter(t, p.phase, 'pea', p.recoil, p.flash); break;
+case 'potato':
+case 'potato': drawPotato(p.armed, t, p.phase); break;
+case 'potato': drawPotato(true, AT, 6); break;
+case 'puff': case 'peashooter': case 'snowpea': case 'repeater': case 'qiuqiu': {
+case 'puff': drawPuff(AT, 9, false); break;
+case 'puff': drawPuff(t, p.phase, p.asleep); break;
+case 'qiuqiu': drawQiuqiu(AT, 1, 0); break;
+case 'qiuqiu': drawQiuqiu(t, p.phase, p.recoil); break;
+case 'repeater': drawShooter(AT, 4, 'repeater', 0, 0); break;
+case 'repeater': drawShooter(t, p.phase, 'repeater', p.recoil, p.flash); break;
+case 'snowpea': drawShooter(AT, 3, 'snow', 0, 0); break;
+case 'snowpea': drawShooter(t, p.phase, 'snow', p.recoil, p.flash); break;
+case 'sunflower': case 'sunshroom':
+case 'sunflower': drawSunflower(AT, 1); break;
+case 'sunflower': drawSunflower(t, p.phase); break;
+case 'sunshroom': drawSunshroom(AT, 10, false); break;
+case 'sunshroom': drawSunshroom(t, p.phase, p.asleep); break;
+case 'torch': drawTorch(AT, 8); break;
+case 'torch': drawTorch(t, p.phase); break;
+case 'wallnut': drawWallnut(1, AT, 5); break;
+case 'wallnut': drawWallnut(p.hp/p.maxHp, t, p.phase); break;
+cherry: { name:'樱桃炸弹', cost:150, hp:300, cool:32, desc:'轰！炸飞一片区域的僵尸' },
+chomp(){ this.noise(0.09, 0.15, 500); this.tone(150, 80, 0.08, 'square', 0.05); },
+click(){ this.tone(620, 620, 0.05, 'sine', 0.08); },
+cloud(((AT*6+500)%(W+260))-130, 150, 0.85);
+cloud(((AT*7.5+900)%(W+260))-130, 58, 1.35);
+cloud(((AT*9)%(W+260))-130, 88, 1.1);
+coffee: { name:'咖啡豆', cost:25, hp:300, cool:20, desc:'点一株白天打盹的蘑菇，把它唤醒' },
+color: ['#fff3b0','#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(0,4)] });
+color:['#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(0,3)] });
+cone: { name:'路障僵尸', hp:200, acc:370, speed:17 },
+const AC = window.AudioContext || window.webkitAudioContext;
+const BANK_Y = 8, BANK_H = 88;
+const BASS = ['A2','F3','C3','G3','A2','F3','D3','E3'];
+const C = {
+const CARD_X0 = 148, CARD_W = 60, CARD_H = 84, CARD_GAP = 6;
+const COLS = 9, ROWS = 5;
+const CW = 80, CH = 96;
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+const G = {
+const LEVELS = [
+const LX = 265, LY = 112;
+const MELODY = [
+const MUSIC_BEAT = 0.4, MUSIC_LOOP = 24 * MUSIC_BEAT;
+const NOTE = { A2:110, C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196,
+const PLANTS = {
+const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee'];
+const R = mulberry32(20260814);
+const SFX = {
+const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
+const TAU = Math.PI * 2;
+const W = 1024, H = 640;
+const ZTYPES = {
+const a = (t*13 + k*TAU/5) % TAU;
+const a = 1 - cyc;
+const a = AT*2 + k*TAU/4;
+const a = clamp(0.30 + Math.sin(AT*2.3+k*1.4)*0.34, 0, 1);
+const a = clamp(G.nightHint/1.4, 0, 1);
+const a = k*TAU/10 + 0.4;
+const a = rand(0,TAU), sp = rand(30,240);
+const a = rand(0,TAU), sp = rand(40, big?340:210);
+const a = spin + k*TAU/6;
+const acc = zs[k]==='normal' ? null : zs[k];
+const acc = zt==='normal' ? null : zt;
+const active = G.shovel;
+const afford = G.sun >= def.cost && s.cool <= 0;
+const ahead = curBeat + 0.7;
+const ang = Math.sin(AT*9)*2;
+const angry = z.type==='newspaper' && !!z.angry;
+const animMul = (z.type==='vault' && !z.poleLost) ? 1.7 : (z.angry ? 2.1 : 1);
+const armSway = walk ? Math.sin(ph+1.1)*3 : (eat ? Math.sin(z.eatT*9)*2.4 : 0);
+const at = z.animT || 0;
+const b = bar*3;
+const bgc = bgCanvas.getContext('2d');
+const bl = 12, pu = Math.sin(AT*6)*1.5;
+const blink = Math.sin(t*1.7+ph) > 0.965;
+const blink = Math.sin(t*1.9+ph) > 0.96;
+const blink = Math.sin(t*3+ph);
+const blink = isBlinking(t, ph);
+const blink = isBlinking(t, ph);
+const blink = isBlinking(t, ph+1);
+const blink = isBlinking(t, ph+2);
+const bob = Math.sin(t*1.6+ph)*1.6;
+const bob = Math.sin(t*2.4+ph)*2.2;
+const bob = walk ? Math.abs(Math.cos(ph))*2.6 : 0;
+const btns = [
+const buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
+const built = buildSpawns(lv);
+const bw = 520, bh = 44, bx = W/2-bw/2, by = 150;
+const bw=240, bh=54, bx0=W/2-bw-12, bx1=W/2+12, by0=py+262, by1=py+330;
+const bx = (i%2===0)?bx0:bx1;
+const bx = ox+14 + Math.cos(a)*5;
+const by = (i<2)?by0:by1;
+const by = oy + Math.sin(a)*5;
+const c = (col !== undefined) ? col : Math.floor((x - LX)/CW);
+const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
+const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
+const cardW = 214, cardH = 150, gap = 22;
+const cloud = (x,y,s)=>{
+const col = p.type==='snow' ? ['#e8f8ff','#8fd0f2','#4a93c9']
+const cols = type==='snow' ? ['#bfe9ff','#8fd0f2']
+const cur = q.questions[q.idx];
+const curBeat = pos / MUSIC_BEAT;
+const cv = document.getElementById('game');
+const cw = 108, ch = 92;
+const cx = (i - (title.length-1)/2) * tGap;
+const cx = (i - (title.length-1)/2) * tGap;
+const cx = px + ((k*97 + AT*70) % pw);
+const cy = py + ((k*53 + AT*(40+k*3)) % ph);
+const cyc = (t*0.5 + k*0.34 + ph*0.07) % 1;
+const d = buf.getChannelData(0);
+const d = z.deathT;
+const def = PLANTS[s.type];
+const def = PLANTS[s.type];
+const def = PLANTS[s.type];
+const def = PLANTS[type];
+const def = PLANTS[type];
+const def = ZTYPES[type];
+const disabled = opts.disabled;
+const dmg = 1 - hpFrac;
+const dmg = isMissile ? 90 : 25;
+const draw = (x,y,r)=>{
+const dx = p.x - s.x, dy = p.y - s.y;
+const dy = Math.sin(AT*2 + i*0.9)*4;
+const dy = Math.sin(AT*2 + i*0.9)*4;
+const e = G.events[G.evIdx++];
+const eat = z.state==='eat', walk = z.state==='walk';
+const ev = [];
+const existing = G.grid[r][c];
+const f = rand(75, 120);
+const f = this.ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value = freq||800;
+const finalCount = Math.max(4, Math.round(n*0.33));
+const finalT = Math.max(t+7, 90);
+const flagAt = (frac)=>{
+const flame = (h, col, off)=>{
+const flash = G.sunFlash > 0 && Math.sin(AT*30) > 0;
+const food = findEatTarget(z);
+const frac = s.cool / def.cool;
+const full = G.slots.length >= lv.slots;
+const fx = R()*W, fy = LY + 22 + R()*(ROWS*CH-26);
+const fx = inner.x + inner.w*(1-frac);
+const fy = fyBase + (z.vy || 0);
+const fyBase = (fyOverride !== undefined) ? fyOverride : LY + (z.row+1)*CH - 4;
+const g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);
+const g = this.ctx.createGain(); g.gain.setValueAtTime(vol, t0);
+const ghost = { type:selType, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0,
+const h = G.hotspots[i];
+const hc = G.hoverCell;
+const hop = Math.abs(Math.sin(t*2+ph))*2.5;
+const hop = Math.abs(Math.sin(t*2.6+ph))*2.4;
+const hover = !locked && G.mouse.x>=x && G.mouse.x<=x+cardW && G.mouse.y>=y && G.mouse.y<=y+cardH;
+const hover = G.mouse.x>=bx && G.mouse.x<=bx+bw && G.mouse.y>=by && G.mouse.y<=by+bh;
+const hover = G.mouse.x>=x && G.mouse.x<=x+CARD_W && G.mouse.y>=y && G.mouse.y<=y+CARD_H;
+const hover = G.mouse.x>=x && G.mouse.x<=x+cw && G.mouse.y>=y && G.mouse.y<=y+ch;
+const hover = G.mouse.x>=x && G.mouse.x<=x+w && G.mouse.y>=y && G.mouse.y<=y+h;
+const hover = G.mouse.x>=x && G.mouse.x<=x+w && G.mouse.y>=y && G.mouse.y<=y+h;
+const hoverS = G.mouse.x>=sx && G.mouse.x<=sx+64 && G.mouse.y>=sy && G.mouse.y<=sy+72;
+const hx = -2 - rec, hy = -54 + bob;
+const hx = -7, hy = -96;
+const hx = inner.x + inner.w*(1-p);
+const hx = sway, hy = -60+bob;
+const i = G.plants.indexOf(p);
+const i = parseInt(e.key)-1;
+const inPhase = t >= -1.4;
+const inTeam = G.slots.some(s=>s.type===type);
+const inner = { x:x0+4, w:(x1-x0)-8 };
+const isCoffee = selType === 'coffee';
+const isMissile = Math.random() < 0.15;
+const izx0 = zx + 165 - (nIco-1)*31;
+const j = Math.floor(rng() * (i + 1));
+const k = easeOut(s.ft);
+const k = inPhase ? clamp((t+1.4)/0.3, 0, 1) : clamp((t+3.2)/0.3, 0, 1);
+const kind = p.type==='snowpea' ? 'snow' : 'pea';
+const kneeX = (hipX+footX)/2 + 2;
+const lastLv = G.level >= LEVELS.length-1;
+const leftCb = lastLv ? ()=>startLevel(G.level) : ()=>startLevel(G.level+1);
+const leftLabel = lastLv ? '再玩一次' : '下一关';
+const leg=(x,dy)=>{
+const legDraw = (hipX, footX, lift)=>{
+const light = (r+c)%2===0;
+const lines = [
+const locked = !G.unlockAll && i+1 > G.unlocked;
+const long = k%2===0;
+const lunge = eat ? Math.abs(Math.sin(z.eatT*9))*5 : 0;
+const lv = LEVELS[G.level];
+const lv = LEVELS[G.level];
+const lv = LEVELS[G.level];
+const lv = LEVELS[i];
+const m = G.mowers.find(m=>m.row===row && m.state==='idle');
+const m = G.mowers.find(m=>m.row===z.row && m.state==='idle');
+const mouth = eat ? Math.abs(Math.sin(z.eatT*9))*7 : 2;
+const muzzle = clamp(r*1.6, 0, 1);
+const mx = x+15, my = y+22;
+const n = Math.floor(this.ctx.sampleRate * dur);
+const n = lv.count;
+const nIco = lv.types.length;
+const nLv = LEVELS.length;
+const now = this.ctx.currentTime;
+const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+const ok = isCoffee ? !!(target && target.asleep) : !target;
+const on = Math.sin(t*7+ph) > 0;
+const opts = [ans];
+const p = G.grid[z.row][c];
+const p = G.grid[z.row][c];
+const p = G.parts[i];
+const p = G.plants[i];
+const p = G.total ? clamp(G.killed / G.total, 0, 1) : 0;
+const p = toCanvas(t);
+const p = z.eatPlant;
+const p = {
+const pal = kind==='snow'
+const pea = G.peas[i];
+const ph = at*5.2;
+const pool = lv.types.map(([t,w])=>{
+const pos = ((now - this.loopStart) % MUSIC_LOOP + MUSIC_LOOP) % MUSIC_LOOP;
+const pre = n - finalCount;
+const progress = i/pre;
+const pulse = 1 + Math.sin(AT*4 + s.t)*0.05;
+const pulse = asleep ? 0 : 0.5 + Math.sin(t*3.4+ph)*0.14;
+const pw = 560, ph = 330, px = W/2-pw/2, py = H/2-ph/2-20;
+const pw = 660, ph = 520, px = W/2-pw/2, py = H/2-ph/2-10;
+const pw=640, ph=400, px=W/2-pw/2, py=H/2-ph/2;
+const px = worried ? 0 : 1.2;
+const px = z.state==='vault' ? -18 : -54;
+const py = p.fy - 28;
+const py = p.fy - 44;
+const py = p.fy - 52;
+const py = z.state==='vault' ? -58 : 0;
+const q = G.quiz;
+const q = G.quiz;
+const q = G.quiz;
+const qs = [];
+const r = clamp(throwT||0, 0, 1);
+const r = cv.getBoundingClientRect();
+const rand = (a, b) => a + rng() * (b - a);
+const randi = (a, b) => Math.floor(a + rng() * (b - a + 1));
+const reach = p.type==='puff' ? p.cx + CW*2 : W + 50;
+const reading = z.type==='newspaper' && !angry;
+const rec = (recoil||0)*7;
+const rot = Math.sin(AT*1.5 + i)*0.04;
+const run = m.state==='run';
+const s = G.slots[G.sel];
+const s = G.slots[i];
+const s = G.slots[i];
+const s = G.slots[i];
+const s = G.suns[i];
+const s = G.suns[i];
+const saved = ctx;
+const scale = 0.5 + easeOut(k)*0.6 + (inPhase ? Math.sin(AT*10)*0.02 : 0);
+const selType = G.slots[G.sel].type;
+const selected = G.sel === i;
+const skin='#ffd9ae', skinD='#eeb183', line='#6e4218';
+const slotW = 72, slotH = 100;
+const slowMul = z.slowT > 0 ? 0.45 : 1;
+const slowed = z.slowT > 0;
+const small = p.type === 'sunshroom';
+const spin = t*2 + r*18;
+const src = this.ctx.createBufferSource(); src.buffer = buf;
+const step = Math.sin(t*2.6+ph)*1.6;
+const sub = '网 页 版 · 离 线 可 玩';
+const sw2 = sub.length * 21 + 56;
+const sway = Math.sin(t*1.9+ph)*3, bob = Math.sin(t*2.2+ph)*2.4;
+const swing = walk ? Math.sin(ph) : 0;
+const sx = CARD_X0 + 8*(CARD_W+CARD_GAP) + 8, sy = BANK_Y+8;
+const sx = R()*W, sy = 6 + R()*(LY-56), tw = 0.45 + R()*0.55;
+const sx0 = W/2 - (lv.slots*(slotW+10))/2 + 5;
+const t = AT;
+const t = G.t;
+const t = G.t;
+const t = G.waveText.t;
+const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+const t = e.changedTouches[0];
+const t0 = this.ctx.currentTime + (delay||0);
+const t0 = this.ctx.currentTime + (delay||0);
+const t0 = this.ctx.currentTime + (when||0);
+const tGap = 86 * tScale;
+const tScale = title.length > 6 ? 64/86 : 1;
+const tSize = Math.round(86 * tScale);
+const target = G.grid[hc.row][hc.col];
+const theme = isNight() ? 'night' : 'day';
+const tieWave = Math.sin(at*3.1)*2;
+const tips = [
+const title = '球球的植物大战僵尸';
+const type = PLANT_ORDER[i];
+const type = isMissile ? 'missile' : 'bullet';
+const type = spawned < 3 ? 'normal' : pickType(lv, Math.max(0, progress-0.2), rng);
+const vg = ctx.createRadialGradient(W/2, H/2, H*0.55, W/2, H/2, H*0.95);
+const vx = isMissile ? 300 : 520;
+const w = 74;
+const w1 = Math.sin(t*9+ph)*3.4, w2 = Math.cos(t*11+ph)*3.2;
+const wa = run ? AT*24 : 0;
+const wheel = (wx, r)=>{
+const when = Math.max(0, (m[0]-curBeat)*MUSIC_BEAT);
+const wob = Math.sin(at*2.6)*0.05 + (walk ? swing*0.03 : 0);
+const won = G.state==='won';
+const worried = dmg > 0.55;
+const x = ((AT*(6+k*1.4) + k*163) % (W+80)) - 40;
+const x = ((AT*14 + k*197) % (W+60)) - 30;
+const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+8);
+const x = CARD_X0 + i*(CARD_W+CARD_GAP);
+const x = LX + R()*COLS*CW, y = LY + R()*ROWS*CH;
+const x = LX + hc.col*CW, y = LY + hc.row*CH;
+const x = LX+c*CW, y = LY+r*CH;
+const x = R()*W, y = LY+ROWS*CH+12+R()*28;
+const x = sx0 + i*(slotW+10), y = 118;
+const x = x0 + i*(cardW+gap), y = 258;
+const x0 = 600, x1 = 985, y = 611, h = 20;
+const x0 = W/2 - (nLv*cardW + (nLv-1)*gap)/2;
+const xx = Math.sin(t*3+k*2.4)*7;
+const y = 12, h = 30;
+const y = 96 + k*72;
+const y = BANK_Y + 12 + k*17;
+const y = BANK_Y + 2;
+const y = LY + 34 + ((k*101) % (ROWS*CH-56)) + Math.sin(AT*0.85+k*2.1)*16;
+const y = LY + 46 + ((k*89) % (ROWS*CH-70)) + Math.sin(AT*0.9+k*1.7)*13;
+const y0 = LY-34, y1 = LY+ROWS*CH+4;
+const yy = -30 - k*22;
+const yy = -58 - ((t*46 + k*29) % 34);
+const yy = -9 + k*5.4;
+const z = G.zombies[i];
+const zc = Math.floor((z.x - LX)/CW);
+const zs = G.zombies.filter(z=>z.row===r).sort((a,b)=>a.x-b.x);
+const zs = lv.types.map(t=>t[0]).slice(0,5);
+const zt = lv.types[k][0];
+const zx = 640, zy = 270;
+const zx0 = x+cardW/2 - (zs.length-1)*21;
+continue;
+continue;
+ctx = bgc;
+ctx = saved;
+ctx.arc(Math.cos(a)*17, -62+Math.sin(a*1.3)*26, 1.9, 0, TAU);
+ctx.arc(x+26*s,y+6*s,20*s,0,TAU);
+ctx.arc(x,y,18*s,0,TAU); ctx.arc(x+24*s,y-9*s,23*s,0,TAU); ctx.arc(x+50*s,y,17*s,0,TAU);
+ctx.arcTo(x+w,y+h,x,y+h,r);
+ctx.arcTo(x+w,y,x+w,y+h,r);
+ctx.arcTo(x,y+h,x,y,r);
+ctx.arcTo(x,y,x+w,y,r);
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath(); ctx.arc(-1, -14, 3.4, 0.3, Math.PI-0.3); ctx.stroke();
+ctx.beginPath(); ctx.arc(-1.5,3.2,1,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-1.6,-58.6,1.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-10,-8,2.4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-10,0,6,0,TAU); ctx.fillStyle = col[1]; ctx.fill();
+ctx.beginPath(); ctx.arc(-11,-16-Math.abs(Math.sin(AT*18))*5,3.4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-12,-20,3,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-12,1.4,3.6,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-13, 0, 3.6, 0, TAU); ctx.fillStyle = '#d8dee4'; ctx.fill();
+ctx.beginPath(); ctx.arc(-13, 0, 5, 0, TAU); ctx.fillStyle = '#ff9a2e'; ctx.fill();
+ctx.beginPath(); ctx.arc(-13,-60,5,0,TAU); ctx.fill(); ctx.stroke();
+ctx.beginPath(); ctx.arc(-13,0,5.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-13.5,-24,4,Math.PI+0.3,TAU-0.3); ctx.stroke();
+ctx.beginPath(); ctx.arc(-18,0,5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-20, 0, 3.5, 0, TAU); ctx.fillStyle = '#ffd23e'; ctx.fill();
+ctx.beginPath(); ctx.arc(-20,1,3.4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-26,-52-armSway*0.5,4.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-4,3,1,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-4.5,-11,1.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-4.8,-4,0.9,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-45,-65.5+armSway,2.2,0,TAU);
+ctx.beginPath(); ctx.arc(-47,-61+armSway,5,0,TAU);
+ctx.beginPath(); ctx.arc(-5,-11,2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-5,-11,2.6,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-5.3,-30.5,2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-5.5, ey-1, 3.6, Math.PI*1.15, Math.PI*1.85); ctx.stroke();
+ctx.beginPath(); ctx.arc(-5.5,-2.6,1.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-50.5,-116,1.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-52,-70,4.6,0,TAU); ctx.fill(); ctx.stroke();
+ctx.beginPath(); ctx.arc(-53,-111.5,2,0.2,Math.PI-0.2); ctx.stroke();
+ctx.beginPath(); ctx.arc(-53,-115+Math.sin(AT*4.2)*1.8,7,0,TAU);
+ctx.beginPath(); ctx.arc(-55.5,-116,1.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-7+px,-39,2.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-7,-24.4,1.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-8,-33,2.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-9,-3,2.1,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-9,-31,2.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-9.4,-2.7,0.9,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0, ey+8, 3.2, 0.25, Math.PI-0.25); ctx.stroke();
+ctx.beginPath(); ctx.arc(0, ey+9, 2.6, Math.PI+0.3, TAU-0.3); ctx.stroke();
+ctx.beginPath(); ctx.arc(0,-20,4.5,0.25,Math.PI-0.25); ctx.stroke();
+ctx.beginPath(); ctx.arc(0,-22,5.5,Math.PI+0.4,TAU-0.4); ctx.stroke();
+ctx.beginPath(); ctx.arc(0,-28,2.6,0,TAU); O('#c03028','#6e1810',1.4);
+ctx.beginPath(); ctx.arc(0,-28,5.6,0,TAU);
+ctx.beginPath(); ctx.arc(0,-28,7,0.3,Math.PI-0.3); ctx.stroke();
+ctx.beginPath(); ctx.arc(0,-30,34,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,-52,34,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,-57,5,0,TAU);
+ctx.beginPath(); ctx.arc(0,-58,13,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,-66,2.6+Math.sin(t*25)*1,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,0,13.5,0,TAU);
+ctx.beginPath(); ctx.arc(0,0,14,0,TAU);
+ctx.beginPath(); ctx.arc(0,0,14,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,0,15.5,0,TAU);
+ctx.beginPath(); ctx.arc(0,0,16,0,TAU);
+ctx.beginPath(); ctx.arc(0,0,16,0,TAU);
+ctx.beginPath(); ctx.arc(0,0,16.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,0,23,0,TAU);
+ctx.beginPath(); ctx.arc(0,0,40,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,0,7.5,0,TAU);
+ctx.beginPath(); ctx.arc(0,0,7.8,0,TAU);
+ctx.beginPath(); ctx.arc(0,0,r,0,TAU);
+ctx.beginPath(); ctx.arc(0,3.5,6.5,0.3,Math.PI-0.3); ctx.stroke();
+ctx.beginPath(); ctx.arc(1.7,-2.4,0.8,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(10,-16,2.6,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(12,-34,1.8,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(12,2,2, -0.5, 1.2); ctx.stroke();
+ctx.beginPath(); ctx.arc(14,-31,4.5,Math.PI+0.3,TAU-0.3); ctx.stroke();
+ctx.beginPath(); ctx.arc(14,-44,2.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(17,-53,4.6,0,TAU); O(skin,line,2);
+ctx.beginPath(); ctx.arc(17.2,-3,2.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(175, y0+48, 4, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(175, y0+48, 5.2, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(18,-4,0.8,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(2,-2.6,1.7,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(4,-11,2.6,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(4,-2.6,1.4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(4,-22,3.4,0.6,2.6); ctx.stroke();
+ctx.beginPath(); ctx.arc(4.5,-11,1.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(5.5, ey-1, 3.6, Math.PI*1.15, Math.PI*1.85); ctx.stroke();
+ctx.beginPath(); ctx.arc(6, -1, 1.2, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(6,-14,2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(6,-17,6,0,TAU); O('#f7f2e4','#6e1810',1.6);
+ctx.beginPath(); ctx.arc(6.2,-4,0.9,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(7,-24.4,1.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(7,-36,4.6,0,TAU); O(skin,line,2);
+ctx.beginPath(); ctx.arc(7.4,-3.4,2.4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(7.7,-30.5,2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(8,-33,2.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(8.2,-4.4,0.9,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(80,wy+97,4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(84,wy+99,3,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(875,55,5.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(879,74,2.6,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(88,wy+95,4.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(880,70,150,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(884,64,26,0,TAU);
+ctx.beginPath(); ctx.arc(890,52,2.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(893,70,3.4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(9+px,-39,2.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(9,-11,2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(Math.cos(a)*10, Math.sin(a)*10, 1.4, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(bx+24, by+bh/2-2.6, 2.1, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(bx+27, by+bh/2, 9, 0, TAU); ctx.fill(); ctx.stroke();
+ctx.beginPath(); ctx.arc(bx+30.5, by+bh/2+2.8, 1.5, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(ex+1.1, -23.2, 1.7, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(ex+1.2, ey+0.9, 1.8, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(hx+42, hy, 14, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(hx, hy, 22, 0, TAU);
+ctx.beginPath(); ctx.arc(hx-1, hy-8, 0.9, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(hx-1.8, hy-7, 2.3, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(mx+2.4, my+2.2, 1.1, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(mx, my, 6.6, 0, TAU);
+ctx.beginPath(); ctx.arc(mx-2.2, my-1.8, 1.5, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(ox+36,oy,14,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(s[0], s[1], s[2], 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(sx, BANK_Y+13, 3.2, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(sx, BANK_Y+BANK_H-13, 3.2, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(sx, sy, 0.8+tw*1.4, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(sx-1, BANK_Y+12, 1.2, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(sx-1, BANK_Y+BANK_H-14, 1.2, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(wx,10,2.4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(wx,10,r,0,TAU);
+ctx.beginPath(); ctx.arc(x+cardW/2, y+72, 11, Math.PI, 0); ctx.stroke();
+ctx.beginPath(); ctx.arc(x+cardW/2, y+83, 3, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(x+cw-16, y+14, 9, 0, TAU);
+ctx.beginPath(); ctx.arc(x, 490, 22+((x*7)%13), Math.PI, 0); ctx.fill();
+ctx.beginPath(); ctx.arc(x, 492, 16+((x*5)%9), Math.PI, 0); ctx.fill();
+ctx.beginPath(); ctx.arc(x, LY-16, 15+R()*8, Math.PI, 0); ctx.fill();
+ctx.beginPath(); ctx.arc(x, LY-20, 20+R()*10, Math.PI, 0); ctx.fill();
+ctx.beginPath(); ctx.arc(x, y, 2, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(x, y, 2.2+(k%3), 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(x, y, 2.2, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(x, y, 7, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(x,y,r,0,TAU);
+ctx.beginPath(); ctx.arc(xx, yy, 1.7, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-1,-9.5,15.5,4.6,-0.06,0,TAU);
+ctx.beginPath(); ctx.ellipse(-1,7.5,6,2.6,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-1.5,-10,15,4.6,-0.07,0,TAU);
+ctx.beginPath(); ctx.ellipse(-10,-50,8,5,-0.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-10,2,3,2,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-11,-42,5,6,0.3,0,TAU); O('#f5a02e','#a05c10',2);
+ctx.beginPath(); ctx.ellipse(-18,-33,2.2,3.2,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-2,6,3.6,2.4,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-2.4,-2.8,2.4,1.5,-0.6,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-21,2,3.5,4.5,0,0,TAU); O(skinD,line,1.8);
+ctx.beginPath(); ctx.ellipse(-5, 10, 9, 6.2, -0.08, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-5,-3,3.8,4.6,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-5.5,-3,2.2,3.4,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-6, 9, 8.5, mouth*0.62+1.6, -0.08, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-6,-38,7,3.4,-0.35,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-6.5,-31,4,5,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(-7, 10.5+mouth*0.5, 9.5, 5.6, -0.12, 0, TAU);
+ctx.beginPath(); ctx.ellipse(-7,-25,3.4,4.6,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(-8,-30,4.5,7,-0.4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-8,-40,5,6.2,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(-8.5,-3.5,3.6,4.2,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-8.5,-3.5,4.6,5.4,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-9,-33,2.2,3.2,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-r*0.32,-r*0.36,r*0.3,r*0.18,-0.6,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(0, 2, 23, 6.5, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(0,-21,15.5,20,0.14,0,TAU);
+ctx.beginPath(); ctx.ellipse(0,-23,6,13,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(0,-24,21,25,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(0,-25,6.5,14,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(0,-31,18,13.5,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(0,-34,27,35,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(0,-4,24,14,0,Math.PI,0);
+ctx.beginPath(); ctx.ellipse(0,-47,12,4.4,0,0,TAU); ctx.stroke();
+ctx.beginPath(); ctx.ellipse(0,-47,20,7.5,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(0,-47,5.5,2,0,0,TAU); ctx.stroke();
+ctx.beginPath(); ctx.ellipse(0,3,25,7.5,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(0,3,32,10,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(10,2,3,2,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(10,8,6.5,4.6,0.1,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(10,9.6,3.6,2.2,0.1,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(11,-42,5,6,-0.3,0,TAU); O('#f5a02e','#a05c10',2);
+ctx.beginPath(); ctx.ellipse(13,-2,3.2,4.4,0.2,0,TAU);
+ctx.beginPath(); ctx.ellipse(14,13,25,5.5,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(16,-3.5,4.2,5.2,0,0,TAU); O('#fff',line,1.8);
+ctx.beginPath(); ctx.ellipse(19,-41,2.6,3.6,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(2.5,-3.5,3.2,3.9,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(2.5,-3.5,4,4.9,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(20,6,3,2.2,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(27,-9, 13, 4.6, -0.1, 0, TAU);
+ctx.beginPath(); ctx.ellipse(4.5,-3,3.4,4.2,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(5.5,-3,2.2,3.4,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(6,-4,4.6,5.6,0,0,TAU); O('#fff',line,1.8);
+ctx.beginPath(); ctx.ellipse(6.5,-31,4,5,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(7,-25,3.4,4.6,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(8,-40,5,6.2,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(8,-52,7,3.6,-0.45,0,TAU);
+ctx.beginPath(); ctx.ellipse(9,-41,2.6,3.6,0,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(d.x, d.fy, d.r, d.r*0.5, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(ex, -24, 3.4, blink ? 0.9 : 4.2, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(ex, ey, 3.6, blink ? 0.9 : 4.4, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(footX-3,-3-lift,7.5,3.8,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(fx, fy, 58+R()*74, 6+R()*5, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(hx+30, hy-6, 5, 2.5, -0.3, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(hx+37, hy, 3.2, 6, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(hx+37, hy, 6, 9.5, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(hx-20, hy-6.5, 4.5, 7, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(hx-3.5, hy-7.5, 4.6, 5.6, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(ox+33, oy, 3.5, 5, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(ox+33, oy, 7, 9, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(x+26*s, y+12*s, 34*s, 7*s, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(x+CARD_W/2, y+CARD_H-24, 16, 4, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(x+cw/2, y+ch-30, 18, 4, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(x+dy*0.4+2.5,-3,8,4.6,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(x+slotW/2, y+slotH-26, 18, 4, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(x-r*0.38,y-r*0.48,r*0.28,r*0.15,-0.6,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.moveTo(-1,-39); ctx.quadraticCurveTo(6,-24,0,-3); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-10,-4); ctx.lineTo(-14,-8); ctx.lineTo(-8,-4); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(-10,4); ctx.lineTo(-14,8); ctx.lineTo(-8,4); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(-11,-38); ctx.lineTo(-4,-36); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-11,-42); ctx.quadraticCurveTo(-13,-24,-11,-6); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-11,-70); ctx.lineTo(-27,-66+armSway);
+ctx.beginPath(); ctx.moveTo(-12,-40); ctx.lineTo(-4,-40); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-12,-44); ctx.quadraticCurveTo(-4,-62, 0,-66);
+ctx.beginPath(); ctx.moveTo(-12,-8); ctx.lineTo(11,-9); ctx.lineTo(2,-33); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(-12,5.6); ctx.lineTo(-8.4,5.6); ctx.lineTo(-10.2,10.5); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(-13,-49); ctx.lineTo(-5,-46.5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-13,-7); ctx.lineTo(12,-8); ctx.lineTo(9,-30); ctx.lineTo(-10,-28); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(-13,-8); ctx.lineTo(-4,-9.5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-13.8,-27); ctx.lineTo(11.6,-28.8); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-14,-70); ctx.lineTo(-9,-74); ctx.moveTo(-11.5,-76); ctx.lineTo(-11.5,-68); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-14,-9); ctx.lineTo(-4,-5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-14.5,-17); ctx.lineTo(12.5,-18.8); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-16,11); ctx.lineTo(16,-24); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-16,11); ctx.lineTo(16,-24); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-18,-74); ctx.quadraticCurveTo((px-18)/2-6,(py-74)/2, px, py);
+ctx.beginPath(); ctx.moveTo(-19,-54); ctx.lineTo(-13,-43); ctx.lineTo(-18,-33); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-20,-10); ctx.quadraticCurveTo(-14,-4,-19,-1); ctx.quadraticCurveTo(-23,-5,-20,-10); ctx.fill();
+ctx.beginPath(); ctx.moveTo(-22,-40); ctx.lineTo(-15,-36.5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-24,-19); ctx.lineTo(0,-16); ctx.lineTo(0,18); ctx.lineTo(-24,21); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(-27,-66+armSway); ctx.lineTo(-44,-62+armSway);
+ctx.beginPath(); ctx.moveTo(-3,-77); ctx.lineTo(4,-77); ctx.lineTo(0.5,-72); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(-30,-60+armSway); ctx.lineTo(-32,-132);
+ctx.beginPath(); ctx.moveTo(-4,-15); ctx.quadraticCurveTo(-3,-19,-1,-21); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-5,-40); ctx.lineTo(-12,-36.5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-5.5,5.8); ctx.lineTo(-1.8,5.8); ctx.lineTo(-3.6,10.5); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(-7,-14); ctx.lineTo(-1,-24); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-8,-3); ctx.lineTo(-3,-3); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-8,-30); ctx.lineTo(-4,-33); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-8,-34); ctx.lineTo(-8,-44); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-9,-34); ctx.lineTo(-10.5,-15); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-9,-40); ctx.quadraticCurveTo(-4,-34, 7,-36);
+ctx.beginPath(); ctx.moveTo(0,-14); ctx.lineTo(3.6,-21); ctx.lineTo(-3.6,-21); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(0,18); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(23,-19); ctx.lineTo(23,21); ctx.lineTo(0,18); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(0,-27); ctx.lineTo(0,6);
+ctx.beginPath(); ctx.moveTo(0,-48); ctx.lineTo(0,-53); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(0,-9.5); ctx.lineTo(7,-8.5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,r-0.9,-0.4,1.1); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,r-0.9,2.7,4.2); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(198,y); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(1,-38); ctx.quadraticCurveTo(-1,-26,1,-14); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(1,-40); ctx.quadraticCurveTo(3,-48,2,-52); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(10, y);
+ctx.beginPath(); ctx.moveTo(10,-4); ctx.lineTo(16,0); ctx.lineTo(10,4); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(10,-40); ctx.quadraticCurveTo(12,-24,10,-8); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(10,-5); ctx.lineTo(16,-34); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(102, wy+2); ctx.lineTo(102, wy+92);
+ctx.beginPath(); ctx.moveTo(102, wy+2); ctx.lineTo(102, wy+92);
+ctx.beginPath(); ctx.moveTo(11,-38); ctx.lineTo(4,-36); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(12,-38); ctx.quadraticCurveTo(16,-46, 17,-52);
+ctx.beginPath(); ctx.moveTo(13,-12); ctx.lineTo(19,-11); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(13,-12); ctx.lineTo(19,-15); ctx.lineTo(17,-9); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(13,-4); ctx.lineTo(19,-4); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(13,-49); ctx.lineTo(5,-46.5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(13,-52); ctx.quadraticCurveTo(6,-64, 0,-66);
+ctx.beginPath(); ctx.moveTo(142,wy+2); ctx.lineTo(124,wy+2); ctx.quadraticCurveTo(134,wy+40,142,wy+58); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(15,-13); ctx.quadraticCurveTo(19,-8,15,-6); ctx.quadraticCurveTo(12,-9,15,-13); ctx.fill();
+ctx.beginPath(); ctx.moveTo(15,-58); ctx.lineTo(9,-45); ctx.lineTo(16,-34); ctx.lineTo(10,-21); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(16,-34); ctx.lineTo(33,-30); ctx.lineTo(16,-24); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(199, LY-4); ctx.lineTo(199, LY+ROWS*CH+4); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(2,-11); ctx.lineTo(9,-12); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(2,-15); ctx.quadraticCurveTo(3,-19,5,-20); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(2,-66); ctx.lineTo(5,-57); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(20,-12); ctx.lineTo(20,5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(24,-49); ctx.lineTo(16,-45); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(25,-12); ctx.lineTo(25,5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(3,-3); ctx.lineTo(8,-3); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(3,-4); ctx.lineTo(9,-4); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(30+k*6, yy); ctx.lineTo(52+k*10, yy); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(30,2); ctx.lineTo(47,-24);
+ctx.beginPath(); ctx.moveTo(4,-40); ctx.lineTo(12,-40); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(4,-49); ctx.lineTo(12,-45); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(43,-24); ctx.lineTo(51,-24);
+ctx.beginPath(); ctx.moveTo(44,y); ctx.bezierCurveTo(300,y+5,700,y-5,W-44,y+4); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(5,-15); ctx.lineTo(8,-17); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(62,wy+2); ctx.lineTo(80,wy+2); ctx.quadraticCurveTo(70,wy+40,62,wy+58); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(7,-9.5); ctx.lineTo(-1,-5.5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(76,wy+100); ctx.lineTo(92,wy+100); ctx.lineTo(89,wy+112); ctx.lineTo(79,wy+112); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(8,-13); ctx.quadraticCurveTo(10,-16,12,-17); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(8,-34); ctx.lineTo(8,-44); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(9,-66); ctx.lineTo(-4,-59-armSway*0.5); ctx.lineTo(-24,-52-armSway*0.5);
+ctx.beginPath(); ctx.moveTo(LX-1, LY-4); ctx.lineTo(LX-1, LY+ROWS*CH+4); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+19,by);
+ctx.beginPath(); ctx.moveTo(fx, y+3); ctx.lineTo(fx, y-10);
+ctx.beginPath(); ctx.moveTo(fx, y-10); ctx.lineTo(fx+13, y-6); ctx.lineTo(fx, y-2); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(hipX,-38); ctx.quadraticCurveTo(kneeX,-22, footX,-4-lift);
+ctx.beginPath(); ctx.moveTo(hx-7,hy-7); ctx.lineTo(hx-1,hy-7); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(px+14, py+k*66); ctx.lineTo(px+pw-14, py+k*66); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(wx+Math.cos(wa)*(r-2.5), 10+Math.sin(wa)*(r-2.5));
+ctx.beginPath(); ctx.moveTo(wx+Math.cos(wa+1.57)*(r-2.5), 10+Math.sin(wa+1.57)*(r-2.5));
+ctx.beginPath(); ctx.moveTo(x+6,452); ctx.lineTo(x+14,443); ctx.lineTo(x+22,452); ctx.closePath(); ctx.fill(); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(x+cw-20, y+14); ctx.lineTo(x+cw-17, y+17.5); ctx.lineTo(x+cw-11.5, y+10.5); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(x+dir*3*s, y); ctx.quadraticCurveTo(x+dir*14*s, y-3*s, x+dir*23*s, y-2*s); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(x+dy*0.4-4,-3.4); ctx.lineTo(x+dy*0.4+9,-3.4); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(x, LY-30); ctx.lineTo(x+7, LY-38); ctx.lineTo(x+14, LY-30); ctx.closePath(); ctx.fill(); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(x,-16); ctx.lineTo(x+dy*0.4,-4);
+ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-2,y-5); ctx.moveTo(x,y); ctx.lineTo(x+2,y-6); ctx.stroke();
+ctx.beginPath(); ctx.rect(-12, 5.6, 2.8, 3.2); ctx.fill(); ctx.stroke();
+ctx.beginPath(); ctx.rect(-14,-14,27,5.5);
+ctx.beginPath(); ctx.rect(-8.2, 6.2, 2.8, 3); ctx.fill(); ctx.stroke();
+ctx.beginPath(); rr(-10,-4, 20, 8, 3);
+ctx.beginPath(); rr(-11,-9,22,17,1.5);
+ctx.beginPath(); rr(-12,-34,24,20,6);
+ctx.beginPath(); rr(-13,-48,26,20,8);
+ctx.beginPath(); rr(-13,-76,26,42,6);
+ctx.beginPath(); rr(-20,-47,40,48,8);
+ctx.beginPath(); rr(-4,-16,38,25,8);
+ctx.beginPath(); rr(-5,-28,10,7,3); ctx.stroke();
+ctx.beginPath(); rr(-7,-2.4, 16, 4.8, 2);
+ctx.beginPath(); rr(-8,-14,6,8,2);
+ctx.beginPath(); rr(1,-12,15,9,3);
+ctx.beginPath(); rr(40, 70, W-80, H-120, 16);
+ctx.beginPath(); rr(8, BANK_Y, 744, BANK_H, 12);
+ctx.beginPath(); rr(SUN_BOX.x, SUN_BOX.y, SUN_BOX.w, SUN_BOX.h, 10);
+ctx.beginPath(); rr(bx+3, by+5, bw, bh, 22); ctx.fill();
+ctx.beginPath(); rr(bx, by, bw, bh, 10); O(bg, '#2e4a14', 3);
+ctx.beginPath(); rr(bx, by, bw, bh, 22);
+ctx.beginPath(); rr(hx+10, hy-10, 28, 20, 9);
+ctx.beginPath(); rr(hx-20, hy-16, 28, 19, 9);
+ctx.beginPath(); rr(inner.x, y+4, inner.w, h-8, 6); ctx.fill();
+ctx.beginPath(); rr(ox-14, oy-11, 22, 22, 5);
+ctx.beginPath(); rr(ox-6, oy-17, 14, 8, 3);
+ctx.beginPath(); rr(ox-8, oy+11, 9, 9, 3);
+ctx.beginPath(); rr(px+5, py+7, pw, ph, 14); ctx.fill();
+ctx.beginPath(); rr(px+5, py+7, pw, ph, 14); ctx.fill();
+ctx.beginPath(); rr(px+5, py+8, pw, ph, 14); ctx.fill();
+ctx.beginPath(); rr(px, py, pw, ph, 14);
+ctx.beginPath(); rr(px, py, pw, ph, 14);
+ctx.beginPath(); rr(px, py, pw, ph, 14); O(g,'#6b4c20',4);
+ctx.beginPath(); rr(sx, sy, 64, 72, 8);
+ctx.beginPath(); rr(x+2, y+3, CARD_W, CARD_H, 8); ctx.fill();
+ctx.beginPath(); rr(x+2, y+4, cw, ch, 9); ctx.fill();
+ctx.beginPath(); rr(x+3, y+4, w, h, 11); ctx.fill();
+ctx.beginPath(); rr(x+3, y+5, cardW, cardH, 12); ctx.fill();
+ctx.beginPath(); rr(x+cardW/2-15, y+72, 30, 26, 5); ctx.fill();
+ctx.beginPath(); rr(x, y, CARD_W, CARD_H, 8);
+ctx.beginPath(); rr(x, y, cardW, cardH, 12);
+ctx.beginPath(); rr(x, y, cw, ch, 9);
+ctx.beginPath(); rr(x, y, slotW, slotH, 8);
+ctx.beginPath(); rr(x, y, w, h, 10);
+ctx.beginPath(); rr(x, y, w, h, 8);
+ctx.beginPath(); rr(x0, y, x1-x0, h, 9);
+ctx.beginPath(); rr(zx, zy, 330, 220, 10);
+ctx.bezierCurveTo(200, y+4, 500, y-4, 750, y+3);
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath(); ctx.fill();
+ctx.closePath(); ctx.fill(); ctx.stroke();
+ctx.drawImage(bgCanvas, 0, 0, W, H);
+ctx.ellipse(208+R()*50, LY+r*CH+14+R()*70, 4+R()*4, 2.5+R()*2, R(), 0, TAU);
+ctx.fill();
+ctx.fill();
+ctx.fill();
+ctx.fill();
+ctx.fillRect(-20,-20,W+40,H+40);
+ctx.fillRect(-21, 12, 8, 5);
+ctx.fillRect(-21, yy+0.8, 16 - (k===3?5:0), 1.8);
+ctx.fillRect(-3, -1.6, 6, 3.2);
+ctx.fillRect(-4, 10, 9, 8);
+ctx.fillRect(-5,4.6,2.2,2.6); ctx.fillRect(-1.4,4.9,2.2,2.4);
+ctx.fillRect(0, 462, W, 6); ctx.fillRect(0, 474, W, 6);
+ctx.fillRect(0, H-150, W, 150);
+ctx.fillRect(0, LY+ROWS*CH+4, W, H-(LY+ROWS*CH)-4);
+ctx.fillRect(0, LY-4, W, ROWS*CH+8);
+ctx.fillRect(0, y0+12, 200, 4);
+ctx.fillRect(0, y0, 198, y1-y0);
+ctx.fillRect(0, y0, 200, 12);
+ctx.fillRect(0, y1-26, 198, 26);
+ctx.fillRect(0,0,W,H);
+ctx.fillRect(0,0,W,H);
+ctx.fillRect(0,0,W,H);
+ctx.fillRect(0,0,W,H);
+ctx.fillRect(0,0,W,H);
+ctx.fillRect(0,0,W,H);
+ctx.fillRect(0,0,W,H);
+ctx.fillRect(0,0,W,H);
+ctx.fillRect(0,0,W,LY);
+ctx.fillRect(10, BANK_Y+2, 740, 6);
+ctx.fillRect(170, y0+40, 10, 16);
+ctx.fillRect(188, y0+12, 12, y1-y0-38);
+ctx.fillRect(198, LY-4, LX-198, ROWS*CH+8);
+ctx.fillRect(200, LY-12, W-200, 5);
+ctx.fillRect(200, LY-22, W-200, 5);
+ctx.fillRect(3,-15, 17, 3.4);
+ctx.fillRect(3.5, yy, 16 - (k===4?6:0), 1.8);
+ctx.fillRect(46, 74, W-92, 8);
+ctx.fillRect(6.5,4.6,3,2.2);
+ctx.fillRect(62, wy+2, 80, 90);
+ctx.fillRect(62, wy+2, 80, 90);
+ctx.fillRect(LX+COLS*CW, LY-34, W-(LX+COLS*CW), ROWS*CH+38);
+ctx.fillRect(SUN_BOX.x+4, SUN_BOX.y+3, SUN_BOX.w-8, 8);
+ctx.fillRect(c*80, H-150, 80, 150);
+ctx.fillRect(inner.x + inner.w*(1-p), y+4, inner.w*p, h-8);
+ctx.fillRect(px+6, py+4, pw-12, 7);
+ctx.fillRect(x+3, y+2, w-6, 5);
+ctx.fillRect(x+3, y+2.5, CARD_W-6, 5);
+ctx.fillRect(x+4, y+3, cw-8, 6);
+ctx.fillRect(x+5, y+3, w-10, 6);
+ctx.fillRect(x+5, y+h-7, w-10, 4);
+ctx.fillRect(x+6, y+4, cardW-12, 7);
+ctx.fillRect(x, y, CARD_W, CARD_H*frac);
+ctx.fillRect(x, y, CW, CH);
+ctx.fillRect(x, y, CW, CH);
+ctx.fillRect(x, y, CW, CH);
+ctx.fillStyle = '#1e2a12';
+ctx.fillStyle = '#221822';
+ctx.fillStyle = '#222';
+ctx.fillStyle = '#222';
+ctx.fillStyle = '#241204';
+ctx.fillStyle = '#2a1c08';
+ctx.fillStyle = '#2c2c22';
+ctx.fillStyle = '#2c2c28';
+ctx.fillStyle = '#2e1c06';
+ctx.fillStyle = '#2e2018';
+ctx.fillStyle = '#2e2018';
+ctx.fillStyle = '#39412e';
+ctx.fillStyle = '#3a0802';
+ctx.fillStyle = '#3a0e0a';
+ctx.fillStyle = '#3a220c';
+ctx.fillStyle = '#3c3428';
+ctx.fillStyle = '#4a93c9';
+ctx.fillStyle = '#4d8a3a';
+ctx.fillStyle = '#4d8a3a';
+ctx.fillStyle = '#5a5245';
+ctx.fillStyle = '#5a5245'; ctx.fillRect(-9,-7,18,2.4);
+ctx.fillStyle = '#5c6247';
+ctx.fillStyle = '#5f9e46';
+ctx.fillStyle = '#5f9e46';
+ctx.fillStyle = '#6b4522';
+ctx.fillStyle = '#6b5230';
+ctx.fillStyle = '#6b6b62';
+ctx.fillStyle = '#7a5c38';
+ctx.fillStyle = '#7dbb43';
+ctx.fillStyle = '#7dbb43';
+ctx.fillStyle = '#7fb85a';
+ctx.fillStyle = '#8a5c34';
+ctx.fillStyle = '#8a6b44';
+ctx.fillStyle = '#a86238';
+ctx.fillStyle = '#a89c8c';
+ctx.fillStyle = '#b08968';
+ctx.fillStyle = '#c03028';
+ctx.fillStyle = '#c04818';
+ctx.fillStyle = '#ddd8c6';
+ctx.fillStyle = '#ddd8c6';
+ctx.fillStyle = '#ddd8c6';
+ctx.fillStyle = '#e86a8a';
+ctx.fillStyle = '#e8dfc6';
+ctx.fillStyle = '#e8dfc6';
+ctx.fillStyle = '#e8e4d4';
+ctx.fillStyle = '#e8e4d4';
+ctx.fillStyle = '#e8f7ff';
+ctx.fillStyle = '#e9ff9a';
+ctx.fillStyle = '#f2ead4';
+ctx.fillStyle = '#f2ead4';
+ctx.fillStyle = '#f6eec6'; ctx.strokeStyle = '#b8a860'; ctx.lineWidth = 1.2;
+ctx.fillStyle = '#ffc82e';
+ctx.fillStyle = '#ffd23e';
+ctx.fillStyle = '#ffd23e';
+ctx.fillStyle = '#ffd23e';
+ctx.fillStyle = '#ffd83d';
+ctx.fillStyle = '#ffe89a';
+ctx.fillStyle = '#fff';
+ctx.fillStyle = '#fff';
+ctx.fillStyle = '#fff';
+ctx.fillStyle = '#fff3b0';
+ctx.fillStyle = '#fffbe0';
+ctx.fillStyle = 'rgba(0,0,0,0.18)';
+ctx.fillStyle = 'rgba(0,0,0,0.4)';
+ctx.fillStyle = 'rgba(10,16,10,0.55)';
+ctx.fillStyle = 'rgba(10,16,10,0.6)';
+ctx.fillStyle = 'rgba(10,16,10,0.6)';
+ctx.fillStyle = 'rgba(10,16,10,0.62)';
+ctx.fillStyle = 'rgba(120,112,96,0.55)';
+ctx.fillStyle = 'rgba(120,120,120,'+(0.3+Math.sin(AT*30)*0.15)+')';
+ctx.fillStyle = 'rgba(120,80,28,0.35)';
+ctx.fillStyle = 'rgba(120,90,50,'+(0.18+R()*0.15)+')';
+ctx.fillStyle = 'rgba(15,15,25,0.6)';
+ctx.fillStyle = 'rgba(15,22,48,0.42)';
+ctx.fillStyle = 'rgba(15,25,8,0.4)';
+ctx.fillStyle = 'rgba(15,25,8,0.45)';
+ctx.fillStyle = 'rgba(158,170,200,0.5)';
+ctx.fillStyle = 'rgba(170,225,255,0.65)';
+ctx.fillStyle = 'rgba(180,215,235,0.5)';
+ctx.fillStyle = 'rgba(184,168,96,0.5)';
+ctx.fillStyle = 'rgba(184,168,96,0.55)';
+ctx.fillStyle = 'rgba(188,212,255,0.10)';
+ctx.fillStyle = 'rgba(20,12,4,0.35)';
+ctx.fillStyle = 'rgba(20,12,4,0.6)';
+ctx.fillStyle = 'rgba(20,35,10,0.35)';
+ctx.fillStyle = 'rgba(200,40,30,0.35)';
+ctx.fillStyle = 'rgba(210,240,255,0.55)';
+ctx.fillStyle = 'rgba(220,90,45,0.3)';
+ctx.fillStyle = 'rgba(230,120,60,0.3)';
+ctx.fillStyle = 'rgba(232,120,90,0.85)';
+ctx.fillStyle = 'rgba(25,45,15,0.3)';
+ctx.fillStyle = 'rgba(25,45,15,0.32)';
+ctx.fillStyle = 'rgba(255,150,40,0.45)';
+ctx.fillStyle = 'rgba(255,190,80,0.85)';
+ctx.fillStyle = 'rgba(255,230,180,0.1)';
+ctx.fillStyle = 'rgba(255,230,180,0.14)';
+ctx.fillStyle = 'rgba(255,230,180,0.18)';
+ctx.fillStyle = 'rgba(255,230,180,0.35)';
+ctx.fillStyle = 'rgba(255,230,190,0.22)';
+ctx.fillStyle = 'rgba(255,240,200,0.35)';
+ctx.fillStyle = 'rgba(255,250,230,' + clamp(G.flash,0,0.35) + ')';
+ctx.fillStyle = 'rgba(255,252,232,'+(0.3+tw*0.55).toFixed(3)+')';
+ctx.fillStyle = 'rgba(255,255,255,0.2)';
+ctx.fillStyle = 'rgba(255,255,255,0.25)';
+ctx.fillStyle = 'rgba(255,255,255,0.28)';
+ctx.fillStyle = 'rgba(255,255,255,0.28)';
+ctx.fillStyle = 'rgba(255,255,255,0.3)';
+ctx.fillStyle = 'rgba(255,255,255,0.3)';
+ctx.fillStyle = 'rgba(255,255,255,0.35)';
+ctx.fillStyle = 'rgba(255,255,255,0.55)';
+ctx.fillStyle = 'rgba(255,255,255,0.6)';
+ctx.fillStyle = 'rgba(255,255,255,0.65)';
+ctx.fillStyle = 'rgba(255,255,255,0.7)';
+ctx.fillStyle = 'rgba(255,255,255,0.92)';
+ctx.fillStyle = 'rgba(30,18,6,0.35)';
+ctx.fillStyle = 'rgba(30,50,15,0.35)';
+ctx.fillStyle = 'rgba(35,65,20,0.18)';
+ctx.fillStyle = 'rgba(35,65,20,0.32)';
+ctx.fillStyle = 'rgba(60,40,15,0.25)';
+ctx.fillStyle = 'rgba(60,40,15,0.25)';
+ctx.fillStyle = 'rgba(60,40,15,0.3)';
+ctx.fillStyle = 'rgba(90,82,69,0.7)';
+ctx.fillStyle = 'rgba(90,82,69,0.75)';
+ctx.fillStyle = 'rgba(95,58,18,0.55)';
+ctx.fillStyle = 'rgba(95,60,22,0.5)';
+ctx.fillStyle = C.line;
+ctx.fillStyle = C.skin; ctx.fill();
+ctx.fillStyle = C.skin; ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+ctx.fillStyle = C.skinD;
+ctx.fillStyle = C.skinD;
+ctx.fillStyle = ['#ffd23e','#8fd44a','#ff8ab0','#7cc4ec'][k%4];
+ctx.fillStyle = ['#ffd23e','#ff8ab0','#fff'][k%3];
+ctx.fillStyle = col; ctx.fill();
+ctx.fillStyle = fill;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g; ctx.beginPath(); ctx.arc(102, wy+47, 104, 0, TAU); ctx.fill();
+ctx.fillStyle = g; ctx.beginPath(); ctx.arc(175, y0+48, 70, 0, TAU); ctx.fill();
+ctx.fillStyle = g; ctx.beginPath(); ctx.arc(884,64,130,0,TAU); ctx.fill();
+ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mx, my, 12, 0, TAU); ctx.fill();
+ctx.fillStyle = g; ctx.fill();
+ctx.fillStyle = g; ctx.fill();
+ctx.fillStyle = g; ctx.fillRect(0, LY+ROWS*CH+4, W, H-(LY+ROWS*CH)-4);
+ctx.fillStyle = hi;
+ctx.fillStyle = long ? '#ffd83d' : '#ffc32e';
+ctx.fillStyle = ok ? 'rgba(255,255,220,0.32)' : 'rgba(200,40,30,0.32)';
+ctx.fillStyle = p.color;
+ctx.fillStyle = slowed ? '#3f5a68' : '#5c6247';
+ctx.fillStyle = spots;
+ctx.fillStyle = tg;
+ctx.fillStyle = vg;
+ctx.fillStyle='#1a1c1f'; ctx.fill();
+ctx.fillStyle='#2a1a08';
+ctx.fillStyle='#4a2c14';
+ctx.fillStyle='#7a2c18';
+ctx.fillStyle='#e86a5a';
+ctx.fillStyle='#ffd23e';
+ctx.fillStyle='#fff';
+ctx.fillStyle='#fff';
+ctx.fillStyle='rgba(15,25,8,0.35)'; ctx.beginPath(); rr(bx+2, by+3, bw, bh, 10); ctx.fill();
+ctx.fillStyle='rgba(15,25,8,0.45)';
+ctx.fillStyle='rgba(180,40,30,0.28)'; ctx.fillRect(0,0,W,H);
+ctx.fillStyle='rgba(240,120,110,0.4)';
+ctx.fillStyle='rgba(255,255,255,0.22)'; ctx.fillRect(bx+5, by+3, bw-10, 6);
+ctx.fillStyle='rgba(60,140,40,0.28)'; ctx.fillRect(0,0,W,H);
+ctx.fillStyle=g;
+ctx.fillText(text, x, y);
+ctx.fillText(title[i], 0, 0);
+ctx.fillText(title[i], cx+5, dy+8);
+ctx.font = '900 ' + tSize + 'px "PingFang SC","Microsoft YaHei",sans-serif';
+ctx.font = '900 ' + tSize + 'px "PingFang SC","Microsoft YaHei",sans-serif';
+ctx.font = (weight||'900') + ' ' + size + 'px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif';
+ctx.globalAlpha = 0.12;
+ctx.globalAlpha = 0.12;
+ctx.globalAlpha = 0.16 + Math.sin(AT*1.3+k)*0.08;
+ctx.globalAlpha = 0.25;
+ctx.globalAlpha = 0.25;
+ctx.globalAlpha = 0.3;
+ctx.globalAlpha = 0.55;
+ctx.globalAlpha = 0.5;
+ctx.globalAlpha = 0.9;
+ctx.globalAlpha = 1;
+ctx.globalAlpha = 1;
+ctx.globalAlpha = 1;
+ctx.globalAlpha = 1;
+ctx.globalAlpha = 1;
+ctx.globalAlpha = a * 0.95;
+ctx.globalAlpha = a*0.28;
+ctx.globalAlpha = a;
+ctx.globalAlpha = a;
+ctx.globalAlpha = alpha;
+ctx.globalAlpha = alpha;
+ctx.globalAlpha = clamp(1 - (-58-yy+34)/40, 0, 1)*0.8;
+ctx.globalAlpha = clamp(1 - (d-0.25)/0.7, 0, 1);
+ctx.globalAlpha = clamp(d.ttl/d.max, 0, 1) * 0.55;
+ctx.globalAlpha = clamp(muzzle,0,1);
+ctx.globalAlpha = clamp(p.life/p.max, 0, 1);
+ctx.globalAlpha = flash/0.09;
+ctx.globalCompositeOperation = 'multiply';
+ctx.lineCap = 'round';
+ctx.lineCap = 'round';
+ctx.lineCap='round';
+ctx.lineTo(-1.5+tieWave,-48);
+ctx.lineTo(-13,-43); ctx.lineTo(-10,-37); ctx.lineTo(-17,-39);
+ctx.lineTo(-6,-79); ctx.lineTo(-9,-40);
+ctx.lineTo(-73, -101 + Math.sin(AT*4.2)*2.4);
+ctx.lineTo(0+tieWave,-44);
+ctx.lineTo(13,-43); ctx.lineTo(10,-37); ctx.lineTo(17,-39);
+ctx.lineTo(4,-44);
+ctx.lineTo(6,-79); ctx.lineTo(9,-40);
+ctx.lineTo(6.5,-25); ctx.quadraticCurveTo(9.5,-15,7,-1);
+ctx.lineTo(Math.cos(a)*(9+Math.sin(t*30+k)*2), -66+Math.sin(a)*(9+Math.sin(t*30+k)*2));
+ctx.lineTo(W,520); ctx.lineTo(0,520);
+ctx.lineTo(W/2+sw2/2, 205); ctx.lineTo(W/2+sw2/2+14, 222);
+ctx.lineTo(W/2-sw2/2-14, 222); ctx.lineTo(W/2-sw2/2, 205);
+ctx.lineTo(hx+18.5+k*8, hy+17);
+ctx.lineTo(hx+22+k*8, hy+10);
+ctx.lineTo(wx-Math.cos(wa)*(r-2.5), 10-Math.sin(wa)*(r-2.5)); ctx.stroke();
+ctx.lineTo(wx-Math.cos(wa+1.57)*(r-2.5), 10-Math.sin(wa+1.57)*(r-2.5)); ctx.stroke();
+ctx.lineWidth = 13*tScale; ctx.lineJoin = 'round';
+ctx.lineWidth = 2.5;
+ctx.moveTo(-1,2);
+ctx.moveTo(-1,2);
+ctx.moveTo(-1.5,-76); ctx.lineTo(2.5,-76);
+ctx.moveTo(-10,4); ctx.lineTo(10,4); ctx.lineTo(8,20);
+ctx.moveTo(-11.5,-19); ctx.lineTo(9.5,-20.5); ctx.lineTo(8,-26); ctx.lineTo(-9.5,-24.5);
+ctx.moveTo(-14+off, -49);
+ctx.moveTo(-16,-9);
+ctx.moveTo(-16,-9); ctx.lineTo(14,-11); ctx.lineTo(10.5,-40); ctx.lineTo(-13,-38);
+ctx.moveTo(-17,-74);
+ctx.moveTo(-23,-6);
+ctx.moveTo(-32,-132);
+ctx.moveTo(-7,-1); ctx.quadraticCurveTo(-9.5,-15,-6.5,-25);
+ctx.moveTo(-7,-7); ctx.lineTo(-2.4,-2.4); ctx.moveTo(0,-9); ctx.lineTo(0,-3);
+ctx.moveTo(0,-14); ctx.lineTo(long?4.6:3.4, long?-27:-22); ctx.lineTo(long?-4.6:-3.4, long?-27:-22);
+ctx.moveTo(0,470);
+ctx.moveTo(1,2);
+ctx.moveTo(1,2);
+ctx.moveTo(17,-74);
+ctx.moveTo(4,-19); ctx.lineTo(4,-24); ctx.moveTo(1,-21.5); ctx.lineTo(7,-21.5);
+ctx.moveTo(62, wy+47); ctx.lineTo(142, wy+47); ctx.stroke();
+ctx.moveTo(62, wy+47); ctx.lineTo(142, wy+47); ctx.stroke();
+ctx.moveTo(7,-7); ctx.lineTo(2.4,-2.4); ctx.moveTo(-5,0); ctx.lineTo(5,0);
+ctx.moveTo(Math.cos(a)*4, -66+Math.sin(a)*4);
+ctx.moveTo(W/2-sw2/2-14, 188); ctx.lineTo(W/2+sw2/2+14, 188);
+ctx.moveTo(hx+15+k*8, hy+10);
+ctx.moveTo(sx, sy-3.2); ctx.lineTo(sx, sy+3.2);
+ctx.moveTo(sx-3.2, sy); ctx.lineTo(sx+3.2, sy);
+ctx.moveTo(x+2+bl+pu, y+CH-2); ctx.lineTo(x+2, y+CH-2); ctx.lineTo(x+2, y+CH-2-bl-pu);
+ctx.moveTo(x+2, y+2+bl+pu); ctx.lineTo(x+2, y+2); ctx.lineTo(x+2+bl+pu, y+2);
+ctx.moveTo(x+CW-2, y+CH-2-bl-pu); ctx.lineTo(x+CW-2, y+CH-2); ctx.lineTo(x+CW-2-bl-pu, y+CH-2);
+ctx.moveTo(x+CW-2-bl-pu, y+2); ctx.lineTo(x+CW-2, y+2); ctx.lineTo(x+CW-2, y+2+bl+pu);
+ctx.moveTo(x+r,y);
+ctx.moveTo(x, y); ctx.lineTo(x+1, y-6-R()*3);
+ctx.moveTo(x, y); ctx.lineTo(x+3, y-4-R()*3);
+ctx.moveTo(x, y); ctx.lineTo(x-2, y-5-R()*3);
+ctx.moveTo(x,y);
+ctx.quadraticCurveTo(-17+off+w1, -49-h*0.45, w2*0.5+off, -49-h);
+ctx.quadraticCurveTo(-18,-79,-12,-79);
+ctx.quadraticCurveTo(-2+tieWave,-60,-1.5,-76);
+ctx.quadraticCurveTo(-2,-13, 13,-11);
+ctx.quadraticCurveTo(-20,-27, 0,-28);
+ctx.quadraticCurveTo(-52, -108, -31, -104);
+ctx.quadraticCurveTo(-54, -128 + Math.sin(AT*4.2)*3.4, -76, -121 + Math.sin(AT*4.2+1)*3.6);
+ctx.quadraticCurveTo(0,-14, -23,-6);
+ctx.quadraticCurveTo(0,28,-8,20);
+ctx.quadraticCurveTo(0,3,-7,-1); ctx.closePath();
+ctx.quadraticCurveTo(1,-46, -2,-44);
+ctx.quadraticCurveTo(17+off+w1, -49-h*0.42, 14+off, -49);
+ctx.quadraticCurveTo(18,-79,12,-79);
+ctx.quadraticCurveTo(180, 400, 380, 462);
+ctx.quadraticCurveTo(20,-27, 23,-6);
+ctx.quadraticCurveTo(3+tieWave,-60, 1.5+tieWave,-48);
+ctx.quadraticCurveTo(5,-16, -2-rec*0.5, -32+bob);
+ctx.quadraticCurveTo(5,-16, -2-rec*0.5, -32+bob);
+ctx.quadraticCurveTo(560, 415, 760, 465);
+ctx.quadraticCurveTo(7,-22, hx, hy+16);
+ctx.quadraticCurveTo(7,-22, hx, hy+16);
+ctx.quadraticCurveTo(900, 430, 1024, 468);
+ctx.quadraticCurveTo(x+dir*15*s, y+8*s, x, y);
+ctx.quadraticCurveTo(x+dir*15*s, y-9*s, x+dir*27*s, y-2*s);
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.rotate(-0.22 + wob);
+ctx.rotate(AT*0.7);
+ctx.rotate(Math.sin(AT*14)*0.012);
+ctx.rotate(Math.sin(t*1.8+ph)*0.03);
+ctx.rotate(TAU/10);
+ctx.rotate(TAU/14);
+ctx.rotate(d*1.5);
+ctx.rotate(r*0.07);
+ctx.rotate(rot);
+ctx.rotate(swing*0.035);
+ctx.rotate(swing*0.06 + (eat ? Math.sin(z.eatT*9)*0.07 : Math.sin(at*1.7)*0.03));
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save(); ctx.rotate(AT*0.7);
+ctx.save(); ctx.rotate(Math.sin(t+ph)*0.05 + TAU/24);
+ctx.save(); ctx.rotate(Math.sin(t+ph)*0.05);
+ctx.save(); ctx.rotate(k*TAU/12);
+ctx.save(); ctx.rotate(k*TAU/12);
+ctx.save(); ctx.scale(s,s);
+ctx.save(); ctx.translate(0, bob*0.4);
+ctx.save(); ctx.translate(0,-hop);
+ctx.save(); ctx.translate(110, H-36); ctx.scale(1.55,1.55); drawSunflower(AT, 0); ctx.restore();
+ctx.save(); ctx.translate(225, H-28); ctx.scale(1.35,1.35); drawShooter(AT, 2, 'pea', 0, 0); ctx.restore();
+ctx.save(); ctx.translate(315, H-24); ctx.scale(1.15,1.15); drawWallnut(1, AT, 4); ctx.restore();
+ctx.save(); ctx.translate(465, H-14); ctx.scale(1.12,1.12); drawQiuqiu(AT, 5, 0); ctx.restore();
+ctx.save(); ctx.translate(W-140, H-26); ctx.scale(1.55,1.55);
+ctx.save(); ctx.translate(W-262, H-18); ctx.scale(1.3,1.3);
+ctx.save(); ctx.translate(W-372, H-14); ctx.scale(1.12,1.12);
+ctx.save(); ctx.translate(W-470, H-16); ctx.scale(1.2,1.2);
+ctx.save(); ctx.translate(cx, cy); ctx.rotate(AT*3+k);
+ctx.save(); ctx.translate(hx,hy); ctx.rotate(Math.sin(t*0.9+ph)*0.08);
+ctx.save(); ctx.translate(hx-7, hy-20); ctx.rotate(-0.55+Math.sin(t*2+ph)*0.12);
+ctx.save(); ctx.translate(x,y); ctx.rotate(-0.7); ctx.scale(s,s);
+ctx.save(); ctx.translate(x,y); ctx.rotate(spin||0);
+ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
+ctx.scale(DPR, DPR);
+ctx.scale(pulse, pulse);
+ctx.scale(s, s);
+ctx.scale(scale, scale);
+ctx.scale(scale, scale);
+ctx.scale(scale, scale);
+ctx.stroke();
+ctx.stroke();
+ctx.stroke();
+ctx.stroke();
+ctx.stroke();
+ctx.stroke();
+ctx.stroke();
+ctx.stroke();
+ctx.strokeRect(200, LY-22, W-200, 5);
+ctx.strokeRect(LX-1, LY-1, COLS*CW+2, ROWS*CH+2);
+ctx.strokeRect(x+2, y+2, CW-4, CH-4);
+ctx.strokeStyle = '#241204'; ctx.lineWidth = 1.8;
+ctx.strokeStyle = '#2c2c28'; ctx.lineWidth = 5.5;
+ctx.strokeStyle = '#2c2c2c'; ctx.lineWidth = 5; ctx.stroke();
+ctx.strokeStyle = '#2c4210';
+ctx.strokeStyle = '#2e1c06'; ctx.lineWidth = 2.2; ctx.lineCap='round';
+ctx.strokeStyle = '#39412e'; ctx.lineWidth = 1.4;
+ctx.strokeStyle = '#3a2408'; ctx.lineWidth = 2; ctx.lineCap='round';
+ctx.strokeStyle = '#3a2608'; ctx.lineWidth = 2.2; ctx.lineCap='round';
+ctx.strokeStyle = '#3a2a44'; ctx.lineWidth = 1.8;
+ctx.strokeStyle = '#3a2a44'; ctx.lineWidth = 2;
+ctx.strokeStyle = '#3c4046'; ctx.lineWidth = 6; ctx.lineCap='round'; ctx.stroke();
+ctx.strokeStyle = '#4a3008'; ctx.lineWidth = 2.2; ctx.lineCap='round';
+ctx.strokeStyle = '#4a3008'; ctx.lineWidth = 2; ctx.lineCap='round';
+ctx.strokeStyle = '#4a3210'; ctx.lineWidth = 2.4; ctx.lineCap='round';
+ctx.strokeStyle = '#4a3a24'; ctx.lineWidth = 5;
+ctx.strokeStyle = '#4a3c22'; ctx.lineWidth = 3.4;
+ctx.strokeStyle = '#4a3c22'; ctx.lineWidth = 3.4; ctx.stroke();
+ctx.strokeStyle = '#4a3c22'; ctx.lineWidth = 5.5; ctx.stroke();
+ctx.strokeStyle = '#4a7a28'; ctx.lineWidth = 2.6;
+ctx.strokeStyle = '#5a0a04'; ctx.lineWidth = 2.4; ctx.lineCap='round';
+ctx.strokeStyle = '#5c564a'; ctx.lineWidth = 4.4;
+ctx.strokeStyle = '#5c564a'; ctx.lineWidth = 6; ctx.stroke();
+ctx.strokeStyle = '#5f3c14'; ctx.lineWidth = 2; ctx.lineCap='round';
+ctx.strokeStyle = '#5f3c14'; ctx.lineWidth = 3;
+ctx.strokeStyle = '#5f3c18'; ctx.lineWidth = 8; ctx.lineCap='round'; ctx.stroke();
+ctx.strokeStyle = '#6e1810'; ctx.lineWidth = 2.6; ctx.lineCap='round';
+ctx.strokeStyle = '#7a5c38'; ctx.lineWidth = 5;
+ctx.strokeStyle = '#7d7468'; ctx.lineWidth = 2;
+ctx.strokeStyle = '#8a744a'; ctx.lineWidth = 1.6; ctx.stroke();
+ctx.strokeStyle = '#8a744a'; ctx.lineWidth = 3; ctx.stroke();
+ctx.strokeStyle = '#8a8470'; ctx.lineWidth = 0.8;
+ctx.strokeStyle = '#8d8676'; ctx.lineWidth = 1.6;
+ctx.strokeStyle = '#8d949c'; ctx.lineWidth = 3.6; ctx.stroke();
+ctx.strokeStyle = '#8e2018'; ctx.lineWidth = 1.8;
+ctx.strokeStyle = '#9fd0e8'; ctx.lineWidth = 1;
+ctx.strokeStyle = '#a8763c'; ctx.lineWidth = 5; ctx.stroke();
+ctx.strokeStyle = '#b8a880'; ctx.lineWidth = 1.5;
+ctx.strokeStyle = '#b8a880'; ctx.lineWidth = 1.5;
+ctx.strokeStyle = '#b8b2a2'; ctx.lineWidth = 2.4;
+ctx.strokeStyle = '#b8b2a2'; ctx.lineWidth = 3.6; ctx.stroke();
+ctx.strokeStyle = '#e0382a'; ctx.lineWidth = 4.6; ctx.lineCap='round';
+ctx.strokeStyle = '#e8f5d8'; ctx.lineWidth = 2.4; ctx.lineCap='round';
+ctx.strokeStyle = '#ffd23e'; ctx.lineWidth = 2.2; ctx.lineCap='round';
+ctx.strokeStyle = '#fff0b8'; ctx.lineWidth = 2.4;
+ctx.strokeStyle = 'rgba(107,76,32,0.25)'; ctx.lineWidth = 1.5;
+ctx.strokeStyle = 'rgba(120,105,70,0.4)';
+ctx.strokeStyle = 'rgba(120,95,60,0.3)'; ctx.lineWidth = 2;
+ctx.strokeStyle = 'rgba(140,200,240,0.4)'; ctx.lineWidth = 1.4;
+ctx.strokeStyle = 'rgba(210,130,20,0.6)'; ctx.lineWidth = 1.4; ctx.stroke();
+ctx.strokeStyle = 'rgba(220,90,45,0.85)'; ctx.lineWidth = 2.5;
+ctx.strokeStyle = 'rgba(230,150,20,0.6)'; ctx.lineWidth = 1.6;
+ctx.strokeStyle = 'rgba(255,220,80,0.55)'; ctx.lineWidth = 7;
+ctx.strokeStyle = 'rgba(255,240,160,0.75)'; ctx.lineWidth = 2;
+ctx.strokeStyle = 'rgba(255,240,220,0.22)'; ctx.lineWidth = 3; ctx.lineCap='round';
+ctx.strokeStyle = 'rgba(255,252,232,0.5)'; ctx.lineWidth = 1;
+ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2.4; ctx.lineCap='round';
+ctx.strokeStyle = 'rgba(30,16,6,0.8)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+ctx.strokeStyle = 'rgba(35,90,20,0.5)'; ctx.lineWidth = 1.2;
+ctx.strokeStyle = 'rgba(45,80,22,0.5)'; ctx.lineWidth = 2.5;
+ctx.strokeStyle = 'rgba(50,32,14,0.55)'; ctx.lineWidth = 2; ctx.lineCap='round';
+ctx.strokeStyle = 'rgba(50,95,28,0.6)'; ctx.lineWidth = 1.5;
+ctx.strokeStyle = 'rgba(58,34,12,0.25)'; ctx.lineWidth = 1.6;
+ctx.strokeStyle = 'rgba(58,34,12,0.3)'; ctx.lineWidth = 2;
+ctx.strokeStyle = 'rgba(60,95,30,0.25)'; ctx.lineWidth = 1.5;
+ctx.strokeStyle = 'rgba(63,71,77,0.6)'; ctx.lineWidth = 1.6;
+ctx.strokeStyle = 'rgba(70,120,40,0.5)'; ctx.lineWidth = 1.6; ctx.lineCap='round';
+ctx.strokeStyle = 'rgba(90,50,10,0.45)'; ctx.lineWidth = 1.4;
+ctx.strokeStyle = 'rgba(90,58,28,0.7)'; ctx.lineWidth = 1.6;
+ctx.strokeStyle = 'rgba(90,60,40,0.4)'; ctx.lineWidth = 1.5;
+ctx.strokeStyle = 'rgba(90,66,38,0.35)'; ctx.lineWidth = 2;
+ctx.strokeStyle = 'rgba(94,20,16,0.6)'; ctx.lineWidth = 1.6;
+ctx.strokeStyle = C.line; ctx.lineWidth = 10; ctx.stroke();
+ctx.strokeStyle = C.line; ctx.lineWidth = 10; ctx.stroke();
+ctx.strokeStyle = C.line; ctx.lineWidth = 2; ctx.lineCap='round';
+ctx.strokeStyle = C.line; ctx.lineWidth = 2; ctx.lineCap='round';
+ctx.strokeStyle = C.line; ctx.lineWidth = 9.5; ctx.stroke();
+ctx.strokeStyle = C.line; ctx.lineWidth = 9; ctx.stroke();
+ctx.strokeStyle = C.pants; ctx.lineWidth = 7; ctx.stroke();
+ctx.strokeStyle = C.skin; ctx.lineWidth = 6; ctx.stroke();
+ctx.strokeStyle = C.suit; ctx.lineWidth = 7; ctx.stroke();
+ctx.strokeStyle = C.suitD; ctx.lineWidth = 6.5; ctx.stroke();
+ctx.strokeStyle = ok ? 'rgba(255,250,200,0.9)' : 'rgba(230,60,40,0.9)';
+ctx.strokeStyle = pal.line; ctx.lineWidth = 2; ctx.lineCap='round';
+ctx.strokeStyle='#1c3a70'; ctx.lineWidth=1.8;
+ctx.strokeStyle='#2f5ca8'; ctx.lineWidth=4;
+ctx.strokeStyle='#3c4046'; ctx.lineWidth=6; ctx.lineCap='round'; ctx.stroke();
+ctx.strokeStyle='#4a2c14'; ctx.lineWidth=2; ctx.lineCap='round';
+ctx.strokeStyle='#6b7076'; ctx.lineWidth=3; ctx.stroke();
+ctx.strokeStyle='#e04438'; ctx.lineWidth=1.6;
+ctx.strokeStyle=line; ctx.lineWidth=2.2; ctx.lineCap='round';
+ctx.strokeStyle=line; ctx.lineWidth=8.5; ctx.stroke();
+ctx.strokeStyle=line; ctx.lineWidth=8.5; ctx.stroke();
+ctx.strokeStyle=line; ctx.lineWidth=8; ctx.stroke();
+ctx.strokeStyle=skin; ctx.lineWidth=5.5; ctx.stroke();
+ctx.strokeStyle=skin; ctx.lineWidth=5.5; ctx.stroke();
+ctx.strokeStyle=skin; ctx.lineWidth=5; ctx.stroke();
+ctx.strokeStyle=skinD; ctx.lineWidth=2;
+ctx.strokeText(title[i], 0, 0);
+ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+ctx.textAlign = align || 'center';
+ctx.textBaseline = 'middle';
+ctx.translate(-34, -78);
+ctx.translate(-7, -96);
+ctx.translate(-7, 6); ctx.rotate(-0.2);
+ctx.translate(-lunge*0.35, -bob);
+ctx.translate(0, -hop);
+ctx.translate(0, Math.sin(t*2.2+ph)*0.9);
+ctx.translate(0, Math.sin(t*2.4+ph)*1.1);
+ctx.translate(0, Math.sin(t*2.6+ph)*0.9);
+ctx.translate(0, d*10);
+ctx.translate(14, -118 + ang*0.4);
+ctx.translate(2,-66);
+ctx.translate(W/2, 128);
+ctx.translate(W/2, H/2 - 30);
+ctx.translate(W/2, H/2 - 40);
+ctx.translate(cx, dy);
+ctx.translate(hx, hy);
+ctx.translate(m.x, LY + m.row*CH + CH - 14);
+ctx.translate(p.cx, p.fy);
+ctx.translate(p.x, p.y);
+ctx.translate(rand(-1,1)*G.shake*14, rand(-1,1)*G.shake*14);
+ctx.translate(x, y);
+ctx.translate(x, y);
+ctx.translate(x,y); ctx.scale(s,s);
+ctx.translate(z.x, fy);
+ctx:null, master:null, musicGain:null, musicTimer:null, loopStart:0,
+cv.addEventListener('contextmenu', e=>{
+cv.addEventListener('mousedown', e=>{
+cv.addEventListener('mousemove', e=> handleMove(toCanvas(e)));
+cv.addEventListener('touchend', e=> e.preventDefault(), {passive:false});
+cv.addEventListener('touchmove', e=>{
+cv.addEventListener('touchstart', e=>{
+cv.style.cursor = pointer ? 'pointer' : ((G.shovel || G.sel>=0) ? 'crosshair' : 'default');
+cv.width = W * DPR; cv.height = H * DPR;
+cx: cellCX(col), fy: cellFY(row),
+damageZombie(z, 1800);
+damageZombie(z, 90);
+damageZombie(z, 9999);
+damageZombie(z, pea.dmg);
+damageZombie(z2, 20);
+dig(){ this.noise(0.12, 0.13, 1600); this.tone(320, 150, 0.09, 'triangle', 0.07); },
+document.addEventListener('gesturestart', e=> e.preventDefault());
+draw(-14,-30,17); draw(14,-38,20);
+drawBackground();
+drawBallIcon(-11, 0, 6, p.x*0.11 - 0.5);
+drawBallIcon(-19, 0, 5, p.x*0.11 - 1);
+drawBallIcon(0, 0, 7.5, p.x*0.11);
+drawBallIcon(6,-17,3.6, 0);
+drawButton(88, H-88, 150, 46, '返回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
+drawButton(W-286, H-88, 198, 46, G.slots.length ? '开 始 游 戏' : '请先选择植物', 'go',
+drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(), { size: 18 });
+drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
+drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
+drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', ()=>startLevel(G.level), { red:true });
+drawButton(W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftCb, {});
+drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});
+drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
+drawButton(W/2-90, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', ()=>{ SFX.ensure(); SFX.musicOn = !SFX.musicOn; SFX.click(); }, {});
+drawGatling(16, -44, spin, muzzle);
+drawIntro();
+drawLeafShape(-2,-7,-1,0.9); drawLeafShape(4,-12,1,0.8);
+drawLeafShape(-3,-8,-1,0.95); drawLeafShape(4,-14,1,0.85);
+drawLeafShape(0,0,1,0.62, pal.main, pal.line);
+drawMenuScene();
+drawMenuScene();
+drawMenuScene();
+drawPlantEntity(ghost);
+drawPlantIcon(s.type, x+CARD_W/2, y+CARD_H-22, 0.5);
+drawPlantIcon(s.type, x+slotW/2, y+slotH-26, 0.6);
+drawPlantIcon(type, x+cw/2, y+ch-28, 0.52);
+drawProgressBar();
+drawSeedBank();
+drawShovelIcon(G.mouse.x, G.mouse.y - 10, 1.1);
+drawShovelIcon(sx+32, sy+34, hoverS||active ? 1.08 : 1);
+drawShroomBody(['#c9a2ea','#9459c0','#6b3490'], '#401d5c', 'rgba(255,255,255,0.22)', 'rgba(232,208,255,0.5)');
+drawShroomBody(['#ffe9a0','#f5b63a','#c47a18'], '#7a4a10', 'rgba(255,255,255,0.3)', 'rgba(255,246,200,0.6)');
+drawShroomFace(-13, asleep, t, ph);
+drawShroomFace(-13, asleep, t, ph);
+drawSunIcon(880, 70, 1.9);
+drawSunIcon(SUN_BOX.x+30, SUN_BOX.y+32, 0.85);
+drawSunIcon(px+86, py+120, 0.7);
+drawSunIcon(x+18, y+CARD_H-11, 0.34);
+drawSunIcon(x+24, y+ch-11, 0.3);
+drawText('z', 17 + cyc*11, -46 - cyc*30, 8 + cyc*7, '#f4f8ff', 'rgba(64,76,120,0.9)', 2.2, 'center', '900');
+drawText('僵尸 × ' + lv.count + (lv.night ? ' · 夜间' : ''), x+cardW/2, y+126, 14, '#6b4c20', null, 0, 'center', '700');
+drawText('僵尸吃掉了你的脑子！', W/2, py+66, 37, '#e8554a', '#3a0a04', 8, 'center', '900');
+drawText('关 卡 完 成 ！', W/2, py+62, 44, '#3c7a18', '#1e3c0a', 8, 'center', '900');
+drawText('关卡进度', x0-52, y+h/2+1, 12, '#f0e2c0', '#3a2410', 3, 'center', '700');
+drawText('初始能量：' + q.energy, px+150, py+120, 22, '#3a6b18', null, 0, 'left', '800');
+drawText('同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐', W/2, H-20, 12.5, 'rgba(30,50,18,0.75)', null, 0, 'center', '600');
+drawText('夜战 · 天上不会掉太阳，快种向日葵！', bx+bw/2+14, by+bh/2+1, 17, '#eaf0ff', '#1b2440', 4, 'center', '800');
+drawText('已暂停', W/2, H/2-20, 54, '#f5e6b8', '#3a2410', 9);
+drawText('战 前 热 身', W/2, py+42, 30, '#42280f', null, 0, 'center', '900');
+drawText('操 作 说 明', W/2, py+44, 30, '#42280f', 'rgba(255,246,220,0.7)', 4, 'center', '900');
+drawText('本关出没的僵尸', zx+110, zy-20, 15, '#e8d2a0', null, 0, 'left', '700');
+drawText('植物图鉴（点击加入队伍）', 200, 244, 15, '#e8d2a0', null, 0, 'left', '700');
+drawText('消灭僵尸：' + G.killed + ' / ' + G.total, W/2, py+130, 19, '#d8b8c0', null, 0, 'center', '700');
+drawText('消灭僵尸：' + G.killed + ' 只 剩余阳光：' + G.sun, W/2, py+122, 19, '#4a3414', null, 0, 'center', '700');
+drawText('点击「继续」或按 P 键继续游戏', W/2, H/2+36, 18, '#e0d2a8', '#3a2410', 4, 'center', '600');
+drawText('第 ' + (q.idx+1) + ' / 3 题', W/2, py+168, 16, '#8a6b3a', null, 0, 'center', '700');
+drawText('答对一题，初始能量 ×2', W/2, py+74, 16, '#6b4c20', null, 0, 'center', '700');
+drawText('答对了！能量 ×2', W/2, py+180, 34, '#3c7a18', '#fff', 6);
+drawText('答错了，开战！', W/2, py+180, 34, '#c03028', '#fff', 6);
+drawText('选 择 你 的 植 物', W/2, 40, 30, '#f5e6b8', '#2c1c08', 6, 'center', '900');
+drawText('通关上一关解锁', x+cardW/2, y+124, 13, '#9a9a90', null, 0, 'center', '600');
+drawText('铲子', sx+32, sy+62, 11, '#42300f', null, 0, 'center', '700');
+drawText('阳光', SUN_BOX.x+SUN_BOX.w/2, SUN_BOX.y+66, 13, '#7a5c28', null, 0, 'center', '600');
+drawText(G.waveText.text, 0, 0, 46, '#d02818', '#3a0a04', 9);
+drawText(LEVELS[G.level].name, W-16, 62, 13, '#f0e2c0', '#3a2410', 3, 'right', '700');
+drawText(PLANTS[s.type].name, x+slotW/2, y+13, 11, '#e8d2a0', null, 0, 'center', '700');
+drawText(String(G.sun), SUN_BOX.x+78, SUN_BOX.y+33, 26, '#3a2c10', 'rgba(255,250,230,0.7)', 3, 'center');
+drawText(String(PLANTS[s.type].cost), x+slotW/2, y+slotH-9, 11, '#ffd83d', null, 0, 'center', '700');
+drawText(String(cur.options[i]), bx+bw/2, by+bh/2+1, 24, '#fffbe8', '#2e3a10', 4, 'center', '800');
+drawText(String(def.cost), x+40, y+CARD_H-11, 13, G.sun>=def.cost ? '#3a2c10' : '#a02818', 'rgba(255,246,220,0.5)', 2, 'center', '800');
+drawText(String(def.cost), x+42, y+ch-11, 12, '#6b4c10', null, 0, 'left', '800');
+drawText(String(i+1), x+slotW/2, y+slotH/2, 22, 'rgba(232,210,160,0.25)', null, 0, 'center', '800');
+drawText(b.label, x+w/2, y+h/2+1, 13.5, '#f5e6b8', null, 0, 'center', '700');
+drawText(cur.text, W/2, py+222, 46, '#3c2a10', '#fff6dc', 6, 'center', '900');
+drawText(def.name, x+CARD_W/2, y+12, 11.5, '#42300f', 'rgba(255,246,220,0.5)', 2, 'center', '700');
+drawText(def.name, x+cw/2, y+13, 12, '#3c2a10', 'rgba(255,246,220,0.5)', 2, 'center', '800');
+drawText(label, x+w/2, y+h/2+1, opts.size||20, disabled ? '#9a9a90' : '#fffbe8', '#2e3a10', 4, 'center', '800');
+drawText(lines[i], px+42, py+94+i*24, 15.5, '#3c2a10', null, 0, 'left', '600');
+drawText(lv.name + ' · 可携带 ' + lv.slots + ' 种植物' + (lv.night ? ' · 夜战：开局 +100 阳光' : ''), W/2, 96, 16, '#e8d2a0', null, 0, 'center', '700');
+drawText(lv.name, x+cardW/2, y+28, 18, locked ? '#8a8a80' : '#42280f', locked?null:'rgba(255,246,220,0.6)', 2.5, 'center', '800');
+drawText(sub, W/2, 206, 21, '#fff4d8', '#6e2408', 3.5, 'center', '800');
+drawText(tips[i2], zx+22, zy+88+i2*20, 12.5, '#d8c090', null, 0, 'left', '600');
+drawText(txt, 0, 0, 64, inPhase ? '#ffe86e' : '#f5f0d8', '#3a2c10', 10);
+drawTopRightButtons();
+drawWaveText();
+drawZombieEntity({ type:'bucket', row:0, x:0, vy:0, state:'walk', animT:AT+4, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
+drawZombieEntity({ type:'cone', row:0, x:0, vy:0, state:'walk', animT:AT+2, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
+drawZombieEntity({ type:'newspaper', row:0, x:0, vy:0, state:'walk', animT:AT+1.2, eatT:0, slowT:0, deathT:0, dustT:0, paper:400, angry:false }, 0);
+drawZombieEntity({ type:'normal', row:0, x:0, vy:0, state:'walk', animT:AT, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
+drawZombieHeadIcon(hx, y+h/2, 0.64, null);
+drawZombieHeadIcon(izx0+k*62, zy+44, 1.1, acc);
+drawZombieHeadIcon(zx0+k*42, y+80, 0.86, acc);
+dt = Math.min(dt, 0.05);
+e.preventDefault();
+e.preventDefault();
+e.preventDefault();
+else SFX.error();
+else drawText('你通关了全部 ' + LEVELS.length + ' 个关卡，草坪安全了！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
+else if(!fu){ G.slots.push({type:tp, cool:0}); SFX.select(); }
+else if(G.state==='help') renderHelp();
+else if(G.state==='quiz') renderQuiz();
+else if(G.state==='quiz') updateQuiz(dt);
+else if(G.state==='select') renderSelect();
+else if(e.key==='m' || e.key==='M'){ SFX.musicOn = !SFX.musicOn; }
+else if(e.key==='p' || e.key==='P'){ G.paused = !G.paused; SFX.click(); }
+else if(t >= -1.4) txt = '开始！';
+else if(z.x < LX - 72){ lost = true; G.loseZombie = z; }
+else {
+else { beginPlay(q.energy); }
+else { bg.addColorStop(0, hover ? '#f6e8c4' : '#e8d7ae'); bg.addColorStop(1, hover ? '#e0c898' : '#ccb586'); }
+else { bg.addColorStop(0, hover ? '#f6e8c4' : '#ecd9ae'); bg.addColorStop(1, hover ? '#d8c088' : '#c8b078'); }
+else { g.addColorStop(0,'#4a3040'); g.addColorStop(1,'#2c1c26'); }
+else { g.addColorStop(0,'#98cf54'); g.addColorStop(1,'#84bd44'); }
+else { g.addColorStop(0,'#aede66'); g.addColorStop(1,'#96cd52'); }
+ensure(){
+ensureBG();
+error(){ this.tone(150, 110, 0.14, 'square', 0.08); },
+ev.push({ t: finalT + k*0.4, type: k===0 ? 'flag' : pickType(lv, 1, rng) });
+ev.push({ t: finalT-3.2, announce:true });
+ev.push({ t: t + k*0.9, type });
+ev.sort((a,b)=>a.t-b.t);
+events:[], evIdx:0, total:0, killed:0,
+explode(p.cx, p.row, false);
+explode(p.cx, p.row, true);
+explodeMissile(pea.x, pea.row, Math.floor((pea.x - LX)/CW));
+fireT: rand(0.5,1.3), sunT: rand(6,9), recoil:0, flash:0,
+flag: { name:'旗帜僵尸', hp:200, acc:0, speed:21 },
+flagAt(0.5); flagAt(1.0);
+flame(16+Math.sin(t*10+ph)*3.5, '#fff3b0', 0);
+flame(29+Math.cos(t*8+ph)*5, '#ffc23e', 0);
+flame(40+Math.sin(t*7+ph)*6, '#ff7a1e', 0);
+for(const [t,w] of pool){ if((r-=w) <= 0) return t; }
+for(const b of btns){
+for(const d of G.decals){
+for(const ex of [-5.5, 5.5]){
+for(const ex of [-9, 7]){
+for(const h of G.hotspots){
+for(const m of G.mowers) drawMower(m);
+for(const m of G.mowers){
+for(const m of MELODY){
+for(const p of G.parts){
+for(const p of G.peas) drawPea(p);
+for(const p of G.plants) if(p.row===r) drawPlantEntity(p);
+for(const p of G.plants){
+for(const s of G.slots) if(s.cool > 0) s.cool = Math.max(0, s.cool - dt);
+for(const s of G.suns) drawSun(s);
+for(const s of [[8,-36,2.6],[-11.5,-30,2.1],[2.5,-24.5,1.8]]){
+for(const sx of [22, 738]){
+for(const wy of [LY+34, LY+ROWS*CH-140]){
+for(const wy of [LY+34, LY+ROWS*CH-140]){
+for(const z of G.zombies){
+for(const z of G.zombies){
+for(const z of G.zombies){
+for(const z of G.zombies){
+for(const z of G.zombies){
+for(const z of G.zombies){
+for(const z of zs) drawZombieEntity(z);
+for(const z2 of G.zombies){
+for(let bar=0; bar<8; bar++){
+for(let c=0;c<13;c++){
+for(let c=0;c<=COLS;c++){ ctx.beginPath(); ctx.moveTo(LX+c*CW, LY); ctx.lineTo(LX+c*CW, LY+ROWS*CH); ctx.stroke(); }
+for(let c=0;c<COLS;c++){
+for(let c=COLS-1;c>=0;c--){
+for(let i2=0;i2<tips.length;i2++){
+for(let i=0;i<30;i++){
+for(let i=0;i<3;i++){
+for(let i=0;i<46;i++){
+for(let i=0;i<4;i++){
+for(let i=0;i<G.slots.length;i++){
+for(let i=0;i<PLANT_ORDER.length;i++){
+for(let i=0;i<lines.length;i++){
+for(let i=0;i<lv.slots;i++){
+for(let i=0;i<n;i++) d[i] = (Math.random()*2-1) * (1-i/n);
+for(let i=0;i<nLv;i++){
+for(let i=0;i<title.length;i++){
+for(let i=0;i<title.length;i++){
+for(let i=G.decals.length-1;i>=0;i--){
+for(let i=G.hotspots.length-1;i>=0;i--){
+for(let i=G.parts.length-1;i>=0;i--){
+for(let i=G.peas.length-1;i>=0;i--){
+for(let i=G.plants.length-1;i>=0;i--){
+for(let i=G.suns.length-1;i>=0;i--){
+for(let i=G.suns.length-1;i>=0;i--){
+for(let i=G.zombies.length-1;i>=0;i--){
+for(let i=arr.length-1;i>0;i--){
+for(let k=0;k<10;k++){
+for(let k=0;k<10;k++){
+for(let k=0;k<10;k++){
+for(let k=0;k<11;k++){
+for(let k=0;k<12;k++) G.parts.push({ x, y:y+rand(-14,14), vx:rand(-80,80), vy:rand(-130,-20), g:270, life:rand(0.35,0.75), max:0.75, size:rand(3,6), color:['#63b23f','#8fd44a','#4a9330'][k%3] });
+for(let k=0;k<12;k++){
+for(let k=0;k<12;k++){
+for(let k=0;k<14;k++) G.parts.push({ x:x+rand(-10,10), y:y+rand(-12,12), vx:rand(-110,70), vy:rand(-140,-30), g:260,
+for(let k=0;k<14;k++){
+for(let k=0;k<150;k++){
+for(let k=0;k<26;k++){
+for(let k=0;k<3;k++) ctx.fillRect(-9,-2.4+k*3, 17, 1.2);
+for(let k=0;k<3;k++){
+for(let k=0;k<3;k++){
+for(let k=0;k<3;k++){
+for(let k=0;k<3;k++){
+for(let k=0;k<40;k++){
+for(let k=0;k<4;k++) G.parts.push({ x:x+rand(-8,8), y:y+rand(-6,6), vx:rand(-40,40), vy:rand(-60,-20), g:200,
+for(let k=0;k<4;k++){
+for(let k=0;k<4;k++){
+for(let k=0;k<5;k++){
+for(let k=0;k<5;k++){
+for(let k=0;k<5;k++){
+for(let k=0;k<6;k++) G.parts.push({ x, y, vx:rand(-35,35), vy:rand(-80,-20), g:-50, life:rand(0.2,0.45), max:0.45, size:rand(2,5), color:['#ffb347','#ff8a2e'][k%2] });
+for(let k=0;k<6;k++){
+for(let k=0;k<6;k++){
+for(let k=0;k<7;k++){
+for(let k=0;k<7;k++){
+for(let k=0;k<80;k++){
+for(let k=0;k<9;k++) G.parts.push({ x, y, vx:rand(-100,100), vy:rand(-100,45), g:250, life:rand(0.2,0.45), max:0.45, size:rand(2,5.5), color:cols[k%2] });
+for(let k=0;k<9;k++) G.parts.push({ x:x+rand(-16,16), y, vx:rand(-45,45), vy:rand(-100,-30), g:280, life:rand(0.3,0.6), max:0.6, size:rand(3,6), color:['#8a6b42','#a5875a'][k%2] });
+for(let k=0;k<finalCount;k++){
+for(let k=0;k<nIco;k++){
+for(let k=0;k<size;k++){
+for(let k=0;k<zs.length;k++){
+for(let k=1;k<6;k++){
+for(let r=0;r<=ROWS;r++){ ctx.beginPath(); ctx.moveTo(LX, LY+r*CH); ctx.lineTo(LX+COLS*CW, LY+r*CH); ctx.stroke(); }
+for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+for(let r=0;r<ROWS;r++){
+for(let r=0;r<ROWS;r++){
+for(let x=-10;x<W+20;x+=26){
+for(let x=-10;x<W+20;x+=34){
+for(let x=-4;x<W+20;x+=30){
+for(let x=0;x<W;x+=30){
+for(let x=204;x<W;x+=26){
+for(let x=4;x<W+20;x+=38){
+for(let x=8;x<198;x+=18){ ctx.beginPath(); ctx.moveTo(x,y1-26); ctx.lineTo(x,y1); ctx.stroke(); }
+for(let y=y0+20; y<y1; y+=22){
+for(let y=y1-26;y<y1;y+=9){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(198,y); ctx.stroke(); }
+function O(fill, stroke, lw){
+function addDirtPuff(x,y){
+function addFlamePuff(x,y){
+function addLeafBurst(x,y){
+function addPaperShreds(x, y){
+function addPeaSplat(x,y,type){
+function answerQuiz(a){
+function applyCoffee(p){
+function beginPlay(startSun){
+function buildSpawns(lv, rng = Math.random){
+function cellCX(c){ return LX + c*CW + CW/2; }
+function cellFY(r){ return LY + (r+1)*CH - 6; }
+function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+function clickCard(i){
+function damageZombie(z, d){
+function drawBackground(){
+function drawBallIcon(x,y,r,spin){
+function drawButton(x, y, w, h, label, id, cb, opts){
+function drawCherry(fuse, t, ph){
+function drawCoffee(t, ph){
+function drawGatling(ox, oy, spin, muzzle){
+function drawIntro(){
+function drawLeafShape(x,y,dir,s,col,outline){
+function drawMenuScene(){
+function drawMower(m){
+function drawPea(p){
+function drawPlantEntity(p){
+function drawPlantIcon(type, x, y, s){
+function drawPotato(armed, t, ph){
+function drawProgressBar(){
+function drawPuff(t, ph, asleep){
+function drawQiuqiu(t, ph, throwT){
+function drawSeedBank(){
+function drawShooter(t, ph, kind, recoil, flash){
+function drawShovelIcon(x,y,s){
+function drawShroomBody(cap, capOut, hi, spots){
+function drawShroomFace(ey, asleep, t, ph){
+function drawSleepZzz(t, ph){
+function drawSun(s){
+function drawSunIcon(x,y,s){
+function drawSunflower(t, ph){
+function drawSunshroom(t, ph, asleep){
+function drawText(text, x, y, size, fill, stroke, sw, align, weight){
+function drawTopRightButtons(){
+function drawTorch(t, ph){
+function drawWallnut(hpFrac, t, ph){
+function drawWaveText(){
+function drawZombieEntity(z, fyOverride){
+function drawZombieHeadIcon(x, y, s, acc){
+function easeOut(t){ return 1-(1-t)*(1-t); }
+function ensureBG(){
+function explode(x, row, big){
+function explodeMissile(x, row, col){
+function findEatTarget(z){
+function frame(now){
+function handleMove(p){
+function handlePress(p){
+function isBlinking(t, ph){ const c = (t+ph)%3.8; return c < 0.12; }
+function isNight(){ return !!(LEVELS[G.level] && LEVELS[G.level].night); }
+function lerp(a,b,t){ return a+(b-a)*t; }
+function loadUnlockAll(){ try{ return localStorage.getItem('pvzweb_unlockall') === '1'; }catch(e){ return false; } }
+function loadUnlocked(){ try{ return clamp(parseInt(localStorage.getItem('pvzweb_unlocked'))||1,1,LEVELS.length); }catch(e){ return 1; } }
+function makeQuiz(rng = Math.random){
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function paintBattleBG(night){
+function pickType(lv, prog, rng){
+function placePlant(type, row, col){
+function rand(a,b){ return a + Math.random()*(b-a); }
+function randi(a,b){ return Math.floor(rand(a,b+1)); }
+function removePlant(p){
+function render(){
+function renderEndOverlay(){
+function renderHelp(){
+function renderMenu(){
+function renderPlay(){
+function renderQuiz(){
+function renderSelect(){
+function rr(x,y,w,h,r){
+function saveUnlockAll(on){ try{ if(on) localStorage.setItem('pvzweb_unlockall', '1'); else localStorage.removeItem('pvzweb_unlockall'); }catch(e){} }
+function saveUnlocked(n){ try{ localStorage.setItem('pvzweb_unlocked', String(n)); }catch(e){} }
+function shuffle(arr, rng = Math.random){
+function spawnSun(x,y,ty,fromSky,value){
+function spawnZombie(type){
+function startLevel(li){
+function startQuiz(){
+function toCanvas(e){
+function toggleUnlockAll(){
+function triggerMower(row){
+function updatePlay(dt){
+function updateQuiz(dt){
+g = ctx.createLinearGradient(-10,-30,10,-10);
+g = ctx.createLinearGradient(-11,-9,11,8);
+g = ctx.createLinearGradient(-12,-28,11,-8);
+g = ctx.createLinearGradient(-14,-40,12,-12);
+g = ctx.createLinearGradient(-15,-38,13,-10);
+g = ctx.createLinearGradient(-19,0,19,0);
+g = ctx.createLinearGradient(0, LY+ROWS*CH, 0, H);
+g = ctx.createLinearGradient(0,-28,0,-6);
+g = ctx.createLinearGradient(0,-36,0,-12);
+g = ctx.createLinearGradient(0,0,0,H);
+g = ctx.createLinearGradient(0,0,198,0);
+g = ctx.createLinearGradient(0,70,0,H-40);
+g = ctx.createLinearGradient(0,BANK_Y,0,BANK_Y+BANK_H);
+g = ctx.createLinearGradient(0,H-150,0,H);
+g = ctx.createLinearGradient(0,LY+ROWS*CH,0,H);
+g = ctx.createLinearGradient(0,y+4,0,y+h-4);
+g = ctx.createLinearGradient(0,y,0,y+CH);
+g = ctx.createLinearGradient(198,0,LX,0);
+g = ctx.createLinearGradient(54,wy,54,wy+94);
+g = ctx.createLinearGradient(62,wy,62,wy+92);
+g = ctx.createLinearGradient(LX+COLS*CW, 0, W, 0);
+g = ctx.createRadialGradient(-4,-4,2, 0,0,16);
+g = ctx.createRadialGradient(-6,-40,3, 0,-31,23);
+g = ctx.createRadialGradient(-6,-7,3, 0,0,18);
+g = ctx.createRadialGradient(-6,-8,4, 0,0,25);
+g = ctx.createRadialGradient(0,-58,1, 0,-58,13);
+g = ctx.createRadialGradient(102, wy+47, 8, 102, wy+47, 104);
+g = ctx.createRadialGradient(175, y0+48, 3, 175, y0+48, 70);
+g = ctx.createRadialGradient(876,56,5, 884,64,28);
+g = ctx.createRadialGradient(880,70,10, 880,70,150);
+g = ctx.createRadialGradient(884,64,10, 884,64,130);
+g = ctx.createRadialGradient(hx+42,hy,1, hx+42,hy,14);
+g = ctx.createRadialGradient(x+CARD_W/2, y+CARD_H*0.42, 6, x+CARD_W/2, y+CARD_H/2, CARD_H*0.75);
+g.addColorStop(0, cap[0]); g.addColorStop(0.6, cap[1]); g.addColorStop(1, cap[2]);
+g.addColorStop(0, flash ? '#fff8d0' : '#f8ecbe'); g.addColorStop(1, flash ? '#ffe98a' : '#e2c88a');
+g.addColorStop(0, hover ? '#96c862' : '#7aa848'); g.addColorStop(1, hover ? '#649838' : '#4e7a2a');
+g.addColorStop(0, hover ? '#9a6b38' : '#7a4c22'); g.addColorStop(1, hover ? '#7a4c22' : '#5f3a18');
+g.addColorStop(0, hover ? '#d8554a' : '#c04438'); g.addColorStop(1, hover ? '#a83428' : '#8a281e');
+g.addColorStop(0, kind==='snow' ? 'rgba(220,245,255,0.95)' : 'rgba(255,250,200,0.95)');
+g.addColorStop(0, slowed?'#a8cad8':'#bcc7a0'); g.addColorStop(1, C.skin);
+g.addColorStop(0,'#3c5a2a'); g.addColorStop(1,'#243818');
+g.addColorStop(0,'#46588e'); g.addColorStop(0.28,'#3a4774'); g.addColorStop(1,'#243050');
+g.addColorStop(0,'#4a82d4'); g.addColorStop(1,'#2f5ca8');
+g.addColorStop(0,'#6b4520'); g.addColorStop(1,'#3c220c');
+g.addColorStop(0,'#6b6b62'); g.addColorStop(1,'#4c4c44');
+g.addColorStop(0,'#6ec0ea'); g.addColorStop(0.55,'#a9dcf2'); g.addColorStop(0.75,'#c8e8a0'); g.addColorStop(1,'#8fc94e');
+g.addColorStop(0,'#74b240'); g.addColorStop(1,'#5d9633');
+g.addColorStop(0,'#7ec8ee'); g.addColorStop(1,'#b8e4f6');
+g.addColorStop(0,'#8a5a2c'); g.addColorStop(0.55,'#6b4220'); g.addColorStop(1,'#3f2410');
+g.addColorStop(0,'#96652f'); g.addColorStop(0.5,'#7d5124'); g.addColorStop(1,'#5f3a16');
+g.addColorStop(0,'#96652f'); g.addColorStop(1,'#6b4520');
+g.addColorStop(0,'#96683c'); g.addColorStop(0.5,'#77502c'); g.addColorStop(1,'#5a3a1c');
+g.addColorStop(0,'#a5875a'); g.addColorStop(1,'#7c6038');
+g.addColorStop(0,'#bcc7a0'); g.addColorStop(1,'#a3b187');
+g.addColorStop(0,'#c8f08a'); g.addColorStop(1,'#6fa83e');
+g.addColorStop(0,'#c9903f'); g.addColorStop(1,'#8a5220');
+g.addColorStop(0,'#c9a76e'); g.addColorStop(1,'#b28f58');
+g.addColorStop(0,'#cdeaf5'); g.addColorStop(1,'#8fc4da');
+g.addColorStop(0,'#d4dade'); g.addColorStop(0.45,'#98a2a9'); g.addColorStop(1,'#667077');
+g.addColorStop(0,'#d4dade'); g.addColorStop(1,'#77818a');
+g.addColorStop(0,'#d8a462'); g.addColorStop(0.7,'#b0763a'); g.addColorStop(1,'#8a5626');
+g.addColorStop(0,'#d8dee4'); g.addColorStop(1,'#8a929a');
+g.addColorStop(0,'#e2b45e'); g.addColorStop(0.65,'#c08a38'); g.addColorStop(1,'#8f5f1e');
+g.addColorStop(0,'#f0685a'); g.addColorStop(0.55,'#d03a2c'); g.addColorStop(1,'#952218');
+g.addColorStop(0,'#f0685a'); g.addColorStop(1,'#c03028');
+g.addColorStop(0,'#f09a3e'); g.addColorStop(1,'#c06a18');
+g.addColorStop(0,'#f09a3e'); g.addColorStop(1,'#c06a18');
+g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090');
+g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090');
+g.addColorStop(0,'#f0e2c0'); g.addColorStop(1,'#dcc79c');
+g.addColorStop(0,'#f2e4bc'); g.addColorStop(1,'#bfa06a');
+g.addColorStop(0,'#f4efe2'); g.addColorStop(1,'#d8d2be');
+g.addColorStop(0,'#f6efdd'); g.addColorStop(1,'#d5c8ab');
+g.addColorStop(0,'#ff9a8a'); g.addColorStop(0.5,'#ee3a2a'); g.addColorStop(1,'#a01005');
+g.addColorStop(0,'#ffc85a'); g.addColorStop(1,'#f5a02e');
+g.addColorStop(0,'#ffe6c4'); g.addColorStop(1,skin);
+g.addColorStop(0,'#ffeab0'); g.addColorStop(1,'#f0b04a');
+g.addColorStop(0,'#fff2b0'); g.addColorStop(1,'#ffa82a');
+g.addColorStop(0,'#fff3b0'); g.addColorStop(0.45,'#ff9a2e'); g.addColorStop(1,'rgba(255,90,20,0)');
+g.addColorStop(0,'#fff6c8'); g.addColorStop(0.7,'#ffd042'); g.addColorStop(1,'#ffaa22');
+g.addColorStop(0,'#fffdf0'); g.addColorStop(1,'#cdd6ea');
+g.addColorStop(0,'rgba(170,200,255,0.10)'); g.addColorStop(1,'rgba(170,200,255,0)');
+g.addColorStop(0,'rgba(214,230,255,0.5)'); g.addColorStop(1,'rgba(214,230,255,0)');
+g.addColorStop(0,'rgba(255,120,90,0.85)'); g.addColorStop(1,'rgba(255,80,60,0)');
+g.addColorStop(0,'rgba(255,190,80,'+(0.3+Math.sin(t*8+ph)*0.08)+')');
+g.addColorStop(0,'rgba(255,214,124,0.42)'); g.addColorStop(1,'rgba(255,214,124,0)');
+g.addColorStop(0,'rgba(255,220,110,'+(0.26*pulse+0.1)+')');
+g.addColorStop(0,'rgba(255,226,146,0.7)'); g.addColorStop(1,'rgba(255,226,146,0)');
+g.addColorStop(0,'rgba(255,244,160,0.95)');
+g.addColorStop(0,'rgba(255,244,180,0.9)'); g.addColorStop(1,'rgba(255,244,180,0)');
+g.addColorStop(0,'rgba(255,246,200,0.6)'); g.addColorStop(1,'rgba(255,246,200,0)');
+g.addColorStop(0,'rgba(255,250,200,0.95)');
+g.addColorStop(0,'rgba(40,28,12,0.9)'); g.addColorStop(1,'rgba(40,28,12,0)');
+g.addColorStop(0,'rgba(40,70,25,0)'); g.addColorStop(1,'rgba(24,46,14,0.62)');
+g.addColorStop(0,C.suit); g.addColorStop(1,C.suitD);
+g.addColorStop(0,col[0]); g.addColorStop(1,col[1]);
+g.addColorStop(0,pal.hi); g.addColorStop(0.6,pal.main); g.addColorStop(1,pal.dark);
+g.addColorStop(0.45,'rgba(255,214,90,0.4)');
+g.addColorStop(1,'rgba(255,150,50,0)');
+g.addColorStop(1,'rgba(255,180,60,0)');
+g.addColorStop(1,'rgba(255,190,60,0)');
+g.addColorStop(1,'rgba(255,200,80,0)');
+g.addColorStop(1,'rgba(255,220,120,0)');
+g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+g.gain.linearRampToValueAtTime(vol, t0+0.01);
+g.gain.linearRampToValueAtTime(vol, t0+0.012);
+g.gain.setValueAtTime(0.0001, t0);
+g.gain.setValueAtTime(0.0001, t0);
+g2.addColorStop(0, active ? '#efd28a' : '#b8946a'); g2.addColorStop(1, active ? '#c8a24e' : '#8a6b42');
+gatling(){ this.tone(240, 120, 0.06, 'square', 0.07); this.noise(0.05, 0.06, 2200); },
+gi.addColorStop(0,'#4a3418'); gi.addColorStop(1,'#33220e');
+grid:null, plants:[], zombies:[], peas:[], suns:[], mowers:[], parts:[], decals:[],
+groan(){
+h.cb();
+handleMove(p);
+handleMove(toCanvas(e.changedTouches[0]));
+handlePress(p);
+handlePress(toCanvas(e));
+hit = true;
+hit = true;
+hop(){ this.tone(280, 620, 0.22, 'triangle', 0.1); },
+horn(){ this.tone(98, 98, 0.7, 'sawtooth', 0.11); this.tone(147, 147, 0.7, 'sawtooth', 0.07, 0.02); },
+hotspots:[],
+hoverCell:null, mouse:{x:-99,y:-99},
+hp: def.hp, acc: def.acc, maxHp: def.hp + def.acc,
+i += size;
+if(!AC) return false;
+if(!G.waveText) return;
+if(!afford) ctx.globalAlpha = 0.55;
+if(!armed){
+if(!asleep){
+if(!best || p.cx > best.cx) best = p;
+if(!blink){
+if(!blink){
+if(!lastLv) drawText('新的关卡已解锁！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
+if(!lv.night){
+if(!opts.includes(d)) opts.push(d);
+if(!p || !p.asleep) return false;
+if(!p || p.hp <= 0 || G.grid[z.row][p.col] !== p){
+if(!p) continue;
+if(!p.armed){
+if(!this.ctx || !this.musicOn) return;
+if(!this.ctx) return;
+if(!this.ctx) return;
+if(!this.ctx) return;
+if(!txt) return;
+if(G.decals[i].ttl <= 0) G.decals.splice(i,1);
+if(G.evIdx >= G.events.length && G.zombies.length === 0 && t > 0){
+if(G.flash > 0) G.flash = Math.max(0, G.flash - dt*1.4);
+if(G.flash > 0){
+if(G.groanTimer <= 0){ G.groanTimer = rand(4,9); SFX.groan(); }
+if(G.lastRows.length>3) G.lastRows.length = 3;
+if(G.lastRows.length>=2 && G.lastRows[0]===row && G.lastRows[1]===row){
+if(G.level + 2 > G.unlocked){ G.unlocked = clamp(G.level+2, 1, LEVELS.length); saveUnlocked(G.unlocked); }
+if(G.nightHint > 0 && isNight()){
+if(G.nightHint > 0) G.nightHint -= dt;
+if(G.paused){
+if(G.sel === i){ G.sel = -1; SFX.click(); return; }
+if(G.sel >= 0){
+if(G.shake > 0 && G.state==='play'){
+if(G.shake > 0) G.shake -= dt;
+if(G.shovel && G.mouse.x >= 0){
+if(G.shovel){
+if(G.shovel){
+if(G.skyTimer <= 0){
+if(G.state !== 'play' || G.paused) return;
+if(G.state !== 'play' || G.t >= 0) return;
+if(G.state !== 'quiz' || G.quiz.feedback > 0) return;
+if(G.state!=='play' || G.paused) return;
+if(G.state==='menu') renderMenu();
+if(G.state==='play' && !G.paused) updatePlay(dt);
+if(G.state==='play'){
+if(G.state==='play'){
+if(G.state==='won' || G.state==='lost') renderEndOverlay();
+if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
+if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
+if(G.sunFlash > 0) G.sunFlash -= dt;
+if(G.waveText){
+if(G.waveText.t > 2.6) G.waveText = null;
+if(G.winT > 1.0){
+if(G.zombies.length > 0){
+if(Math.abs(z.row - row) <= 1 && Math.abs(zc - c) <= 1){
+if(Math.abs(z.row-row) <= (big?1:0) && Math.abs(z.x-x) < (big?132:58)){
+if(Math.floor(z.eatT/0.62) !== Math.floor((z.eatT-dt)/0.62)) SFX.chomp();
+if(Math.random()<0.55){
+if(R()<0.4){
+if(a < 0.06) continue;
+if(a <= 0.05) continue;
+if(a === q.questions[q.idx].answer){
+if(acc==='cone'){
+if(ahead < this.lastBeat - 0.5) this.lastBeat = -1;
+if(angry && walk) ctx.rotate(-0.11);
+if(angry){
+if(applyCoffee(existing)){
+if(asleep){
+if(b > this.lastBeat && b <= ahead){
+if(bgCanvas && bgTheme === theme) return;
+if(blink > -0.6){
+if(blink){
+if(blink){
+if(blink){
+if(blink){
+if(c%2){ g.addColorStop(0,'#98cf54'); g.addColorStop(1,'#84bd44'); }
+if(c>=0 && c<COLS && r>=0 && r<ROWS) G.hoverCell = { row:r, col:c };
+if(c>=0 && c<COLS && r>=0 && r<ROWS){
+if(d < 0) d = ans + randi(1, 9);
+if(disabled){
+if(dmg > 0.33){
+if(dmg > 0.4) ctx.rotate(Math.sin(t*9)*0.015);
+if(dmg > 0.66){
+if(dx*dx + dy*dy < 36*36){
+if(e.announce){
+if(e.button === 2) return;
+if(e.key >= '1' && e.key <= '8'){
+if(existing){
+if(existing){ SFX.error(); return; }
+if(f1 && f1!==f0) o.frequency.exponentialRampToValueAtTime(Math.max(f1,20), t0+dur);
+if(fill){ ctx.fillStyle = fill; ctx.fill(); }
+if(flash > 0){
+if(food){
+if(fuse < 0.4) s = 1 + Math.abs(Math.sin(fuse*38))*0.24*(0.4-fuse)/0.4 + 0.06;
+if(fuse < 0.7){
+if(has && p.fireT <= 0 && t > 0){
+if(hc && G.state==='play' && !G.paused){
+if(hit || pea.x > W+60) G.peas.splice(i,1);
+if(hover && !disabled){
+if(hover && !inTeam) ctx.translate(0,-3);
+if(hover) ctx.translate(0,-4);
+if(i < G.slots.length && !G.paused) clickCard(i);
+if(i>=0) G.plants.splice(i,1);
+if(inT){ const idx = G.slots.findIndex(s=>s.type===tp); G.slots.splice(idx,1); SFX.click(); }
+if(inTeam){
+if(inTeam){ bg.addColorStop(0,'#c4e096'); bg.addColorStop(1,'#94c060'); }
+if(isMissile) SFX.missile(); else SFX.gatling();
+if(isNight()){
+if(kind==='repeater'){
+if(kind==='snow') SFX.snowShoot(); else SFX.shoot();
+if(kind==='snow'){
+if(light){ g.addColorStop(0,'#aede66'); g.addColorStop(1,'#96cd52'); }
+if(locked){
+if(locked){ bg.addColorStop(0,'#5a5a54'); bg.addColorStop(1,'#3c3c38'); }
+if(lost){
+if(lv.night && !locked){
+if(lv.night) startSun += 100;
+if(m) triggerMower(z.row);
+if(m){ m.state = 'run'; SFX.mower(); return true; }
+if(m.state==='gone') return;
+if(m.state==='run'){
+if(m.x > W+80) m.state = 'gone';
+if(m[0] > this.lastBeat && m[0] <= ahead){
+if(muzzle > 0){
+if(night){
+if(ok && !isCoffee){
+if(on){
+if(p && !(p.type==='potato' && !p.armed) && p.cx < z.x-6 && p.cx > z.x-150){ target = p; break; }
+if(p.armT >= 14){ p.armed = true; addDirtPuff(p.cx, p.fy); }
+if(p.asleep) continue;
+if(p.asleep) drawSleepZzz(t, p.phase);
+if(p.cx < z.x - 92) continue;
+if(p.cx >= z.x - 26) continue;
+if(p.fuse <= 0){
+if(p.g) p.vy += p.g*dt;
+if(p.hp <= 0){
+if(p.hp <= 0){ removePlant(p); addLeafBurst(p.cx, p.fy-30); continue; }
+if(p.life <= 0){ G.parts.splice(i,1); continue; }
+if(p.sunT <= 0){
+if(p.type==='ball'){
+if(p.type==='bullet'){
+if(p.type==='fire'){
+if(p.type==='missile'){
+if(p.type==='potato') continue;
+if(p.type==='qiuqiu'){
+if(p.type==='repeater'){
+if(p.type==='snow'){
+if(p.type==='torch' && p.row===pea.row && pea.prevX < p.cx && pea.x >= p.cx){
+if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){
+if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){ pointer = true; break; }
+if(pea.type === 'pea' || pea.type === 'snow'){
+if(pea.type==='bullet') SFX.bulletHit(); else SFX.splat();
+if(pea.type==='fire' && Math.random()<0.6){
+if(pea.type==='fire'){
+if(pea.type==='missile'){
+if(pea.type==='snow'){ z.slowT = 6; }
+if(progress > 0.15) size += (rng() < 0.26 + 0.3*progress ? 1 : 0);
+if(progress > 0.55) size += (rng() < 0.35 ? 1 : 0);
+if(q.correct && q.idx < 2){ q.idx++; q.feedback = 0; }
+if(q.correct){
+if(q.feedback <= 0){
+if(q.feedback > 0){
+if(q.feedback > 0){
+if(reading){
+if(rng() < 0.5){
+if(run) ctx.translate(0, Math.sin(AT*42)*1.4);
+if(run){
+if(s){
+if(s.cool > 0){
+if(s.cool > 0){ SFX.error(); return; }
+if(s.cool > 0){ SFX.error(); return; }
+if(s.ft >= 1){
+if(s.life <= 0){ G.suns.splice(i,1); }
+if(s.state==='fall') scale = 0.85 + clamp(s.t*0.5,0,0.15);
+if(s.state==='fall'){
+if(s.state==='fly') continue;
+if(s.state==='fly'){
+if(s.state==='idle' && s.life < 2.5) alpha = clamp(s.life/2.5, 0, 1);
+if(s.type === 'coffee'){
+if(s.y >= s.ty){ s.y = s.ty; s.state='idle'; s.t=0; }
+if(selected) ctx.translate(0,-4);
+if(selected){
+if(slowed){
+if(stroke){ ctx.lineWidth = sw||4; ctx.strokeStyle = stroke; ctx.lineJoin='round'; ctx.strokeText(text, x, y); }
+if(stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw||2.5; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke(); }
+if(t < 0.35) scale = 0.4 + easeOut(t/0.35)*0.7;
+if(t <= 0) continue;
+if(t > 0){
+if(t > 0){
+if(t > 2.1) alpha = clamp((2.6-t)/0.5, 0, 1);
+if(t >= -3.2 && t < -1.4) txt = '准备……';
+if(t==='bucket'||t==='vault') ww += prog*3;
+if(t==='cone') ww += prog*1.5;
+if(t==='newspaper') ww += prog*2;
+if(target){
+if(this.ctx) return true;
+if(tw > 0.9){
+if(walk){
+if(won){
+if(won){ g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090'); }
+if(worried){
+if(worried){
+if(z.acc < 0){ z.hp += z.acc; z.acc = 0; }
+if(z.acc > 0){
+if(z.deathT > 0.95) G.zombies.splice(i,1);
+if(z.dustT > 0.5 && z.x > LX-30 && z.x < W){
+if(z.hp <= 0 && z.state !== 'dying'){
+if(z.row===m.row && z.state!=='dying' && z.x < m.x+52 && z.x > m.x-70){
+if(z.row===p.row && z.state!=='dying' && Math.abs(z.x - p.cx) < 34){
+if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < reach){ has = true; break; }
+if(z.row===pea.row && z.state!=='dying' && pea.x >= z.x-24 && pea.x <= z.x+16){
+if(z.slowT > 0) z.slowT -= dt;
+if(z.state!=='dying' && z.x < LX + 14){
+if(z.state==='dying') continue;
+if(z.state==='dying') continue;
+if(z.state==='dying'){
+if(z.state==='dying'){
+if(z.state==='walk'){
+if(z.type==='cone'){
+if(z.type==='flag'){
+if(z.type==='newspaper' && !z.angry && z.acc <= 0 && z.state !== 'dying'){
+if(z.type==='vault' && !z.poleLost){
+if(z.type==='vault' && !z.poleLost){
+if(z.vt >= 1){
+if(z2!==z && z2.row===pea.row && z2.state!=='dying' && Math.abs(z2.x-z.x)<45){
+leg(-5,-step); leg(6,step);
+legDraw(-4, -2 + swing*9, walk ? Math.max(0,-Math.sin(ph))*3 : 0);
+legDraw(5, 6 - swing*9, walk ? Math.max(0,Math.sin(ph))*3 : 0);
+let AT = 0;
+let a, b, ans, text;
+let alpha = 1, scale = 1;
+let alpha = 1, scale = 1;
+let best = null;
+let bg = ctx.createLinearGradient(0,by,0,by+bh);
+let bg = ctx.createLinearGradient(0,y,0,y+cardH);
+let bg = ctx.createLinearGradient(0,y,0,y+ch);
+let bg = ctx.createLinearGradient(0,y,0,y+slotH);
+let bgCanvas = null, bgTheme = null;
+let ctx = cv.getContext('2d');
+let d = ans + randi(-9, 9);
+let dt = (now-last)/1000; last = now;
+let g = ctx.createLinearGradient(-14,-40,14,-2);
+let g = ctx.createLinearGradient(-17,-80,15,-36);
+let g = ctx.createLinearGradient(-8,0,8,-26);
+let g = ctx.createLinearGradient(-9,4,9,22);
+let g = ctx.createLinearGradient(0,-18,0,0);
+let g = ctx.createLinearGradient(0,-18,0,12);
+let g = ctx.createLinearGradient(0,-48,0,-28);
+let g = ctx.createLinearGradient(0,0,0,H);
+let g = ctx.createLinearGradient(0,0,0,H);
+let g = ctx.createLinearGradient(0,0,0,LY);
+let g = ctx.createLinearGradient(0,BANK_Y,0,BANK_Y+BANK_H);
+let g = ctx.createLinearGradient(0,py,0,py+ph);
+let g = ctx.createLinearGradient(0,py,0,py+ph);
+let g = ctx.createLinearGradient(0,py,0,py+ph);
+let g = ctx.createLinearGradient(0,y,0,y+h);
+let g = ctx.createLinearGradient(0,y,0,y+h);
+let g = ctx.createLinearGradient(0,y,0,y+h);
+let g = ctx.createRadialGradient(-2,-2,1, 0,0,8.5);
+let g = ctx.createRadialGradient(-3,-3,2, 0,0,14);
+let g = ctx.createRadialGradient(-4,-5,2, 0,0,18);
+let g = ctx.createRadialGradient(-5,-6,2, 0,0,16);
+let g = ctx.createRadialGradient(-7,-32,4, 0,-24,28);
+let g = ctx.createRadialGradient(-9,-45,6, 0,-34,38);
+let g = ctx.createRadialGradient(0,-30,4, 0,-30,34);
+let g = ctx.createRadialGradient(0,-52,4, 0,-52,34);
+let g = ctx.createRadialGradient(0,0,1, 0,0,14);
+let g = ctx.createRadialGradient(0,0,4, 0,0,40);
+let g = ctx.createRadialGradient(d.x, d.fy, 4, d.x, d.fy, d.r);
+let g = ctx.createRadialGradient(hx-8,hy-9,4, hx,hy,26);
+let g = ctx.createRadialGradient(ox+36,oy,1, ox+36,oy,14);
+let g = ctx.createRadialGradient(x-r*0.35,y-r*0.42,r*0.12, x,y,r*1.15);
+let g2 = ctx.createLinearGradient(0,sy,0,sy+72);
+let gi = ctx.createLinearGradient(0,zy,0,zy+220);
+let guard = 0;
+let has = false;
+let hit = false;
+let last = performance.now();
+let lost = false;
+let ng = ctx.createLinearGradient(0,by,0,by+bh);
+let pointer = false;
+let row = randi(0, ROWS-1);
+let s = 1;
+let size = 1;
+let sum = pool.reduce((a,p)=>a+p[1],0), r = rng()*sum;
+let t = 26, i = 0, spawned = 0;
+let target = null;
+let tg = ctx.createLinearGradient(0,-48*tScale,0,38*tScale);
+let txt = null;
+let ww = w;
+let x = W - 12;
+let x = s.x, y = s.y;
+level:0, unlocked:loadUnlocked(),
+life:rand(0.25,0.6), max:0.6, size:rand(2,6),
+life:rand(0.3,0.6), max:0.6, size:rand(2,3.5), color:'#5a5a52' });
+life:rand(0.3,0.85), max:0.85, size:rand(3,10),
+life:rand(0.45,0.95), max:0.95, size:rand(3,6), color:['#f4f0e2','#ded8c4','#c9c2ac'][k%3] });
+life:rand(0.7,1.2), max:1.2, size:rand(9,16), color:'rgba(90,85,80,0.5)' });
+line: '#39412e',
+lose(){ const seq=[392,329.63,261.63,196]; seq.forEach((f,i)=>this.tone(f,f*0.94,0.4,'sawtooth',0.06,i*0.3)); },
+lv.night ? '夜战：天上不掉太阳，靠向日葵与阳光菇。' : '消灭全部僵尸即可过关，小心小推车。',
+m.x += 330 * dt;
+missile(){ this.tone(300, 900, 0.25, 'sawtooth', 0.08); this.noise(0.25, 0.05, 900); },
+mnote(f,dur,type,vol,when){
+mower(){ this.tone(60, 210, 0.9, 'sawtooth', 0.13); this.noise(0.9, 0.09, 700); },
+musicOn:true, lastBeat:-1,
+newspaper:{ name:'报纸僵尸', hp:200, acc:400, speed:13 },
+ng.addColorStop(0,'rgba(38,52,96,0.94)'); ng.addColorStop(1,'rgba(22,30,60,0.94)');
+noise(dur,vol,freq,delay){
+normal:{ name:'普通僵尸', hp:200, acc:0, speed:17 },
+o.connect(g); g.connect(this.master);
+o.connect(g); g.connect(this.musicGain);
+o.frequency.setValueAtTime(Math.max(f0,20), t0);
+o.start(t0); o.stop(t0+dur+0.05);
+o.start(t0); o.stop(t0+dur+0.05);
+o.type = type; o.frequency.value = f;
+o.type = type||'sine';
+opts = opts || {};
+p.armT += dt;
+p.asleep = false;
+p.fireT -= dt;
+p.fireT = 0.4; p.recoil = 1; p.flash = 0.1;
+p.fireT = 1.4; p.recoil = 1; p.flash = 0.09;
+p.fireT = 1.5; p.recoil = 1; p.flash = 0.09;
+p.flash = Math.max(0, (p.flash||0) - dt);
+p.fuse -= dt;
+p.hp -= 100 * dt;
+p.life -= dt;
+p.recoil = Math.max(0, p.recoil - dt*(p.type==='qiuqiu' ? 4 : 1.4));
+p.sunT -= dt;
+p.sunT = rand(8, 10);
+p.x += p.vx*dt; p.y += p.vy*dt;
+paintBattleBG(theme==='night');
+pants: slowed ? '#42525e' : '#4d463c',
+paper: type==='newspaper' ? ZTYPES.newspaper.acc : 0, angry:false,
+paperTear(){ this.noise(0.18, 0.16, 5200); this.tone(1400, 420, 0.16, 'sawtooth', 0.05); },
+paused:false,
+pea.prevX = pea.x;
+pea.type = 'fire'; pea.dmg *= 2;
+pea.x += pea.vx * dt;
+peashooter: { name:'豌豆射手', cost:100, hp:300, cool:7.5, desc:'发射豌豆攻击前方僵尸' },
+phase: Math.random()*TAU,
+placePlant(s.type, r, c);
+plant(){ this.tone(170, 95, 0.13, 'sine', 0.16); this.noise(0.06, 0.05, 600); },
+poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null, dustT:0,
+potato: { name:'土豆雷', cost:25, hp:300, cool:24, desc:'钻出地面后爆炸，需要时间准备' },
+puff: { name:'小喷菇', cost:0, hp:300, cool:7.5, mushroom:true, desc:'免费，但射程只有两格' },
+q.correct = false;
+q.correct = true;
+q.energy *= 2;
+q.feedback -= dt;
+q.feedback = 0.9;
+qiuqiu: { name:'球球', cost:150, hp:900, cool:20, desc:'5岁的小男孩，加特林火力全开' },
+qs.push({ text, answer: ans, options: opts });
+r = Math.min(r, w/2, h/2);
+removePlant(existing);
+removePlant(p);
+removePlant(p);
+removePlant(p);
+render();
+renderPlay();
+repeater: { name:'双发射手', cost:200, hp:300, cool:7.5, desc:'一次发射两颗豌豆' },
+requestAnimationFrame(frame);
+requestAnimationFrame(frame);
+resume(){ if(this.ctx && this.ctx.state==='suspended') this.ctx.resume(); },
+return 'normal';
+return [t, ww];
+return arr;
+return best;
+return false;
+return hover;
+return qs;
+return true;
+return true;
+return { events:ev, total:n };
+return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
+return;
+return;
+return;
+return;
+return;
+return;
+return;
+return;
+return;
+return;
+row = (row + randi(1, ROWS-1)) % ROWS;
+rr(40, 70, W-80, H-120, 16); ctx.clip();
+rr(54, wy-6, 96, 106, 6); ctx.fill();
+rr(8, BANK_Y, 744, BANK_H, 12); ctx.clip();
+rr(inner.x, y+4, inner.w, h-8, 6); ctx.clip();
+rr(x+1, y+1, CARD_W-2, CARD_H-2, 7); ctx.stroke();
+rr(x+2, y+2, w-4, h-4, 8); ctx.stroke();
+rr(x+6, 452, 16, 34, 3); ctx.fill(); ctx.stroke();
+rr(x, LY-30, 14, 30, 3); ctx.fill(); ctx.stroke();
+rr(x, y, CARD_W, CARD_H, 8); ctx.clip();
+rr(x-2, y-2, CARD_W+4, CARD_H+4, 10); ctx.stroke();
+s.cool = def.cool;
+s.ft += dt / 0.42;
+s.life -= dt;
+s.state = 'fly'; s.ft = 0;
+s.t += dt;
+s.x = s.sx + Math.sin(s.t*2.4) * (s.fromSky?9:4);
+s.y += (s.fromSky?130:105) * dt;
+saveUnlockAll(G.unlockAll);
+scale = 1 - s.ft*0.4;
+sel:-1, shovel:false,
+select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },
+shake:0, flash:0, quiz:null,
+shirt: slowed ? '#9db4c2' : '#b3ac98',
+shoot(){ this.tone(760, 320, 0.09, 'square', 0.08); },
+shuffle(opts, rng);
+size = Math.min(size, pre-i);
+skin: slowed ? '#8fb4c4' : '#a3b187',
+skinD: slowed ? '#6a92a4' : '#7f8b66',
+skyTimer:5, groanTimer:4, lastRows:[],
+slots:[],
+snowShoot(){ this.tone(980, 420, 0.1, 'sine', 0.09); this.noise(0.06, 0.03, 4000); },
+snowpea: { name:'寒冰射手', cost:175, hp:300, cool:7.5, desc:'冰豌豆可减速僵尸' },
+spawnSun(p.cx + rand(-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
+spawnSun(rand(LX+30, LX+COLS*CW-30), -30, rand(LY+60, LY+ROWS*CH-40), true);
+spawned++;
+speed: def.speed * rand(0.92,1.08),
+splat(){ this.noise(0.07, 0.13, 900); this.tone(190, 90, 0.07, 'sine', 0.1); },
+src.connect(f); f.connect(g); g.connect(this.master);
+src.start(t0); src.stop(t0+dur+0.02);
+startSun = (startSun === undefined) ? 50 : startSun;
+state:'menu',
+state:'walk', animT: rand(0,TAU), eatT:0, slowT:0,
+suit: slowed ? '#4a5a68' : '#544f46',
+suitD: slowed ? '#394854' : '#3d3931',
+sun(){ this.tone(1046, 1046, 0.08, 'sine', 0.09); this.tone(1568, 1568, 0.1, 'sine', 0.07, 0.06); },
+sun:50, sunFlash:0,
+sunflower: { name:'向日葵', cost:50, hp:300, cool:7.5, desc:'生产阳光，经济的基石' },
+sunshroom: { name:'阳光菇', cost:25, hp:300, cool:7.5, mushroom:true, desc:'比向日葵便宜，产阳光也只有一半' },
+switch(p.type){
+switch(p.type){
+switch(type){
+t += rand(12,21) * (1 - 0.38*progress);
+t:0,
+text = a + ' + ' + b + ' = ?';
+text = a + ' − ' + b + ' = ?';
+tg.addColorStop(0,'#d8f8a0'); tg.addColorStop(0.45,'#8fc050'); tg.addColorStop(0.55,'#6ba234'); tg.addColorStop(1,'#4e7a22');
+this.ctx = new AC();
+this.lastBeat = ahead;
+this.loopStart = this.ctx.currentTime + 0.1;
+this.master = this.ctx.createGain(); this.master.gain.value = 0.9;
+this.master.connect(this.ctx.destination);
+this.mnote(NOTE[BASS[bar]], MUSIC_BEAT*2.8, 'sine', 0.06, Math.max(0,(b-curBeat)*MUSIC_BEAT));
+this.mnote(NOTE[m[1]]*2, m[2]*MUSIC_BEAT*1.2, 'sine', 0.011, when);
+this.mnote(NOTE[m[1]], m[2]*MUSIC_BEAT*1.9, 'triangle', 0.045, when);
+this.musicGain = this.ctx.createGain(); this.musicGain.gain.value = 0.6;
+this.musicGain.connect(this.master);
+this.musicTimer = setInterval(()=>this.tickMusic(), 100);
+this.tone(f*1.5, f*1.1, rand(0.5,0.8), 'triangle', 0.028);
+this.tone(f, f*0.72, rand(0.6,0.95), 'sawtooth', 0.05);
+throwBall(){ this.tone(480, 940, 0.08, 'triangle', 0.1); this.noise(0.04, 0.03, 3500); },
+tickMusic(){
+tie: '#b8382c',
+tone(f0,f1,dur,type,vol,delay){
+torch: { name:'火炬树桩', cost:175, hp:300, cool:7.5, desc:'让穿过的豌豆变成火豌豆' },
+try{
+type, row,
+type, row, col, hp:def.hp, maxHp:def.hp,
+unlockAll:loadUnlockAll(),
+vault: { name:'撑杆僵尸', hp:500, acc:0, speed:36 },
+vg.addColorStop(0,'rgba(0,0,0,0)');
+vg.addColorStop(1,'rgba(10,20,8,0.22)');
+wallnut: { name:'坚果墙', cost:50, hp:4000, cool:24, desc:'坚固的屏障，阻挡僵尸' },
+waveText:null, nightHint:0,
+wheel(3, 8.4); wheel(27, 7);
+while(G.evIdx < G.events.length && G.events[G.evIdx].t <= t){
+while(i < pre){
+while(opts.length < 4 && guard++ < 200){
+while(opts.length < 4) opts.push(ans + opts.length + 1);
+win(){ const seq=[523.25,659.25,783.99,1046.5]; seq.forEach((f,i)=>this.tone(f,f,0.22,'triangle',0.11,i*0.14)); },
+winT:0, loseZombie:null,
+window.addEventListener('keydown', e=>{
+x -= w + 8;
+x = lerp(s.x, 78, k); y = lerp(s.y, 50, k);
+x: W + 40 + rand(0,40),
+z.acc -= d;
+z.angry = true;
+z.animT += dt * slowMul * animMul;
+z.deathT += dt;
+z.dustT = (z.dustT||0) + dt;
+z.dustT = 0;
+z.eatT += dt;
+z.hp -= d;
+z.slowT = 0;
+z.speed = 34 * rand(0.94,1.08);
+z.speed = ZTYPES.normal.speed * rand(0.92,1.08);
+z.state = 'dying'; z.deathT = 0;
+z.state = 'eat'; z.eatT = 0; z.eatPlant = food;
+z.state = 'vault'; z.vt = 0; z.fromX = z.x;
+z.state = 'walk'; z.eatPlant = null;
+z.state = 'walk'; z.eatPlant = null;
+z.toX = Math.max(target.cx - CW + 18, LX - 10);
+z.vt += dt / 0.55;
+z.vy = -Math.sin(Math.PI * z.vt) * 72;
+z.vy = 0;
+z.x -= z.speed * slowMul * dt;
+z.x = Math.max(z.x, food.cx + 40);
+z.x = lerp(z.fromX, z.toX, easeOut(z.vt));
+z.x = z.toX; z.state = 'walk'; z.poleLost = true;
+{ disabled: !G.slots.length, size:19 });
+{ id:'mute', label: SFX.musicOn ? '音乐开' : '音乐关', cb:()=>{ SFX.musicOn = !SFX.musicOn; SFX.click(); } },
+{ id:'pause', label: G.paused ? '继续' : '暂停', cb:()=>{ G.paused = !G.paused; SFX.click(); } },
+{ name:'第 1 关 · 前院草坪', count:20, slots:6, types:[['normal',8],['cone',2]] },
+{ name:'第 2 关 · 来者不善', count:32, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
+{ name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
+{ name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+} else SFX.error();
+} else if(G.sel >= 0){
+} else if(acc==='bucket'){
+} else if(acc==='flag'){
+} else if(acc==='newspaper'){
+} else if(acc==='vault'){
+} else if(e.key==='Escape'){ G.sel=-1; G.shovel=false; }
+} else if(hover && afford){
+} else if(opts.red){
+} else if(p.type==='puff'){
+} else if(s.state==='fly'){
+} else if(s.state==='idle'){
+} else if(z.state==='eat'){
+} else if(z.state==='vault'){
+} else if(z.type==='bucket'){
+} else if(z.type==='vault' && !z.poleLost){
+} else spawnZombie(e.type);
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+} else {
+});
+});
+});
+});
+});
+},
+},
+},
+},
+},
+},
+}, {passive:false});
+}, {passive:false});
+};
+};
+};
+};
+};
+};
+};
+};
+};
+};
+};
+};
+};
+}; })() });
+}catch(e){ return false; }

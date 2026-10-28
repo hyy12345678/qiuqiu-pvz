@@ -3,7 +3,7 @@
 
 import { COLS, LX, ROWS } from './constants.js';
 import { LEVELS } from './data/levels.js';
-import { loadUnlocked } from './persist.js';
+import { loadUnlocked, loadUnlockAll, saveUnlockAll } from './persist.js';
 import { makeQuiz } from './quiz.js';
 import { buildSpawns } from './waves.js';
 import { SFX } from '../audio/sfx.js';
@@ -11,6 +11,7 @@ import { SFX } from '../audio/sfx.js';
 export const G = {
   state:'menu',           // menu | help | select | play | won | lost
   level:0, unlocked:loadUnlocked(),
+  unlockAll:loadUnlockAll(),   // 主页特殊开关：打开后所有关卡直接进入
   paused:false,
   t:0,                    // 关卡时钟（负数为开场白）
   sun:50, sunFlash:0,
@@ -31,6 +32,16 @@ export function startLevel(li){
   G.state = 'select';
   G.slots = [];
   G.sel = -1; G.shovel = false;
+  SFX.click();
+}
+
+// 昼夜判定：背景、天降太阳、蘑菇是否打盹都读这一处
+export function isNight(){ return !!(LEVELS[G.level] && LEVELS[G.level].night); }
+
+// 主页的特殊开关：打开后所有关卡都能直接进，关掉则回到真实进度（真实进度始终单独保存）
+export function toggleUnlockAll(){
+  G.unlockAll = !G.unlockAll;
+  saveUnlockAll(G.unlockAll);
   SFX.click();
 }
 

@@ -16,7 +16,7 @@ const { LX, CW, CH, LY, ROWS, W } = await import('../src/core/constants.js');
 const DT = 1 / 60;
 
 function stepFrames(n) {
-  for (let i = 0; i < n; i++) updatePlay(DT);
+  for (let i = 0; i < n; i++) updatePlay(G, DT);
 }
 function step(sec) {
   stepFrames(Math.ceil(sec / DT));
@@ -27,7 +27,7 @@ function reset(level = 0) {
   G.level = level;
   G.unlocked = 1;
   beginPlay();                       // 顺带把 grid/mowers/events 全部重建
-  while (G.t < 0.05) updatePlay(DT); // 跑完 -3.2s 开场倒计时，进入 t > 0
+  while (G.t < 0.05) updatePlay(G, DT); // 跑完 -3.2s 开场倒计时，进入 t > 0
   G.zombies.length = G.peas.length = G.suns.length = 0;
   G.plants.length = 0;
   for (let r = 0; r < ROWS; r++) G.grid[r].fill(null);
@@ -40,7 +40,7 @@ function reset(level = 0) {
 
 function plant(type, row, col) {
   G.sun = 9999;
-  placePlant(type, row, col);
+  placePlant(G, type, row, col);
   return G.grid[row][col];
 }
 
@@ -69,22 +69,22 @@ test('不变量1 护盾：伤害先扣 acc，打穿后溢出量转灌 hp，本�
   reset();
   const z = zombie('cone', 600); // hp 200 / acc 370
 
-  damageZombie(z, 100);
+  damageZombie(G, z, 100);
   assert.strictEqual(z.acc, 270, '路障护盾应吸收全部 100');
   assert.strictEqual(z.hp, 200, '护盾未打穿时本体不掉血');
   assert.strictEqual(z.state, 'walk', '本体满血不应进入死亡');
 
-  damageZombie(z, 300);        // 溢出 30
+  damageZombie(G, z, 300);        // 溢出 30
   assert.strictEqual(z.acc, 0, '护盾扣成负数后要归零');
   assert.strictEqual(z.hp, 170, '溢出的 30 应转灌本体');
   assert.notStrictEqual(z.state, 'dying');
 
-  damageZombie(z, 170);
+  damageZombie(G, z, 170);
   assert.strictEqual(z.state, 'dying', '本体清零才判死');
   assert.strictEqual(z.deathT, 0, '死亡计时从零起算');
 
   const bucket = zombie('bucket', 600, 0); // hp 200 / acc 1100
-  damageZombie(bucket, 5000);
+  damageZombie(G, bucket, 5000);
   assert.strictEqual(bucket.acc, 0);
   assert.strictEqual(bucket.hp, 200 - (5000 - 1100), '溢出的 3900 全部转灌本体');
   assert.strictEqual(bucket.hp, -3700);
@@ -98,13 +98,13 @@ test('不变量2 报纸僵尸：acc 归零那一击触发狂暴，加速并清�
   const z = zombie('newspaper', 600);
   z.slowT = 6; // 寒冰射手留下的减速
 
-  damageZombie(z, 399);
+  damageZombie(G, z, 399);
   assert.strictEqual(z.acc, 1, '还剩 1 点报纸');
   assert.strictEqual(z.angry, false, '报纸未掉不狂暴');
   assert.strictEqual(z.slowT, 6, '未狂暴不应清掉减速');
 
   const paperBefore = G.parts.length;
-  damageZombie(z, 1); // 恰好打空护盾
+  damageZombie(G, z, 1); // 恰好打空护盾
   assert.strictEqual(z.acc, 0);
   assert.strictEqual(z.angry, true, '报纸被打掉应狂暴');
   assert.ok(z.speed >= 34 * 0.94 && z.speed <= 34 * 1.08,
@@ -117,7 +117,7 @@ test('不变量2 报纸僵尸：acc 归零那一击触发狂暴，加速并清�
   const dying = zombie('newspaper', 600, 0);
   dying.state = 'dying';
   const speed = dying.speed;
-  damageZombie(dying, 9999);
+  damageZombie(G, dying, 9999);
   assert.strictEqual(dying.angry, false, '濒死状态不应触发狂暴');
   assert.strictEqual(dying.speed, speed, '濒死状态不应改速度');
 });
@@ -131,7 +131,7 @@ test('不变量3 土豆雷：僵尸不会停下来啃它；未装填时撑杆僵
   mine.armed = false; mine.armT = 0;
 
   // 未装填：贴在地里，既不是食物也不是跳点
-  assert.strictEqual(findEatTarget(zombie('normal', 600, row)), null, '土豆雷不应是可啃目标');
+  assert.strictEqual(findEatTarget(G, zombie('normal', 600, row)), null, '土豆雷不应是可啃目标');
   const patient = zombie('vault', 600, row);
   stepFrames(12);
   assert.strictEqual(patient.state, 'walk', '未装填的土豆雷贴地，撑杆僵尸不为它浪费这一跳');
@@ -148,9 +148,9 @@ test('不变量3 土豆雷：僵尸不会停下来啃它；未装填时撑杆僵
 
   // 对照：坚果墙既可啃又可跳；而雷始终不可啃
   G.zombies.length = 0;
-  removePlant(mine);
+  removePlant(G, mine);
   const wall = plant('wallnut', row, 3);
-  assert.strictEqual(findEatTarget(zombie('normal', 600, row)), wall, '坚果墙应成为可啃目标');
+  assert.strictEqual(findEatTarget(G, zombie('normal', 600, row)), wall, '坚果墙应成为可啃目标');
   G.zombies.length = 0;
   const v2 = zombie('vault', 600, row);
   stepFrames(1);
@@ -208,7 +208,7 @@ test('不变量5 导弹：爆炸范围是按 x 换算出的 3×3 格（列 = flo
   const diagRow = zombie('normal', cx, row - 1);        // 斜角一格
   const farRow = zombie('normal', cx, row - 2);
 
-  explodeMissile(cx, row, Math.floor((cx - LX) / CW));
+  explodeMissile(G, cx, row, Math.floor((cx - LX) / CW));
 
   assert.strictEqual(sameCell.hp, 110, '本格应受 90 伤害');
   assert.strictEqual(rightCol.hp, 110, '相邻列即使在 85px 外也应受 90 伤害（按格判定）');
@@ -263,11 +263,11 @@ test('不变量6 小推车：僵尸越过 LX+14 才触发本行的闲置车，�
 
 test('不变量6b triggerMower 只认领闲车，且返回值如实反映是否启动', () => {
   reset();
-  assert.strictEqual(triggerMower(2), true);
+  assert.strictEqual(triggerMower(G, 2), true);
   assert.strictEqual(G.mowers[2].state, 'run');
-  assert.strictEqual(triggerMower(2), false, '已启动的车不应被重复触发');
+  assert.strictEqual(triggerMower(G, 2), false, '已启动的车不应被重复触发');
   G.mowers[2].state = 'gone';
-  assert.strictEqual(triggerMower(2), false, '已消失的车不应被触发');
+  assert.strictEqual(triggerMower(G, 2), false, '已消失的车不应被触发');
 });
 
 // ---- 7. 夜战规则 ----

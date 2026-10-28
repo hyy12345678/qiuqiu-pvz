@@ -155,10 +155,10 @@ for(const t of ['sunflower','peashooter','repeater','snowpea','wallnut','torch']
 beginPlay();
 G.sun = 9999;
 for(let r = 0; r < 5; r++){
-  placePlant('wallnut', r, 0);
-  placePlant('torch', r, 1);
-  placePlant('repeater', r, 2);
-  placePlant('repeater', r, 3);
+  placePlant(G, 'wallnut', r, 0);
+  placePlant(G, 'torch', r, 1);
+  placePlant(G, 'repeater', r, 2);
+  placePlant(G, 'repeater', r, 3);
 }
 guard = 0;
 while(G.state === 'play' && guard++ < 400){ pump(1); }
@@ -174,7 +174,7 @@ beginPlay();
 G.sun = 9999;
 G.t = 1; // 跳过开场白
 // C1: 撑杆僵尸跳过坚果墙
-placePlant('wallnut', 2, 6);
+placePlant(G, 'wallnut', 2, 6);
 G.zombies.push(makeZombie('vault', 2, cellCX(8) + 30));
 let jumped = false;
 for(let i = 0; i < 600 && G.state === 'play'; i++){
@@ -185,7 +185,7 @@ for(let i = 0; i < 600 && G.state === 'play'; i++){
 }
 if(!jumped) throw new Error('C1: vault zombie never finished jump');
 // C2: 土豆雷成长后炸死僵尸
-placePlant('potato', 3, 5);
+placePlant(G, 'potato', 3, 5);
 pump(15); // 等待成长
 const pot = G.grid[3][5];
 if(!pot || !pot.armed) throw new Error('C2: potato not armed after 15s');
@@ -197,11 +197,11 @@ if(G.killed <= killedBefore) throw new Error('C2: potato mine did not kill zombi
 G.zombies.push(makeZombie('cone', 1, cellCX(4) + 40));
 G.zombies.push(makeZombie('normal', 0, cellCX(4) + 20));
 const k3 = G.killed;
-placePlant('cherry', 1, 4);
+placePlant(G, 'cherry', 1, 4);
 pump(3);
 if(G.killed < k3 + 2) throw new Error('C3: cherry bomb killed ' + (G.killed - k3) + ', expect >=2');
 // C4: 僵尸啃食植物
-placePlant('sunflower', 4, 7);
+placePlant(G, 'sunflower', 4, 7);
 G.zombies.push(makeZombie('normal', 4, cellCX(8)));
 let eaten = false;
 for(let i = 0; i < 600 && G.state === 'play'; i++){
@@ -210,7 +210,7 @@ for(let i = 0; i < 600 && G.state === 'play'; i++){
 }
 if(!eaten) throw new Error('C4: zombie did not eat plant');
 // C5: 寒冰减速
-placePlant('snowpea', 0, 0);
+placePlant(G, 'snowpea', 0, 0);
 const szRef = makeZombie('normal', 0, cellCX(3));
 G.zombies.push(szRef);
 pump(3);
@@ -233,7 +233,7 @@ G.slots.push({type:'qiuqiu',cool:0});
 beginPlay();
 G.sun = 9999;
 G.t = 1;
-placePlant('qiuqiu', 2, 1);
+placePlant(G, 'qiuqiu', 2, 1);
 const zE = makeZombie('normal', 2, cellCX(5));
 G.zombies.push(zE);
 const hpBefore = zE.hp;
@@ -269,22 +269,22 @@ beginPlay();
 G.sun = 9999; G.t = 1;
 if(ZTYPES.newspaper.acc <= 0) throw new Error('G0: newspaper zombie has no paper shield');
 // G-a: 出怪时自带报纸护盾
-spawnZombie('newspaper');
+spawnZombie(G, 'newspaper');
 const spawned = G.zombies[G.zombies.length-1];
 if(spawned.type !== 'newspaper' || spawned.paper !== ZTYPES.newspaper.acc || spawned.angry)
   throw new Error('G-a: spawnZombie did not equip paper shield');
 const nz = makeZombie('newspaper', 0, cellCX(4));
 const spdBefore = nz.speed;
-damageZombie(nz, 200);
+damageZombie(G, nz, 200);
 if(nz.acc !== 200 || nz.hp !== ZTYPES.newspaper.hp) throw new Error('G1: paper should absorb damage (acc=' + nz.acc + ' hp=' + nz.hp + ')');
 if(nz.angry) throw new Error('G2: went angry while paper still alive');
-damageZombie(nz, 250);          // 打爆报纸，溢出 50 点伤害
+damageZombie(G, nz, 250);          // 打爆报纸，溢出 50 点伤害
 if(!nz.angry) throw new Error('G3: paper destroyed but zombie not enraged');
 if(nz.acc !== 0) throw new Error('G4: acc should be 0 after paper lost, got ' + nz.acc);
 if(nz.hp !== 150) throw new Error('G5: spillover damage wrong, hp=' + nz.hp);
 if(!(nz.speed > spdBefore)) throw new Error('G6: angry zombie not faster (' + spdBefore + ' -> ' + nz.speed + ')');
 pump(1);                        // 渲染暴怒状态
-damageZombie(nz, 150);
+damageZombie(G, nz, 150);
 if(nz.state !== 'dying') throw new Error('G7: enraged zombie did not die');
 pump(1);
 // G-b: 两种姿态绘制不报错

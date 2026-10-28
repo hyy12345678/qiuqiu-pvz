@@ -1,5 +1,5 @@
 // 游戏世界状态与关卡流程：状态机的唯一持有者。渲染与输入都读它，只有这里写它。
-// P3a 只做搬迁（G 仍是模块级单例）；P3b 之后才讨论要不要把 world 显式传给 simulation。
+// R1a：simulation / entities / particles 已改为显式接收 world；本文件仍持有单例 G，工厂留给 R1b。
 
 import { COLS, LX, ROWS } from './constants.js';
 import { LEVELS } from './data/levels.js';
@@ -36,7 +36,7 @@ export function startLevel(li){
 }
 
 // 昼夜判定：背景、天降太阳、蘑菇是否打盹都读这一处
-export function isNight(){ return !!(LEVELS[G.level] && LEVELS[G.level].night); }
+export function isNight(world){ return !!(LEVELS[world.level] && LEVELS[world.level].night); }
 
 // 主页的特殊开关：打开后所有关卡都能直接进，关掉则回到真实进度（真实进度始终单独保存）
 export function toggleUnlockAll(){

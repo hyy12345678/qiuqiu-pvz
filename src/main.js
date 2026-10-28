@@ -53,7 +53,7 @@ let AT = 0;               // 全局动画时间
 // ---------------- 预渲染背景 ----------------
 let bgCanvas = null, bgTheme = null;
 function ensureBG(){
-  const theme = isNight() ? 'night' : 'day';
+  const theme = isNight(G) ? 'night' : 'day';
   if(bgCanvas && bgTheme === theme) return;
   bgTheme = theme;
   bgCanvas = document.createElement('canvas');
@@ -289,7 +289,7 @@ function paintBattleBG(night){
 function drawBackground(){
   ensureBG();
   ctx.drawImage(bgCanvas, 0, 0, W, H);
-  if(isNight()){
+  if(isNight(G)){
     // 萤火虫 + 星光微微闪
     ctx.save();
     for(let k=0;k<10;k++){
@@ -1833,7 +1833,7 @@ function renderPlay(){
         ctx.save();
         ctx.globalAlpha = 0.55;
         const ghost = { type:selType, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0,
-          asleep: !!PLANTS[selType].mushroom && !isNight() };
+          asleep: !!PLANTS[selType].mushroom && !isNight(G) };
         drawPlantEntity(ghost);
         ctx.restore();
       }
@@ -1866,7 +1866,7 @@ function renderPlay(){
   drawIntro();
 
   // 夜战提示条
-  if(G.nightHint > 0 && isNight()){
+  if(G.nightHint > 0 && isNight(G)){
     const a = clamp(G.nightHint/1.4, 0, 1);
     const bw = 520, bh = 44, bx = W/2-bw/2, by = 150;
     ctx.save();
@@ -2444,8 +2444,8 @@ function handlePress(p){
     const existing = G.grid[r][c];
     if(G.shovel){
       if(existing){
-        addLeafBurst(existing.cx, existing.fy-30);
-        removePlant(existing);
+        addLeafBurst(G, existing.cx, existing.fy-30);
+        removePlant(G, existing);
         SFX.dig();
         G.shovel = false;
       }
@@ -2463,7 +2463,7 @@ function handlePress(p){
       }
       if(existing){ SFX.error(); return; }
       if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
-      placePlant(s.type, r, c);
+      placePlant(G, s.type, r, c);
       s.cool = def.cool;
       G.sel = -1;
     }
@@ -2514,7 +2514,7 @@ function frame(now){
   let dt = (now-last)/1000; last = now;
   dt = Math.min(dt, 0.05);
   AT += dt;
-  if(G.state==='play' && !G.paused) updatePlay(dt);
+  if(G.state==='play' && !G.paused) updatePlay(G, dt);
   else if(G.state==='quiz') updateQuiz(dt);
   render();
   requestAnimationFrame(frame);

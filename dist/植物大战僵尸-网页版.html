@@ -434,107 +434,109 @@
   }
 
   // src/core/world.js
-  var G = {
-    state: "menu",
-    // menu | help | select | play | won | lost
-    level: 0,
-    unlocked: loadUnlocked(),
-    unlockAll: loadUnlockAll(),
-    // 主页特殊开关：打开后所有关卡直接进入
-    paused: false,
-    t: 0,
-    // 关卡时钟（负数为开场白）
-    sun: 50,
-    sunFlash: 0,
-    slots: [],
-    sel: -1,
-    shovel: false,
-    grid: null,
-    plants: [],
-    zombies: [],
-    peas: [],
-    suns: [],
-    mowers: [],
-    parts: [],
-    decals: [],
-    events: [],
-    evIdx: 0,
-    total: 0,
-    killed: 0,
-    skyTimer: 5,
-    groanTimer: 4,
-    lastRows: [],
-    waveText: null,
-    nightHint: 0,
-    winT: 0,
-    loseZombie: null,
-    shake: 0,
-    flash: 0,
-    quiz: null,
-    hoverCell: null,
-    mouse: { x: -99, y: -99 },
-    hotspots: []
-  };
-  function startLevel(li) {
-    G.level = li;
-    G.state = "select";
-    G.slots = [];
-    G.sel = -1;
-    G.shovel = false;
+  function createWorld(init = {}) {
+    return {
+      state: "menu",
+      // menu | help | select | play | won | lost
+      level: 0,
+      unlocked: init.unlocked === void 0 ? loadUnlocked() : init.unlocked,
+      unlockAll: init.unlockAll === void 0 ? loadUnlockAll() : init.unlockAll,
+      // 主页特殊开关：打开后所有关卡直接进入
+      paused: false,
+      t: 0,
+      // 关卡时钟（负数为开场白）
+      sun: 50,
+      sunFlash: 0,
+      slots: [],
+      sel: -1,
+      shovel: false,
+      grid: null,
+      plants: [],
+      zombies: [],
+      peas: [],
+      suns: [],
+      mowers: [],
+      parts: [],
+      decals: [],
+      events: [],
+      evIdx: 0,
+      total: 0,
+      killed: 0,
+      skyTimer: 5,
+      groanTimer: 4,
+      lastRows: [],
+      waveText: null,
+      nightHint: 0,
+      winT: 0,
+      loseZombie: null,
+      shake: 0,
+      flash: 0,
+      quiz: null,
+      hoverCell: null,
+      mouse: { x: -99, y: -99 },
+      hotspots: []
+    };
+  }
+  function startLevel(world, li) {
+    world.level = li;
+    world.state = "select";
+    world.slots = [];
+    world.sel = -1;
+    world.shovel = false;
     SFX.click();
   }
   function isNight(world) {
     return !!(LEVELS[world.level] && LEVELS[world.level].night);
   }
-  function toggleUnlockAll() {
-    G.unlockAll = !G.unlockAll;
-    saveUnlockAll(G.unlockAll);
+  function toggleUnlockAll(world) {
+    world.unlockAll = !world.unlockAll;
+    saveUnlockAll(world.unlockAll);
     SFX.click();
   }
-  function beginPlay(startSun) {
+  function beginPlay(world, startSun) {
     startSun = startSun === void 0 ? 50 : startSun;
-    const lv = LEVELS[G.level];
+    const lv = LEVELS[world.level];
     if (lv.night) startSun += 100;
-    G.state = "play";
-    G.paused = false;
-    G.t = -3.2;
-    G.sun = startSun;
-    G.sunFlash = 0;
-    G.grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
-    G.plants = [];
-    G.zombies = [];
-    G.peas = [];
-    G.suns = [];
-    G.parts = [];
-    G.decals = [];
-    G.lastRows = [];
-    G.mowers = Array.from({ length: ROWS }, (_, r) => ({ row: r, x: LX - 52, state: "idle" }));
-    G.slots = G.slots.map((s) => ({ type: s.type, cool: 0 }));
+    world.state = "play";
+    world.paused = false;
+    world.t = -3.2;
+    world.sun = startSun;
+    world.sunFlash = 0;
+    world.grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    world.plants = [];
+    world.zombies = [];
+    world.peas = [];
+    world.suns = [];
+    world.parts = [];
+    world.decals = [];
+    world.lastRows = [];
+    world.mowers = Array.from({ length: ROWS }, (_, r) => ({ row: r, x: LX - 52, state: "idle" }));
+    world.slots = world.slots.map((s) => ({ type: s.type, cool: 0 }));
     const built = buildSpawns(lv);
-    G.events = built.events;
-    G.total = built.total;
-    G.evIdx = 0;
-    G.killed = 0;
-    G.skyTimer = 2;
-    G.groanTimer = 4;
-    G.waveText = null;
-    G.winT = 0;
-    G.loseZombie = null;
-    G.nightHint = lv.night ? 8 : 0;
-    G.sel = -1;
-    G.shovel = false;
-    G.shake = 0;
-    G.flash = 0;
+    world.events = built.events;
+    world.total = built.total;
+    world.evIdx = 0;
+    world.killed = 0;
+    world.skyTimer = 2;
+    world.groanTimer = 4;
+    world.waveText = null;
+    world.winT = 0;
+    world.loseZombie = null;
+    world.nightHint = lv.night ? 8 : 0;
+    world.sel = -1;
+    world.shovel = false;
+    world.shake = 0;
+    world.flash = 0;
     SFX.click();
   }
-  function startQuiz() {
-    G.state = "quiz";
-    G.quiz = { idx: 0, energy: 50, questions: makeQuiz(), feedback: 0, correct: true };
+  function startQuiz(world) {
+    world.state = "quiz";
+    world.quiz = { idx: 0, energy: 50, questions: makeQuiz(), feedback: 0, correct: true };
     SFX.click();
   }
-  function answerQuiz(a) {
-    if (G.state !== "quiz" || G.quiz.feedback > 0) return;
-    const q = G.quiz;
+  function answerQuiz(world, a) {
+    if (world.state !== "quiz" || world.quiz.feedback > 0) return;
+    const q = world.quiz;
     if (a === q.questions[q.idx].answer) {
       q.energy *= 2;
       q.correct = true;
@@ -545,8 +547,8 @@
     }
     q.feedback = 0.9;
   }
-  function updateQuiz(dt) {
-    const q = G.quiz;
+  function updateQuiz(world, dt) {
+    const q = world.quiz;
     if (q.feedback > 0) {
       q.feedback -= dt;
       if (q.feedback <= 0) {
@@ -554,7 +556,7 @@
           q.idx++;
           q.feedback = 0;
         } else {
-          beginPlay(q.energy);
+          beginPlay(world, q.energy);
         }
       }
     }
@@ -1142,6 +1144,7 @@
   }
 
   // src/main.js
+  var G = createWorld();
   var cv = document.getElementById("game");
   var ctx = cv.getContext("2d");
   var DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -4207,7 +4210,7 @@
       G.hotspots.push({ x, y, w: cardW, h: cardH, id: "lv" + i, cb: locked ? () => {
       } : /* @__PURE__ */ (() => {
         const ii = i;
-        return () => startLevel(ii);
+        return () => startLevel(G, ii);
       })() });
       ctx.save();
       if (hover) ctx.translate(0, -4);
@@ -4284,7 +4287,7 @@
       SFX.musicOn = !SFX.musicOn;
       SFX.click();
     }, {});
-    drawButton(W / 2 + 110, 462, 180, 52, G.unlockAll ? "全部关卡：开" : "全部关卡：关", "unlockall", () => toggleUnlockAll(), { size: 18 });
+    drawButton(W / 2 + 110, 462, 180, 52, G.unlockAll ? "全部关卡：开" : "全部关卡：关", "unlockall", () => toggleUnlockAll(G), { size: 18 });
     drawText("同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐", W / 2, H - 20, 12.5, "rgba(30,50,18,0.75)", null, 0, "center", "600");
   }
   function renderHelp() {
@@ -4501,7 +4504,7 @@
       G.slots.length ? "开 始 游 戏" : "请先选择植物",
       "go",
       () => {
-        if (G.slots.length) startQuiz();
+        if (G.slots.length) startQuiz(G);
         else SFX.error();
       },
       { disabled: !G.slots.length, size: 19 }
@@ -4550,7 +4553,7 @@
       drawText(String(cur.options[i]), bx + bw / 2, by + bh / 2 + 1, 24, "#fffbe8", "#2e3a10", 4, "center", "800");
       G.hotspots.push({ x: bx, y: by, w: bw, h: bh, id: "ans" + i, cb: (() => {
         const a = cur.options[i];
-        return () => answerQuiz(a);
+        return () => answerQuiz(G, a);
       })() });
     }
     if (q.feedback > 0) {
@@ -4606,7 +4609,7 @@
       if (!lastLv) drawText("新的关卡已解锁！", W / 2, py + 158, 17, "#a05c10", null, 0, "center", "700");
       else drawText("你通关了全部 " + LEVELS.length + " 个关卡，草坪安全了！", W / 2, py + 158, 17, "#a05c10", null, 0, "center", "700");
       const leftLabel = lastLv ? "再玩一次" : "下一关";
-      const leftCb = lastLv ? () => startLevel(G.level) : () => startLevel(G.level + 1);
+      const leftCb = lastLv ? () => startLevel(G, G.level) : () => startLevel(G, G.level + 1);
       drawButton(W / 2 - 215, py + ph - 76, 200, 48, leftLabel, "next", leftCb, {});
       drawButton(W / 2 + 15, py + ph - 76, 200, 48, "主菜单", "menu", () => {
         G.state = "menu";
@@ -4615,7 +4618,7 @@
     } else {
       drawText("僵尸吃掉了你的脑子！", W / 2, py + 66, 37, "#e8554a", "#3a0a04", 8, "center", "900");
       drawText("消灭僵尸：" + G.killed + " / " + G.total, W / 2, py + 130, 19, "#d8b8c0", null, 0, "center", "700");
-      drawButton(W / 2 - 215, py + ph - 76, 200, 48, "重新挑战", "retry", () => startLevel(G.level), { red: true });
+      drawButton(W / 2 - 215, py + ph - 76, 200, 48, "重新挑战", "retry", () => startLevel(G, G.level), { red: true });
       drawButton(W / 2 + 15, py + ph - 76, 200, 48, "主菜单", "menu", () => {
         G.state = "menu";
         SFX.click();
@@ -4773,7 +4776,7 @@
     dt = Math.min(dt, 0.05);
     AT += dt;
     if (G.state === "play" && !G.paused) updatePlay(G, dt);
-    else if (G.state === "quiz") updateQuiz(dt);
+    else if (G.state === "quiz") updateQuiz(G, dt);
     render();
     requestAnimationFrame(frame);
   }

@@ -12,10 +12,13 @@ import { mulberry32 } from './core/rng.js';
 import { PLANTS, PLANT_ORDER } from './core/data/plants.js';
 import { LEVELS } from './core/data/levels.js';
 import { SFX } from './audio/sfx.js';
-import { G, startLevel, startQuiz, answerQuiz, updateQuiz, toggleUnlockAll, isNight } from './core/world.js';
+import { createWorld, startLevel, startQuiz, answerQuiz, updateQuiz, toggleUnlockAll, isNight } from './core/world.js';
 import { cellCX, cellFY, placePlant, removePlant, applyCoffee } from './core/entities.js';
 import { addLeafBurst } from './core/particles.js';
 import { updatePlay } from './core/sim.js';
+
+// 装配层持有唯一的游戏世界实例；核心模块一律显式接收它。
+const G = createWorld();
 
 
 
@@ -2079,7 +2082,7 @@ function renderMenu(){
     const locked = !G.unlockAll && i+1 > G.unlocked;
     const x = x0 + i*(cardW+gap), y = 258;
     const hover = !locked && G.mouse.x>=x && G.mouse.x<=x+cardW && G.mouse.y>=y && G.mouse.y<=y+cardH;
-    G.hotspots.push({ x, y, w:cardW, h:cardH, id:'lv'+i, cb: locked ? ()=>{} : (()=>{ const ii=i; return ()=>startLevel(ii); })() });
+    G.hotspots.push({ x, y, w:cardW, h:cardH, id:'lv'+i, cb: locked ? ()=>{} : (()=>{ const ii=i; return ()=>startLevel(G, ii); })() });
     ctx.save();
     if(hover) ctx.translate(0,-4);
     ctx.fillStyle = 'rgba(20,35,10,0.35)';
@@ -2126,7 +2129,7 @@ function renderMenu(){
 
   drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});
   drawButton(W/2-90, 462, 180, 52, SFX.musicOn ? '音乐：开' : '音乐：关', 'music', ()=>{ SFX.ensure(); SFX.musicOn = !SFX.musicOn; SFX.click(); }, {});
-  drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(), { size: 18 });
+  drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(G), { size: 18 });
   drawText('同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐', W/2, H-20, 12.5, 'rgba(30,50,18,0.75)', null, 0, 'center', '600');
 }
 
@@ -2283,7 +2286,7 @@ function renderSelect(){
 
   drawButton(88, H-88, 150, 46, '返回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
   drawButton(W-286, H-88, 198, 46, G.slots.length ? '开 始 游 戏' : '请先选择植物', 'go',
-    ()=>{ if(G.slots.length) startQuiz(); else SFX.error(); },
+    ()=>{ if(G.slots.length) startQuiz(G); else SFX.error(); },
     { disabled: !G.slots.length, size:19 });
 }
 
@@ -2317,7 +2320,7 @@ function renderQuiz(){
     ctx.beginPath(); rr(bx, by, bw, bh, 10); O(bg, '#2e4a14', 3);
     ctx.fillStyle='rgba(255,255,255,0.22)'; ctx.fillRect(bx+5, by+3, bw-10, 6);
     drawText(String(cur.options[i]), bx+bw/2, by+bh/2+1, 24, '#fffbe8', '#2e3a10', 4, 'center', '800');
-    G.hotspots.push({ x:bx, y:by, w:bw, h:bh, id:'ans'+i, cb:(()=>{ const a=cur.options[i]; return ()=>answerQuiz(a); })() });
+    G.hotspots.push({ x:bx, y:by, w:bw, h:bh, id:'ans'+i, cb:(()=>{ const a=cur.options[i]; return ()=>answerQuiz(G, a); })() });
   }
   // 反馈
   if(q.feedback > 0){
@@ -2363,13 +2366,13 @@ function renderEndOverlay(){
     if(!lastLv) drawText('新的关卡已解锁！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
     else drawText('你通关了全部 ' + LEVELS.length + ' 个关卡，草坪安全了！', W/2, py+158, 17, '#a05c10', null, 0, 'center', '700');
     const leftLabel = lastLv ? '再玩一次' : '下一关';
-    const leftCb = lastLv ? ()=>startLevel(G.level) : ()=>startLevel(G.level+1);
+    const leftCb = lastLv ? ()=>startLevel(G, G.level) : ()=>startLevel(G, G.level+1);
     drawButton(W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftCb, {});
     drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
   } else {
     drawText('僵尸吃掉了你的脑子！', W/2, py+66, 37, '#e8554a', '#3a0a04', 8, 'center', '900');
     drawText('消灭僵尸：' + G.killed + ' / ' + G.total, W/2, py+130, 19, '#d8b8c0', null, 0, 'center', '700');
-    drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', ()=>startLevel(G.level), { red:true });
+    drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', ()=>startLevel(G, G.level), { red:true });
     drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
   }
 }
@@ -2515,7 +2518,7 @@ function frame(now){
   dt = Math.min(dt, 0.05);
   AT += dt;
   if(G.state==='play' && !G.paused) updatePlay(G, dt);
-  else if(G.state==='quiz') updateQuiz(dt);
+  else if(G.state==='quiz') updateQuiz(G, dt);
   render();
   requestAnimationFrame(frame);
 }

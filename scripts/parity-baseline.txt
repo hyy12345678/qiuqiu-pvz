@@ -20,7 +20,7 @@
 '普通僵尸：最基础的敌人。',
 '白天蘑菇会打盹，用咖啡豆点它唤醒。',
 '路障 / 铁桶僵尸：头戴护具，非常耐打。',
-()=>{ if(G.slots.length) startQuiz(); else SFX.error(); },
+()=>{ if(G.slots.length) startQuiz(G); else SFX.error(); },
 : ['#8fd44a','#b8e88a'];
 : ['#c8f0a0','#7cc84e','#3f8a2e'];
 : p.type==='spore' ? ['#f0dcff','#b478e0','#6b3f96']
@@ -32,46 +32,23 @@
 ? { hi:'#cdeefc', main:'#6fb4de', dark:'#3a7ba6', line:'#1e4d6e', mouth:'#123a52' }
 AT += dt;
 E4:329.63, G4:392, A4:440, B4:493.88, C5:523.25, D5:587.33, E5:659.25, G5:783.99 };
-G.evIdx = 0; G.killed = 0;
-G.events = built.events; G.total = built.total;
-G.grid = Array.from({length:ROWS}, ()=>Array(COLS).fill(null));
 G.hotspots.length = 0;
 G.hotspots.push({ x, y, w, h, id, cb });
 G.hotspots.push({ x, y, w, h, id:b.id, cb:b.cb });
-G.hotspots.push({ x, y, w:cardW, h:cardH, id:'lv'+i, cb: locked ? ()=>{} : (()=>{ const ii=i; return ()=>startLevel(ii); })() });
+G.hotspots.push({ x, y, w:cardW, h:cardH, id:'lv'+i, cb: locked ? ()=>{} : (()=>{ const ii=i; return ()=>startLevel(G, ii); })() });
 G.hotspots.push({ x, y, w:cw, h:ch, id:'pick'+type, cb:(()=>{ const tp=type, inT=inTeam, fu=full; return ()=>{
 G.hotspots.push({ x, y, w:slotW, h:slotH, id:'slot'+i, cb:(()=>{ const ii=i; return ()=>{ G.slots.splice(ii,1); if(G.sel===ii)G.sel=-1; else if(G.sel>ii)G.sel--; SFX.click(); }; })() });
 G.hotspots.push({ x, y:y-4, w:CARD_W, h:CARD_H+4, id:'card'+i, cb:(()=>{ const ii=i; return ()=>clickCard(ii); })() });
-G.hotspots.push({ x:bx, y:by, w:bw, h:bh, id:'ans'+i, cb:(()=>{ const a=cur.options[i]; return ()=>answerQuiz(a); })() });
+G.hotspots.push({ x:bx, y:by, w:bw, h:bh, id:'ans'+i, cb:(()=>{ const a=cur.options[i]; return ()=>answerQuiz(G, a); })() });
 G.hotspots.push({ x:sx, y:sy, w:64, h:72, id:'shovel', cb:()=>{ G.shovel=!G.shovel; G.sel=-1; SFX.click(); } });
 G.hoverCell = null;
-G.lastRows = [];
-G.level = li;
 G.mouse = p;
 G.mouse = p;
-G.mowers = Array.from({length:ROWS}, (_,r)=>({row:r, x:LX-52, state:'idle'}));
-G.nightHint = lv.night ? 8 : 0;
-G.paused = false;
-G.plants=[]; G.zombies=[]; G.peas=[]; G.suns=[]; G.parts=[]; G.decals=[];
-G.quiz = { idx: 0, energy: 50, questions: makeQuiz(), feedback: 0, correct: true };
 G.sel = -1;
 G.sel = -1; G.shovel = false;
-G.sel = -1; G.shovel = false;
-G.sel = -1; G.shovel = false;
 G.sel = i; G.shovel = false;
-G.shake = 0; G.flash = 0;
 G.shovel = false;
-G.skyTimer = 2; G.groanTimer = 4;
-G.slots = G.slots.map(s=>({type:s.type, cool:0}));
-G.slots = [];
-G.state = 'play';
-G.state = 'quiz';
-G.state = 'select';
 G.sun -= def.cost; s.cool = def.cool; G.sel = -1;
-G.sun = startSun; G.sunFlash = 0;
-G.t = -3.2;
-G.unlockAll = !G.unlockAll;
-G.waveText = null; G.winT = 0; G.loseZombie = null;
 O('#2e2a24', '#17140f', 1.6);
 O('#2e2a24', '#17140f', 2);
 O('#3c4046', '#2c2f33', 1.8);
@@ -288,7 +265,7 @@ const CARD_X0 = 148, CARD_W = 60, CARD_H = 84, CARD_GAP = 6;
 const COLS = 9, ROWS = 5;
 const CW = 80, CH = 96;
 const DPR = Math.min(2, window.devicePixelRatio || 1);
-const G = {
+const G = createWorld();
 const LEVELS = [
 const LX = 265, LY = 112;
 const MELODY = [
@@ -424,7 +401,7 @@ const k = inPhase ? clamp((t+1.4)/0.3, 0, 1) : clamp((t+3.2)/0.3, 0, 1);
 const kind = p.type==='snowpea' ? 'snow' : 'pea';
 const kneeX = (hipX+footX)/2 + 2;
 const lastLv = G.level >= LEVELS.length-1;
-const leftCb = lastLv ? ()=>startLevel(G.level) : ()=>startLevel(G.level+1);
+const leftCb = lastLv ? ()=>startLevel(G, G.level) : ()=>startLevel(G, G.level+1);
 const leftLabel = lastLv ? '再玩一次' : '下一关';
 const leg=(x,dy)=>{
 const legDraw = (hipX, footX, lift)=>{
@@ -434,8 +411,8 @@ const locked = !G.unlockAll && i+1 > G.unlocked;
 const long = k%2===0;
 const lunge = eat ? Math.abs(Math.sin(z.eatT*9))*5 : 0;
 const lv = LEVELS[G.level];
-const lv = LEVELS[G.level];
 const lv = LEVELS[i];
+const lv = LEVELS[world.level];
 const lv = LEVELS[world.level];
 const m = world.mowers.find(m=>m.row===row && m.state==='idle');
 const m = world.mowers.find(m=>m.row===z.row && m.state==='idle');
@@ -479,8 +456,8 @@ const py = p.fy - 44;
 const py = p.fy - 52;
 const py = z.state==='vault' ? -58 : 0;
 const q = G.quiz;
-const q = G.quiz;
-const q = G.quiz;
+const q = world.quiz;
+const q = world.quiz;
 const qs = [];
 const r = clamp(throwT||0, 0, 1);
 const r = cv.getBoundingClientRect();
@@ -1659,10 +1636,10 @@ drawBallIcon(0, 0, 7.5, p.x*0.11);
 drawBallIcon(6,-17,3.6, 0);
 drawButton(88, H-88, 150, 46, '返回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
 drawButton(W-286, H-88, 198, 46, G.slots.length ? '开 始 游 戏' : '请先选择植物', 'go',
-drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(), { size: 18 });
+drawButton(W/2+110, 462, 180, 52, G.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', ()=>toggleUnlockAll(G), { size: 18 });
 drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
 drawButton(W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', ()=>{ G.state='menu'; SFX.click(); }, {});
-drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', ()=>startLevel(G.level), { red:true });
+drawButton(W/2-215, py+ph-76, 200, 48, '重新挑战', 'retry', ()=>startLevel(G, G.level), { red:true });
 drawButton(W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftCb, {});
 drawButton(W/2-290, 462, 180, 52, '操作说明', 'help', ()=>{ G.state='help'; SFX.click(); }, {});
 drawButton(W/2-80, py+ph-58, 160, 44, '返 回', 'back', ()=>{ G.state='menu'; SFX.click(); }, {});
@@ -1754,14 +1731,14 @@ else drawText('你通关了全部 ' + LEVELS.length + ' 个关卡，草坪安全
 else if(!fu){ G.slots.push({type:tp, cool:0}); SFX.select(); }
 else if(G.state==='help') renderHelp();
 else if(G.state==='quiz') renderQuiz();
-else if(G.state==='quiz') updateQuiz(dt);
+else if(G.state==='quiz') updateQuiz(G, dt);
 else if(G.state==='select') renderSelect();
 else if(e.key==='m' || e.key==='M'){ SFX.musicOn = !SFX.musicOn; }
 else if(e.key==='p' || e.key==='P'){ G.paused = !G.paused; SFX.click(); }
 else if(t >= -1.4) txt = '开始！';
 else if(z.x < LX - 72){ lost = true; world.loseZombie = z; }
 else {
-else { beginPlay(q.energy); }
+else { beginPlay(world, q.energy); }
 else { bg.addColorStop(0, hover ? '#f6e8c4' : '#e8d7ae'); bg.addColorStop(1, hover ? '#e0c898' : '#ccb586'); }
 else { bg.addColorStop(0, hover ? '#f6e8c4' : '#ecd9ae'); bg.addColorStop(1, hover ? '#d8c088' : '#c8b078'); }
 else { g.addColorStop(0,'#4a3040'); g.addColorStop(1,'#2c1c26'); }
@@ -1893,14 +1870,15 @@ function addFlamePuff(world,x,y){
 function addLeafBurst(world,x,y){
 function addPaperShreds(world, x, y){
 function addPeaSplat(world,x,y,type){
-function answerQuiz(a){
+function answerQuiz(world, a){
 function applyCoffee(p){
-function beginPlay(startSun){
+function beginPlay(world, startSun){
 function buildSpawns(lv, rng = Math.random){
 function cellCX(c){ return LX + c*CW + CW/2; }
 function cellFY(r){ return LY + (r+1)*CH - 6; }
 function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
 function clickCard(i){
+function createWorld(init = {}){
 function damageZombie(world, z, d){
 function drawBackground(){
 function drawBallIcon(x,y,r,spin){
@@ -1970,13 +1948,13 @@ function saveUnlocked(n){ try{ localStorage.setItem('pvzweb_unlocked', String(n)
 function shuffle(arr, rng = Math.random){
 function spawnSun(world, x,y,ty,fromSky,value){
 function spawnZombie(world, type){
-function startLevel(li){
-function startQuiz(){
+function startLevel(world, li){
+function startQuiz(world){
 function toCanvas(e){
-function toggleUnlockAll(){
+function toggleUnlockAll(world){
 function triggerMower(world, row){
 function updatePlay(world, dt){
-function updateQuiz(dt){
+function updateQuiz(world, dt){
 g = ctx.createLinearGradient(-10,-30,10,-10);
 g = ctx.createLinearGradient(-11,-9,11,8);
 g = ctx.createLinearGradient(-12,-28,11,-8);
@@ -2136,7 +2114,6 @@ if(G.shovel){
 if(G.shovel){
 if(G.state !== 'play' || G.paused) return;
 if(G.state !== 'play' || G.t >= 0) return;
-if(G.state !== 'quiz' || G.quiz.feedback > 0) return;
 if(G.state!=='play' || G.paused) return;
 if(G.state==='menu') renderMenu();
 if(G.state==='play' && !G.paused) updatePlay(G, dt);
@@ -2301,6 +2278,7 @@ if(world.level + 2 > world.unlocked){ world.unlocked = clamp(world.level+2, 1, L
 if(world.nightHint > 0) world.nightHint -= dt;
 if(world.shake > 0) world.shake -= dt;
 if(world.skyTimer <= 0){
+if(world.state !== 'quiz' || world.quiz.feedback > 0) return;
 if(world.sunFlash > 0) world.sunFlash -= dt;
 if(world.waveText){
 if(world.waveText.t > 2.6) world.waveText = null;
@@ -2398,7 +2376,7 @@ let txt = null;
 let ww = w;
 let x = W - 12;
 let x = s.x, y = s.y;
-level:0, unlocked:loadUnlocked(),
+level:0, unlocked: init.unlocked === undefined ? loadUnlocked() : init.unlocked,
 life:rand(0.25,0.6), max:0.6, size:rand(2,6),
 life:rand(0.3,0.6), max:0.6, size:rand(2,3.5), color:'#5a5a52' });
 life:rand(0.3,0.85), max:0.85, size:rand(3,10),
@@ -2480,6 +2458,7 @@ return hover;
 return qs;
 return true;
 return true;
+return {
 return { events:ev, total:n };
 return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
 return;
@@ -2510,7 +2489,7 @@ s.state = 'fly'; s.ft = 0;
 s.t += dt;
 s.x = s.sx + Math.sin(s.t*2.4) * (s.fromSky?9:4);
 s.y += (s.fromSky?130:105) * dt;
-saveUnlockAll(G.unlockAll);
+saveUnlockAll(world.unlockAll);
 scale = 1 - s.ft*0.4;
 sel:-1, shovel:false,
 select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },
@@ -2570,7 +2549,7 @@ torch: { name:'火炬树桩', cost:175, hp:300, cool:7.5, desc:'让穿过的豌�
 try{
 type, row,
 type, row, col, hp:def.hp, maxHp:def.hp,
-unlockAll:loadUnlockAll(),
+unlockAll: init.unlockAll === undefined ? loadUnlockAll() : init.unlockAll,
 vault: { name:'撑杆僵尸', hp:500, acc:0, speed:36 },
 vg.addColorStop(0,'rgba(0,0,0,0)');
 vg.addColorStop(1,'rgba(10,20,8,0.22)');
@@ -2587,36 +2566,59 @@ window.addEventListener('keydown', e=>{
 world.decals.push({ x, fy: LY + row*CH + CH/2, ttl:4, max:4, r:72 });
 world.decals.push({ x, fy: LY + row*CH + CH/2, ttl:6, max:6, r: big?95:55 });
 world.decals[i].ttl -= dt;
+world.evIdx = 0; world.killed = 0;
+world.events = built.events; world.total = built.total;
 world.flash = Math.max(world.flash, 0.15);
 world.flash = big ? 0.3 : 0.2;
+world.grid = Array.from({length:ROWS}, ()=>Array(COLS).fill(null));
 world.grid[p.row][p.col] = null;
 world.grid[row][col] = p;
 world.groanTimer -= dt;
 world.killed++;
+world.lastRows = [];
 world.lastRows.unshift(row);
+world.level = li;
+world.mowers = Array.from({length:ROWS}, (_,r)=>({row:r, x:LX-52, state:'idle'}));
+world.nightHint = lv.night ? 8 : 0;
 world.parts.push({ x, y: LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-70, g:230,
 world.parts.push({ x, y:LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-50, g:240,
 world.parts.push({ x:m.x+rand(6,26), y:LY+m.row*CH+CH-8, vx:rand(-60,20), vy:rand(-140,-60), g:300, life:rand(0.25,0.5), max:0.5, size:rand(2,4), color:'#7cc24a' });
 world.parts.push({ x:pea.x-8, y:pea.y+rand(-3,3), vx:rand(-30,-10), vy:rand(-25,5), g:-60, life:rand(0.15,0.3), max:0.3, size:rand(2,4), color:'#ffb347' });
 world.parts.push({ x:x+rand(-20,20), y:LY+row*CH+CH/2, vx:rand(-15,15), vy:rand(-70,-35), g:-30,
 world.parts.push({ x:z.x+rand(-6,10), y:LY+(z.row+1)*CH-6, vx:rand(-14,6), vy:rand(-22,-8), g:30, life:rand(0.3,0.55), max:0.55, size:rand(2,4), color:'rgba(150,140,110,0.4)' });
+world.paused = false;
 world.peas.push({ x:p.cx+12, y:py+6, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+12 });
 world.peas.push({ x:p.cx+14, y:py, row:p.row, type:'spore', dmg:20, vx:300, prevX:p.cx+14 });
 world.peas.push({ x:p.cx+30, y:py, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+30 });
 world.peas.push({ x:p.cx+52, y:py, row:p.row, type, dmg, vx, prevX:p.cx+52 });
 world.plants.push(p);
+world.plants=[]; world.zombies=[]; world.peas=[]; world.suns=[]; world.parts=[]; world.decals=[];
+world.quiz = { idx: 0, energy: 50, questions: makeQuiz(), feedback: 0, correct: true };
+world.sel = -1; world.shovel = false;
+world.sel = -1; world.shovel = false;
+world.shake = 0; world.flash = 0;
 world.shake = Math.max(world.shake, 0.3);
 world.shake = Math.max(world.shake, big?0.55:0.4);
 world.skyTimer -= dt;
+world.skyTimer = 2; world.groanTimer = 4;
 world.skyTimer = rand(4.5, 6.5);
+world.slots = [];
+world.slots = world.slots.map(s=>({type:s.type, cool:0}));
 world.state = 'lost';
+world.state = 'play';
+world.state = 'quiz';
+world.state = 'select';
 world.state = 'won';
 world.sun -= def.cost;
 world.sun = Math.min(9990, world.sun + s.value);
+world.sun = startSun; world.sunFlash = 0;
 world.sunFlash = 0.35;
 world.suns.push({ x, y, ty, value: value || 50, life:10, state:'fall', t:0, fromSky, sx:x, ft:0 });
 world.suns.splice(i,1);
 world.t += dt;
+world.t = -3.2;
+world.unlockAll = !world.unlockAll;
+world.waveText = null; world.winT = 0; world.loseZombie = null;
 world.waveText = { text:'一大波僵尸正在接近！', t:0 };
 world.waveText.t += dt;
 world.winT += dt;
@@ -2655,6 +2657,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { name:'第 2 关 · 来者不善', count:32, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
 { name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
+}
 }
 }
 }

@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 
-const { G, beginPlay } = await import('../src/core/world.js');
+const { createWorld, beginPlay } = await import('../src/core/world.js');
 const { updatePlay } = await import('../src/core/sim.js');
 const { placePlant, removePlant, damageZombie, findEatTarget, explodeMissile, triggerMower, cellCX, applyCoffee } = await import('../src/core/entities.js');
 const { ZTYPES } = await import('../src/core/data/zombies.js');
@@ -14,6 +14,8 @@ const { LEVELS } = await import('../src/core/data/levels.js');
 const { LX, CW, CH, LY, ROWS, W } = await import('../src/core/constants.js');
 
 const DT = 1 / 60;
+
+const G = createWorld();
 
 function stepFrames(n) {
   for (let i = 0; i < n; i++) updatePlay(G, DT);
@@ -26,7 +28,7 @@ function step(sec) {
 function reset(level = 0) {
   G.level = level;
   G.unlocked = 1;
-  beginPlay();                       // 顺带把 grid/mowers/events 全部重建
+  beginPlay(G);                       // 顺带把 grid/mowers/events 全部重建
   while (G.t < 0.05) updatePlay(G, DT); // 跑完 -3.2s 开场倒计时，进入 t > 0
   G.zombies.length = G.peas.length = G.suns.length = 0;
   G.plants.length = 0;
@@ -278,7 +280,7 @@ test('不变量7 夜战：开局补偿 +100 阳光、8 秒提示倒计时自行�
 
   // 初值直接看 beginPlay，不受开场倒计时影响
   G.level = nightLevel;
-  beginPlay();
+  beginPlay(G);
   assert.strictEqual(G.sun, 150, '夜战开局阳光 = 基础 50 + 补偿 100');
   assert.strictEqual(G.nightHint, 8, '夜战开场提示倒计时 8 秒');
 
@@ -336,7 +338,7 @@ test('不变量8 胜利：出怪事件放完且场上无僵尸，连续 1 秒后
 
   // 开场倒计时（t <= 0）阶段不参与胜利判定
   G.level = 0;
-  beginPlay();
+  beginPlay(G);
   G.evIdx = G.events.length;
   stepFrames(150);   // 2.5 秒，仍在 -3.2 秒倒计时之内
   assert.ok(G.t < 0, `此段应仍在开场倒计时内，实际 t = ${G.t.toFixed(2)}`);

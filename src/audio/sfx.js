@@ -1,4 +1,5 @@
 // Web Audio 实时合成：无音频文件。旋律/贝斯是数据，音色由 tone/mnote 的合成参数决定。
+// 噪声与呻吟音高只读模块局部的 Math.random，不碰世界的战斗流 / 表现流。
 
 import { rand } from '../core/util.js';
 
@@ -99,9 +100,9 @@ export const SFX = {
   snowShoot(){ this.tone(980, 420, 0.1, 'sine', 0.09); this.noise(0.06, 0.03, 4000); },
   splat(){ this.noise(0.07, 0.13, 900); this.tone(190, 90, 0.07, 'sine', 0.1); },
   groan(){
-    const f = rand(75, 120);
-    this.tone(f, f*0.72, rand(0.6,0.95), 'sawtooth', 0.05);
-    this.tone(f*1.5, f*1.1, rand(0.5,0.8), 'triangle', 0.028);
+    const f = rand(Math.random, 75, 120);
+    this.tone(f, f*0.72, rand(Math.random, 0.6,0.95), 'sawtooth', 0.05);
+    this.tone(f*1.5, f*1.1, rand(Math.random, 0.5,0.8), 'triangle', 0.028);
   },
   chomp(){ this.noise(0.09, 0.15, 500); this.tone(150, 80, 0.08, 'square', 0.05); },
   plant(){ this.tone(170, 95, 0.13, 'sine', 0.16); this.noise(0.06, 0.05, 600); },

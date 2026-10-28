@@ -8,7 +8,7 @@
 // 常量、数值表、音频、题目、波次、状态与模拟已拆到 core/ 与 audio/；本文件只剩渲染与输入。
 import { W, H, COLS, ROWS, CW, CH, LX, LY, TAU } from './core/constants.js';
 import { clamp, rand, lerp, easeOut, isBlinking } from './core/util.js';
-import { mulberry32 } from './core/rng.js';
+import { DRAW_SEED_XOR, mulberry32, randomSeed } from './core/rng.js';
 import { PLANTS, PLANT_ORDER } from './core/data/plants.js';
 import { LEVELS } from './core/data/levels.js';
 import { SFX } from './audio/sfx.js';
@@ -18,7 +18,10 @@ import { addLeafBurst } from './core/particles.js';
 import { updatePlay } from './core/sim.js';
 
 // 装配层持有唯一的游戏世界实例；核心模块一律显式接收它。
-const G = createWorld();
+// 种子只在这里生成一次：战斗流、表现流、绘制流都由它派生，互不消耗。
+const SEED = randomSeed();
+const G = createWorld({ seed: SEED });
+const drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
 
 
 
@@ -2382,7 +2385,7 @@ function render(){
   G.hotspots.length = 0;
   ctx.save();
   if(G.shake > 0 && G.state==='play'){
-    ctx.translate(rand(-1,1)*G.shake*14, rand(-1,1)*G.shake*14);
+    ctx.translate(rand(drawRng,-1,1)*G.shake*14, rand(drawRng,-1,1)*G.shake*14);
   }
   if(G.state==='menu') renderMenu();
   else if(G.state==='help') renderHelp();

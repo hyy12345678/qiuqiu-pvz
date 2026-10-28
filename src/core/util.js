@@ -1,8 +1,8 @@
-// rng 作为参数注入（默认 Math.random）：需要可复现随机的模块（core/quiz.js、core/waves.js）
-// 必须把自己收到的 rng 一路透传到底，否则调用方以为注入了、其实一半还在走全局随机源。
+// rng 由调用方显式传入：战斗读 world.rng，表现读 world.fxRng。
+// 这里不提供默认随机源——默认值会让“以为分流了、其实还在走全局源”悄悄通过。
 export function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
-export function rand(a,b){ return a + Math.random()*(b-a); }
-export function randi(a,b){ return Math.floor(rand(a,b+1)); }
+export function rand(rng,a,b){ return a + rng()*(b-a); }
+export function randi(rng,a,b){ return Math.floor(rand(rng,a,b+1)); }
 export function lerp(a,b,t){ return a+(b-a)*t; }
 export function easeOut(t){ return 1-(1-t)*(1-t); }
 

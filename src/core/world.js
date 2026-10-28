@@ -1,15 +1,21 @@
 // 世界工厂与关卡流程：每个实例持有自己的状态。装配层创建实例并显式传入，核心不持有单例。
 // R1b：createWorld() 取代模块级 G；渲染与输入仍只通过传入的实例读写状态。
+// R2a：每个世界带两条互不影响的随机流——rng 决定战斗，fxRng 只影响表现。
 
 import { COLS, LX, ROWS } from './constants.js';
 import { LEVELS } from './data/levels.js';
 import { loadUnlocked, loadUnlockAll, saveUnlockAll } from './persist.js';
+import { FX_SEED_XOR, mulberry32, randomSeed } from './rng.js';
 import { makeQuiz } from './quiz.js';
 import { buildSpawns } from './waves.js';
 import { SFX } from '../audio/sfx.js';
 
 export function createWorld(init = {}){
+  const seed = init.seed === undefined ? randomSeed() : (init.seed >>> 0);
   return {
+    seed,
+    rng: init.rng || mulberry32(seed),                       // 战斗：出怪、速度、射击概率、资源时刻
+    fxRng: init.fxRng || mulberry32((seed ^ FX_SEED_XOR) >>> 0),   // 表现：粒子、动画初相、表现计时
     state:'menu',           // menu | help | select | play | won | lost
     level:0, unlocked: init.unlocked === undefined ? loadUnlocked() : init.unlocked,
     unlockAll: init.unlockAll === undefined ? loadUnlockAll() : init.unlockAll,   // 主页特殊开关：打开后所有关卡直接进入
@@ -60,7 +66,7 @@ export function beginPlay(world, startSun){
   world.lastRows = [];
   world.mowers = Array.from({length:ROWS}, (_,r)=>({row:r, x:LX-52, state:'idle'}));
   world.slots = world.slots.map(s=>({type:s.type, cool:0}));
-  const built = buildSpawns(lv);
+  const built = buildSpawns(lv, world.rng);
   world.events = built.events; world.total = built.total;
   world.evIdx = 0; world.killed = 0;
   world.skyTimer = 2; world.groanTimer = 4;
@@ -73,7 +79,7 @@ export function beginPlay(world, startSun){
 
 export function startQuiz(world){
   world.state = 'quiz';
-  world.quiz = { idx: 0, energy: 50, questions: makeQuiz(), feedback: 0, correct: true };
+  world.quiz = { idx: 0, energy: 50, questions: makeQuiz(world.rng), feedback: 0, correct: true };
   SFX.click();
 }
 export function answerQuiz(world, a){

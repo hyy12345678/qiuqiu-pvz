@@ -3457,9 +3457,9 @@ c1 textBaseline=middle
 c1 lineWidth=6
 c1 strokeStyle=#fff6dc
 c1 lineJoin=round
-c1 strokeText(38 + 35 = ?,512,342)
+c1 strokeText(33 + 45 = ?,512,342)
 c1 fillStyle=#3c2a10
-c1 fillText(38 + 35 = ?,512,342)
+c1 fillText(33 + 45 = ?,512,342)
 c1 createLinearGradient g684(0,382,0,436)
 c1 g684.addColorStop(0,#7aa848)
 c1 g684.addColorStop(1,#4e7a2a)
@@ -3496,9 +3496,9 @@ c1 textBaseline=middle
 c1 lineWidth=4
 c1 strokeStyle=#2e3a10
 c1 lineJoin=round
-c1 strokeText(73,380,410)
+c1 strokeText(75,380,410)
 c1 fillStyle=#fffbe8
-c1 fillText(73,380,410)
+c1 fillText(75,380,410)
 c1 createLinearGradient g685(0,382,0,436)
 c1 g685.addColorStop(0,#7aa848)
 c1 g685.addColorStop(1,#4e7a2a)
@@ -3535,9 +3535,9 @@ c1 textBaseline=middle
 c1 lineWidth=4
 c1 strokeStyle=#2e3a10
 c1 lineJoin=round
-c1 strokeText(79,644,410)
+c1 strokeText(84,644,410)
 c1 fillStyle=#fffbe8
-c1 fillText(79,644,410)
+c1 fillText(84,644,410)
 c1 createLinearGradient g686(0,450,0,504)
 c1 g686.addColorStop(0,#7aa848)
 c1 g686.addColorStop(1,#4e7a2a)
@@ -3574,9 +3574,9 @@ c1 textBaseline=middle
 c1 lineWidth=4
 c1 strokeStyle=#2e3a10
 c1 lineJoin=round
-c1 strokeText(70,380,478)
+c1 strokeText(80,380,478)
 c1 fillStyle=#fffbe8
-c1 fillText(70,380,478)
+c1 fillText(80,380,478)
 c1 createLinearGradient g687(0,450,0,504)
 c1 g687.addColorStop(0,#7aa848)
 c1 g687.addColorStop(1,#4e7a2a)
@@ -3613,9 +3613,9 @@ c1 textBaseline=middle
 c1 lineWidth=4
 c1 strokeStyle=#2e3a10
 c1 lineJoin=round
-c1 strokeText(65,644,478)
+c1 strokeText(78,644,478)
 c1 fillStyle=#fffbe8
-c1 fillText(65,644,478)
+c1 fillText(78,644,478)
 c1 restore()
 c1 createRadialGradient g688(512,320,352,512,320,608)
 c1 g688.addColorStop(0,rgba(0,0,0,0))

@@ -27,8 +27,9 @@ export function updatePlay(world, dt){
     if(!lv.night){
       world.skyTimer -= dt;
       if(world.skyTimer <= 0){
-        world.skyTimer = rand(4.5, 6.5);
-        spawnSun(world, rand(LX+30, LX+COLS*CW-30), -30, rand(LY+60, LY+ROWS*CH-40), true);
+        world.skyTimer = rand(world.rng,4.5, 6.5);
+        // 落点决定落地时刻与可点击位置，属于战斗可见状态，不能交给表现流
+        spawnSun(world, rand(world.rng,LX+30, LX+COLS*CW-30), -30, rand(world.rng,LY+60, LY+ROWS*CH-40), true);
       }
     }
   }
@@ -45,10 +46,10 @@ export function updatePlay(world, dt){
         if(t > 0){
           p.sunT -= dt;
           if(p.sunT <= 0){
-            p.sunT = rand(8, 10);
-            // 阳光菇的代价：产量只有向日葵的一半
+            p.sunT = rand(world.rng,8, 10);
+            // 阳光菇的代价：产量只有向日葵的一半；落点同样属于战斗可见状态
             const small = p.type === 'sunshroom';
-            spawnSun(world, p.cx + rand(-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
+            spawnSun(world, p.cx + rand(world.rng,-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
           }
         }
         break;
@@ -63,7 +64,7 @@ export function updatePlay(world, dt){
           if(p.type==='qiuqiu'){
             p.fireT = 0.4; p.recoil = 1; p.flash = 0.1;
             const py = p.fy - 44;
-            const isMissile = Math.random() < 0.15;
+            const isMissile = world.rng() < 0.15;
             const type = isMissile ? 'missile' : 'bullet';
             const dmg = isMissile ? 90 : 25;
             const vx = isMissile ? 300 : 520;
@@ -116,8 +117,8 @@ export function updatePlay(world, dt){
     const pea = world.peas[i];
     pea.prevX = pea.x;
     pea.x += pea.vx * dt;
-    if(pea.type==='fire' && Math.random()<0.6){
-      world.parts.push({ x:pea.x-8, y:pea.y+rand(-3,3), vx:rand(-30,-10), vy:rand(-25,5), g:-60, life:rand(0.15,0.3), max:0.3, size:rand(2,4), color:'#ffb347' });
+    if(pea.type==='fire' && world.fxRng()<0.6){
+      world.parts.push({ x:pea.x-8, y:pea.y+rand(world.fxRng,-3,3), vx:rand(world.fxRng,-30,-10), vy:rand(world.fxRng,-25,5), g:-60, life:rand(world.fxRng,0.15,0.3), max:0.3, size:rand(world.fxRng,2,4), color:'#ffb347' });
     }
     if(pea.type === 'pea' || pea.type === 'snow'){
       for(const p of world.plants){
@@ -174,7 +175,7 @@ export function updatePlay(world, dt){
       z.dustT = (z.dustT||0) + dt;
       if(z.dustT > 0.5 && z.x > LX-30 && z.x < W){
         z.dustT = 0;
-        world.parts.push({ x:z.x+rand(-6,10), y:LY+(z.row+1)*CH-6, vx:rand(-14,6), vy:rand(-22,-8), g:30, life:rand(0.3,0.55), max:0.55, size:rand(2,4), color:'rgba(150,140,110,0.4)' });
+        world.parts.push({ x:z.x+rand(world.fxRng,-6,10), y:LY+(z.row+1)*CH-6, vx:rand(world.fxRng,-14,6), vy:rand(world.fxRng,-22,-8), g:30, life:rand(world.fxRng,0.3,0.55), max:0.55, size:rand(world.fxRng,2,4), color:'rgba(150,140,110,0.4)' });
       }
       if(z.type==='vault' && !z.poleLost){
         let target = null;
@@ -198,7 +199,7 @@ export function updatePlay(world, dt){
       z.vt += dt / 0.55;
       if(z.vt >= 1){
         z.x = z.toX; z.state = 'walk'; z.poleLost = true;
-        z.speed = ZTYPES.normal.speed * rand(0.92,1.08);
+        z.speed = ZTYPES.normal.speed * rand(world.rng,0.92,1.08);
         z.vy = 0;
         addDirtPuff(world, z.x, LY+(z.row+1)*CH-6);
       } else {
@@ -237,8 +238,8 @@ export function updatePlay(world, dt){
   for(const m of world.mowers){
     if(m.state==='run'){
       m.x += 330 * dt;
-      if(Math.random()<0.55){
-        world.parts.push({ x:m.x+rand(6,26), y:LY+m.row*CH+CH-8, vx:rand(-60,20), vy:rand(-140,-60), g:300, life:rand(0.25,0.5), max:0.5, size:rand(2,4), color:'#7cc24a' });
+      if(world.fxRng()<0.55){
+        world.parts.push({ x:m.x+rand(world.fxRng,6,26), y:LY+m.row*CH+CH-8, vx:rand(world.fxRng,-60,20), vy:rand(world.fxRng,-140,-60), g:300, life:rand(world.fxRng,0.25,0.5), max:0.5, size:rand(world.fxRng,2,4), color:'#7cc24a' });
       }
       for(const z of world.zombies){
         if(z.row===m.row && z.state!=='dying' && z.x < m.x+52 && z.x > m.x-70){
@@ -287,7 +288,7 @@ export function updatePlay(world, dt){
 
   if(world.zombies.length > 0){
     world.groanTimer -= dt;
-    if(world.groanTimer <= 0){ world.groanTimer = rand(4,9); SFX.groan(); }
+    if(world.groanTimer <= 0){ world.groanTimer = rand(world.fxRng,4,9); SFX.groan(); }
   }
 
   if(world.waveText){

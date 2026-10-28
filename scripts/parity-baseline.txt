@@ -254,8 +254,8 @@ cloud(((AT*6+500)%(W+260))-130, 150, 0.85);
 cloud(((AT*7.5+900)%(W+260))-130, 58, 1.35);
 cloud(((AT*9)%(W+260))-130, 88, 1.1);
 coffee: { name:'咖啡豆', cost:25, hp:300, cool:20, desc:'点一株白天打盹的蘑菇，把它唤醒' },
-color: ['#fff3b0','#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(0,4)] });
-color:['#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(0,3)] });
+color: ['#fff3b0','#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(world.fxRng,0,4)] });
+color:['#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(world.fxRng,0,3)] });
 cone: { name:'路障僵尸', hp:200, acc:370, speed:17 },
 const AC = window.AudioContext || window.webkitAudioContext;
 const BANK_Y = 8, BANK_H = 88;
@@ -265,7 +265,9 @@ const CARD_X0 = 148, CARD_W = 60, CARD_H = 84, CARD_GAP = 6;
 const COLS = 9, ROWS = 5;
 const CW = 80, CH = 96;
 const DPR = Math.min(2, window.devicePixelRatio || 1);
-const G = createWorld();
+const DRAW_SEED_XOR = 0x51ED270B;
+const FX_SEED_XOR = 0x9E3779B9;
+const G = createWorld({ seed: SEED });
 const LEVELS = [
 const LX = 265, LY = 112;
 const MELODY = [
@@ -274,6 +276,7 @@ const NOTE = { A2:110, C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196,
 const PLANTS = {
 const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee'];
 const R = mulberry32(20260814);
+const SEED = randomSeed();
 const SFX = {
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
 const TAU = Math.PI * 2;
@@ -285,8 +288,8 @@ const a = AT*2 + k*TAU/4;
 const a = clamp(0.30 + Math.sin(AT*2.3+k*1.4)*0.34, 0, 1);
 const a = clamp(G.nightHint/1.4, 0, 1);
 const a = k*TAU/10 + 0.4;
-const a = rand(0,TAU), sp = rand(30,240);
-const a = rand(0,TAU), sp = rand(40, big?340:210);
+const a = rand(world.fxRng,0,TAU), sp = rand(world.fxRng,30,240);
+const a = rand(world.fxRng,0,TAU), sp = rand(world.fxRng,40, big?340:210);
 const a = spin + k*TAU/6;
 const acc = zs[k]==='normal' ? null : zs[k];
 const acc = zt==='normal' ? null : zt;
@@ -313,7 +316,7 @@ const bob = Math.sin(t*2.4+ph)*2.2;
 const bob = walk ? Math.abs(Math.cos(ph))*2.6 : 0;
 const btns = [
 const buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
-const built = buildSpawns(lv);
+const built = buildSpawns(lv, world.rng);
 const bw = 520, bh = 44, bx = W/2-bw/2, by = 150;
 const bw=240, bh=54, bx0=W/2-bw-12, bx1=W/2+12, by0=py+262, by1=py+330;
 const bx = (i%2===0)?bx0:bx1;
@@ -348,6 +351,7 @@ const disabled = opts.disabled;
 const dmg = 1 - hpFrac;
 const dmg = isMissile ? 90 : 25;
 const draw = (x,y,r)=>{
+const drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
 const dx = p.x - s.x, dy = p.y - s.y;
 const dy = Math.sin(AT*2 + i*0.9)*4;
 const dy = Math.sin(AT*2 + i*0.9)*4;
@@ -355,7 +359,7 @@ const e = world.events[world.evIdx++];
 const eat = z.state==='eat', walk = z.state==='walk';
 const ev = [];
 const existing = G.grid[r][c];
-const f = rand(75, 120);
+const f = rand(Math.random, 75, 120);
 const f = this.ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value = freq||800;
 const finalCount = Math.max(4, Math.round(n*0.33));
 const finalT = Math.max(t+7, 90);
@@ -393,7 +397,7 @@ const inPhase = t >= -1.4;
 const inTeam = G.slots.some(s=>s.type===type);
 const inner = { x:x0+4, w:(x1-x0)-8 };
 const isCoffee = selType === 'coffee';
-const isMissile = Math.random() < 0.15;
+const isMissile = world.rng() < 0.15;
 const izx0 = zx + 165 - (nIco-1)*31;
 const j = Math.floor(rng() * (i + 1));
 const k = easeOut(s.ft);
@@ -476,6 +480,7 @@ const s = G.suns[i];
 const s = world.suns[i];
 const saved = ctx;
 const scale = 0.5 + easeOut(k)*0.6 + (inPhase ? Math.sin(AT*10)*0.02 : 0);
+const seed = init.seed === undefined ? randomSeed() : (init.seed >>> 0);
 const selType = G.slots[G.sel].type;
 const selected = G.sel === i;
 const skin='#ffd9ae', skinD='#eeb183', line='#6e4218';
@@ -1606,7 +1611,7 @@ ctx.translate(hx, hy);
 ctx.translate(m.x, LY + m.row*CH + CH - 14);
 ctx.translate(p.cx, p.fy);
 ctx.translate(p.x, p.y);
-ctx.translate(rand(-1,1)*G.shake*14, rand(-1,1)*G.shake*14);
+ctx.translate(rand(drawRng,-1,1)*G.shake*14, rand(drawRng,-1,1)*G.shake*14);
 ctx.translate(x, y);
 ctx.translate(x, y);
 ctx.translate(x,y); ctx.scale(s,s);
@@ -1755,7 +1760,7 @@ events:[], evIdx:0, total:0, killed:0,
 explode(world, p.cx, p.row, false);
 explode(world, p.cx, p.row, true);
 explodeMissile(world, pea.x, pea.row, Math.floor((pea.x - LX)/CW));
-fireT: rand(0.5,1.3), sunT: rand(6,9), recoil:0, flash:0,
+fireT: rand(world.rng,0.5,1.3), sunT: rand(world.rng,6,9), recoil:0, flash:0,
 flag: { name:'旗帜僵尸', hp:200, acc:0, speed:21 },
 flagAt(0.5); flagAt(1.0);
 flame(16+Math.sin(t*10+ph)*3.5, '#fff3b0', 0);
@@ -1819,10 +1824,10 @@ for(let k=0;k<10;k++){
 for(let k=0;k<10;k++){
 for(let k=0;k<10;k++){
 for(let k=0;k<11;k++){
-for(let k=0;k<12;k++) world.parts.push({ x, y:y+rand(-14,14), vx:rand(-80,80), vy:rand(-130,-20), g:270, life:rand(0.35,0.75), max:0.75, size:rand(3,6), color:['#63b23f','#8fd44a','#4a9330'][k%3] });
+for(let k=0;k<12;k++) world.parts.push({ x, y:y+rand(world.fxRng,-14,14), vx:rand(world.fxRng,-80,80), vy:rand(world.fxRng,-130,-20), g:270, life:rand(world.fxRng,0.35,0.75), max:0.75, size:rand(world.fxRng,3,6), color:['#63b23f','#8fd44a','#4a9330'][k%3] });
 for(let k=0;k<12;k++){
 for(let k=0;k<12;k++){
-for(let k=0;k<14;k++) world.parts.push({ x:x+rand(-10,10), y:y+rand(-12,12), vx:rand(-110,70), vy:rand(-140,-30), g:260,
+for(let k=0;k<14;k++) world.parts.push({ x:x+rand(world.fxRng,-10,10), y:y+rand(world.fxRng,-12,12), vx:rand(world.fxRng,-110,70), vy:rand(world.fxRng,-140,-30), g:260,
 for(let k=0;k<14;k++){
 for(let k=0;k<150;k++){
 for(let k=0;k<26;k++){
@@ -1832,20 +1837,20 @@ for(let k=0;k<3;k++){
 for(let k=0;k<3;k++){
 for(let k=0;k<3;k++){
 for(let k=0;k<40;k++){
-for(let k=0;k<4;k++) world.parts.push({ x:x+rand(-8,8), y:y+rand(-6,6), vx:rand(-40,40), vy:rand(-60,-20), g:200,
+for(let k=0;k<4;k++) world.parts.push({ x:x+rand(world.fxRng,-8,8), y:y+rand(world.fxRng,-6,6), vx:rand(world.fxRng,-40,40), vy:rand(world.fxRng,-60,-20), g:200,
 for(let k=0;k<4;k++){
 for(let k=0;k<4;k++){
 for(let k=0;k<5;k++){
 for(let k=0;k<5;k++){
 for(let k=0;k<5;k++){
-for(let k=0;k<6;k++) world.parts.push({ x, y, vx:rand(-35,35), vy:rand(-80,-20), g:-50, life:rand(0.2,0.45), max:0.45, size:rand(2,5), color:['#ffb347','#ff8a2e'][k%2] });
+for(let k=0;k<6;k++) world.parts.push({ x, y, vx:rand(world.fxRng,-35,35), vy:rand(world.fxRng,-80,-20), g:-50, life:rand(world.fxRng,0.2,0.45), max:0.45, size:rand(world.fxRng,2,5), color:['#ffb347','#ff8a2e'][k%2] });
 for(let k=0;k<6;k++){
 for(let k=0;k<6;k++){
 for(let k=0;k<7;k++){
 for(let k=0;k<7;k++){
 for(let k=0;k<80;k++){
-for(let k=0;k<9;k++) world.parts.push({ x, y, vx:rand(-100,100), vy:rand(-100,45), g:250, life:rand(0.2,0.45), max:0.45, size:rand(2,5.5), color:cols[k%2] });
-for(let k=0;k<9;k++) world.parts.push({ x:x+rand(-16,16), y, vx:rand(-45,45), vy:rand(-100,-30), g:280, life:rand(0.3,0.6), max:0.6, size:rand(3,6), color:['#8a6b42','#a5875a'][k%2] });
+for(let k=0;k<9;k++) world.parts.push({ x, y, vx:rand(world.fxRng,-100,100), vy:rand(world.fxRng,-100,45), g:250, life:rand(world.fxRng,0.2,0.45), max:0.45, size:rand(world.fxRng,2,5.5), color:cols[k%2] });
+for(let k=0;k<9;k++) world.parts.push({ x:x+rand(world.fxRng,-16,16), y, vx:rand(world.fxRng,-45,45), vy:rand(world.fxRng,-100,-30), g:280, life:rand(world.fxRng,0.3,0.6), max:0.6, size:rand(world.fxRng,3,6), color:['#8a6b42','#a5875a'][k%2] });
 for(let k=0;k<finalCount;k++){
 for(let k=0;k<nIco;k++){
 for(let k=0;k<size;k++){
@@ -1932,8 +1937,9 @@ function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.im
 function paintBattleBG(night){
 function pickType(lv, prog, rng){
 function placePlant(world, type, row, col){
-function rand(a,b){ return a + Math.random()*(b-a); }
-function randi(a,b){ return Math.floor(rand(a,b+1)); }
+function rand(rng,a,b){ return a + rng()*(b-a); }
+function randi(rng,a,b){ return Math.floor(rand(rng,a,b+1)); }
+function randomSeed(){ return (Math.random()*0x100000000) >>> 0; }
 function removePlant(world, p){
 function render(){
 function renderEndOverlay(){
@@ -1955,6 +1961,7 @@ function toggleUnlockAll(world){
 function triggerMower(world, row){
 function updatePlay(world, dt){
 function updateQuiz(world, dt){
+fxRng: init.fxRng || mulberry32((seed ^ FX_SEED_XOR) >>> 0),
 g = ctx.createLinearGradient(-10,-30,10,-10);
 g = ctx.createLinearGradient(-11,-9,11,8);
 g = ctx.createLinearGradient(-12,-28,11,-8);
@@ -2125,7 +2132,6 @@ if(G.sun < def.cost){ SFX.error(); G.sunFlash = 0.5; return; }
 if(Math.abs(z.row - row) <= 1 && Math.abs(zc - c) <= 1){
 if(Math.abs(z.row-row) <= (big?1:0) && Math.abs(z.x-x) < (big?132:58)){
 if(Math.floor(z.eatT/0.62) !== Math.floor((z.eatT-dt)/0.62)) SFX.chomp();
-if(Math.random()<0.55){
 if(R()<0.4){
 if(a < 0.06) continue;
 if(a <= 0.05) continue;
@@ -2220,7 +2226,7 @@ if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){
 if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h){ pointer = true; break; }
 if(pea.type === 'pea' || pea.type === 'snow'){
 if(pea.type==='bullet') SFX.bulletHit(); else SFX.splat();
-if(pea.type==='fire' && Math.random()<0.6){
+if(pea.type==='fire' && world.fxRng()<0.6){
 if(pea.type==='fire'){
 if(pea.type==='missile'){
 if(pea.type==='snow'){ z.slowT = 6; }
@@ -2271,7 +2277,8 @@ if(won){ g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090'); }
 if(world.decals[i].ttl <= 0) world.decals.splice(i,1);
 if(world.evIdx >= world.events.length && world.zombies.length === 0 && t > 0){
 if(world.flash > 0) world.flash = Math.max(0, world.flash - dt*1.4);
-if(world.groanTimer <= 0){ world.groanTimer = rand(4,9); SFX.groan(); }
+if(world.fxRng()<0.55){
+if(world.groanTimer <= 0){ world.groanTimer = rand(world.fxRng,4,9); SFX.groan(); }
 if(world.lastRows.length>3) world.lastRows.length = 3;
 if(world.lastRows.length>=2 && world.lastRows[0]===row && world.lastRows[1]===row){
 if(world.level + 2 > world.unlocked){ world.unlocked = clamp(world.level+2, 1, LEVELS.length); saveUnlocked(world.unlocked); }
@@ -2365,7 +2372,7 @@ let last = performance.now();
 let lost = false;
 let ng = ctx.createLinearGradient(0,by,0,by+bh);
 let pointer = false;
-let row = randi(0, ROWS-1);
+let row = randi(world.rng,0,ROWS-1);
 let s = 1;
 let size = 1;
 let sum = pool.reduce((a,p)=>a+p[1],0), r = rng()*sum;
@@ -2377,11 +2384,11 @@ let ww = w;
 let x = W - 12;
 let x = s.x, y = s.y;
 level:0, unlocked: init.unlocked === undefined ? loadUnlocked() : init.unlocked,
-life:rand(0.25,0.6), max:0.6, size:rand(2,6),
-life:rand(0.3,0.6), max:0.6, size:rand(2,3.5), color:'#5a5a52' });
-life:rand(0.3,0.85), max:0.85, size:rand(3,10),
-life:rand(0.45,0.95), max:0.95, size:rand(3,6), color:['#f4f0e2','#ded8c4','#c9c2ac'][k%3] });
-life:rand(0.7,1.2), max:1.2, size:rand(9,16), color:'rgba(90,85,80,0.5)' });
+life:rand(world.fxRng,0.25,0.6), max:0.6, size:rand(world.fxRng,2,6),
+life:rand(world.fxRng,0.3,0.6), max:0.6, size:rand(world.fxRng,2,3.5), color:'#5a5a52' });
+life:rand(world.fxRng,0.3,0.85), max:0.85, size:rand(world.fxRng,3,10),
+life:rand(world.fxRng,0.45,0.95), max:0.95, size:rand(world.fxRng,3,6), color:['#f4f0e2','#ded8c4','#c9c2ac'][k%3] });
+life:rand(world.fxRng,0.7,1.2), max:1.2, size:rand(world.fxRng,9,16), color:'rgba(90,85,80,0.5)' });
 line: '#39412e',
 lose(){ const seq=[392,329.63,261.63,196]; seq.forEach((f,i)=>this.tone(f,f*0.94,0.4,'sawtooth',0.06,i*0.3)); },
 lv.night ? '夜战：天上不掉太阳，靠向日葵与阳光菇。' : '消灭全部僵尸即可过关，小心小推车。',
@@ -2414,7 +2421,7 @@ p.hp -= 100 * dt;
 p.life -= dt;
 p.recoil = Math.max(0, p.recoil - dt*(p.type==='qiuqiu' ? 4 : 1.4));
 p.sunT -= dt;
-p.sunT = rand(8, 10);
+p.sunT = rand(world.rng,8, 10);
 p.x += p.vx*dt; p.y += p.vy*dt;
 paintBattleBG(theme==='night');
 pants: slowed ? '#42525e' : '#4d463c',
@@ -2425,7 +2432,7 @@ pea.prevX = pea.x;
 pea.type = 'fire'; pea.dmg *= 2;
 pea.x += pea.vx * dt;
 peashooter: { name:'豌豆射手', cost:100, hp:300, cool:7.5, desc:'发射豌豆攻击前方僵尸' },
-phase: Math.random()*TAU,
+phase: rand(world.fxRng,0,TAU),
 placePlant(G, s.type, r, c);
 plant(){ this.tone(170, 95, 0.13, 'sine', 0.16); this.noise(0.06, 0.05, 600); },
 poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null, dustT:0,
@@ -2471,7 +2478,8 @@ return;
 return;
 return;
 return;
-row = (row + randi(1, ROWS-1)) % ROWS;
+rng: init.rng || mulberry32(seed),
+row = (row + randi(world.rng,1,ROWS-1)) % ROWS;
 rr(40, 70, W-80, H-120, 16); ctx.clip();
 rr(54, wy-6, 96, 106, 6); ctx.fill();
 rr(8, BANK_Y, 744, BANK_H, 12); ctx.clip();
@@ -2491,6 +2499,7 @@ s.x = s.sx + Math.sin(s.t*2.4) * (s.fromSky?9:4);
 s.y += (s.fromSky?130:105) * dt;
 saveUnlockAll(world.unlockAll);
 scale = 1 - s.ft*0.4;
+seed,
 sel:-1, shovel:false,
 select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },
 shake:0, flash:0, quiz:null,
@@ -2504,16 +2513,16 @@ skyTimer:5, groanTimer:4, lastRows:[],
 slots:[],
 snowShoot(){ this.tone(980, 420, 0.1, 'sine', 0.09); this.noise(0.06, 0.03, 4000); },
 snowpea: { name:'寒冰射手', cost:175, hp:300, cool:7.5, desc:'冰豌豆可减速僵尸' },
-spawnSun(world, p.cx + rand(-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
-spawnSun(world, rand(LX+30, LX+COLS*CW-30), -30, rand(LY+60, LY+ROWS*CH-40), true);
+spawnSun(world, p.cx + rand(world.rng,-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
+spawnSun(world, rand(world.rng,LX+30, LX+COLS*CW-30), -30, rand(world.rng,LY+60, LY+ROWS*CH-40), true);
 spawned++;
-speed: def.speed * rand(0.92,1.08),
+speed: def.speed * rand(world.rng,0.92,1.08),
 splat(){ this.noise(0.07, 0.13, 900); this.tone(190, 90, 0.07, 'sine', 0.1); },
 src.connect(f); f.connect(g); g.connect(this.master);
 src.start(t0); src.stop(t0+dur+0.02);
 startSun = (startSun === undefined) ? 50 : startSun;
 state:'menu',
-state:'walk', animT: rand(0,TAU), eatT:0, slowT:0,
+state:'walk', animT: rand(world.fxRng,0,TAU), eatT:0, slowT:0,
 suit: slowed ? '#4a5a68' : '#544f46',
 suitD: slowed ? '#394854' : '#3d3931',
 sun(){ this.tone(1046, 1046, 0.08, 'sine', 0.09); this.tone(1568, 1568, 0.1, 'sine', 0.07, 0.06); },
@@ -2539,8 +2548,8 @@ this.mnote(NOTE[m[1]], m[2]*MUSIC_BEAT*1.9, 'triangle', 0.045, when);
 this.musicGain = this.ctx.createGain(); this.musicGain.gain.value = 0.6;
 this.musicGain.connect(this.master);
 this.musicTimer = setInterval(()=>this.tickMusic(), 100);
-this.tone(f*1.5, f*1.1, rand(0.5,0.8), 'triangle', 0.028);
-this.tone(f, f*0.72, rand(0.6,0.95), 'sawtooth', 0.05);
+this.tone(f*1.5, f*1.1, rand(Math.random, 0.5,0.8), 'triangle', 0.028);
+this.tone(f, f*0.72, rand(Math.random, 0.6,0.95), 'sawtooth', 0.05);
 throwBall(){ this.tone(480, 940, 0.08, 'triangle', 0.1); this.noise(0.04, 0.03, 3500); },
 tickMusic(){
 tie: '#b8382c',
@@ -2582,10 +2591,10 @@ world.mowers = Array.from({length:ROWS}, (_,r)=>({row:r, x:LX-52, state:'idle'})
 world.nightHint = lv.night ? 8 : 0;
 world.parts.push({ x, y: LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-70, g:230,
 world.parts.push({ x, y:LY+row*CH+CH/2, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-50, g:240,
-world.parts.push({ x:m.x+rand(6,26), y:LY+m.row*CH+CH-8, vx:rand(-60,20), vy:rand(-140,-60), g:300, life:rand(0.25,0.5), max:0.5, size:rand(2,4), color:'#7cc24a' });
-world.parts.push({ x:pea.x-8, y:pea.y+rand(-3,3), vx:rand(-30,-10), vy:rand(-25,5), g:-60, life:rand(0.15,0.3), max:0.3, size:rand(2,4), color:'#ffb347' });
-world.parts.push({ x:x+rand(-20,20), y:LY+row*CH+CH/2, vx:rand(-15,15), vy:rand(-70,-35), g:-30,
-world.parts.push({ x:z.x+rand(-6,10), y:LY+(z.row+1)*CH-6, vx:rand(-14,6), vy:rand(-22,-8), g:30, life:rand(0.3,0.55), max:0.55, size:rand(2,4), color:'rgba(150,140,110,0.4)' });
+world.parts.push({ x:m.x+rand(world.fxRng,6,26), y:LY+m.row*CH+CH-8, vx:rand(world.fxRng,-60,20), vy:rand(world.fxRng,-140,-60), g:300, life:rand(world.fxRng,0.25,0.5), max:0.5, size:rand(world.fxRng,2,4), color:'#7cc24a' });
+world.parts.push({ x:pea.x-8, y:pea.y+rand(world.fxRng,-3,3), vx:rand(world.fxRng,-30,-10), vy:rand(world.fxRng,-25,5), g:-60, life:rand(world.fxRng,0.15,0.3), max:0.3, size:rand(world.fxRng,2,4), color:'#ffb347' });
+world.parts.push({ x:x+rand(world.fxRng,-20,20), y:LY+row*CH+CH/2, vx:rand(world.fxRng,-15,15), vy:rand(world.fxRng,-70,-35), g:-30,
+world.parts.push({ x:z.x+rand(world.fxRng,-6,10), y:LY+(z.row+1)*CH-6, vx:rand(world.fxRng,-14,6), vy:rand(world.fxRng,-22,-8), g:30, life:rand(world.fxRng,0.3,0.55), max:0.55, size:rand(world.fxRng,2,4), color:'rgba(150,140,110,0.4)' });
 world.paused = false;
 world.peas.push({ x:p.cx+12, y:py+6, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+12 });
 world.peas.push({ x:p.cx+14, y:py, row:p.row, type:'spore', dmg:20, vx:300, prevX:p.cx+14 });
@@ -2593,7 +2602,7 @@ world.peas.push({ x:p.cx+30, y:py, row:p.row, type:kind, dmg:20, vx:340, prevX:p
 world.peas.push({ x:p.cx+52, y:py, row:p.row, type, dmg, vx, prevX:p.cx+52 });
 world.plants.push(p);
 world.plants=[]; world.zombies=[]; world.peas=[]; world.suns=[]; world.parts=[]; world.decals=[];
-world.quiz = { idx: 0, energy: 50, questions: makeQuiz(), feedback: 0, correct: true };
+world.quiz = { idx: 0, energy: 50, questions: makeQuiz(world.rng), feedback: 0, correct: true };
 world.sel = -1; world.shovel = false;
 world.sel = -1; world.shovel = false;
 world.shake = 0; world.flash = 0;
@@ -2601,7 +2610,7 @@ world.shake = Math.max(world.shake, 0.3);
 world.shake = Math.max(world.shake, big?0.55:0.4);
 world.skyTimer -= dt;
 world.skyTimer = 2; world.groanTimer = 4;
-world.skyTimer = rand(4.5, 6.5);
+world.skyTimer = rand(world.rng,4.5, 6.5);
 world.slots = [];
 world.slots = world.slots.map(s=>({type:s.type, cool:0}));
 world.state = 'lost';
@@ -2625,7 +2634,7 @@ world.winT += dt;
 world.zombies.push({
 x -= w + 8;
 x = lerp(s.x, 78, k); y = lerp(s.y, 50, k);
-x: W + 40 + rand(0,40),
+x: W + 40 + rand(world.rng,0,40),
 z.acc -= d;
 z.angry = true;
 z.animT += dt * slowMul * animMul;
@@ -2635,8 +2644,8 @@ z.dustT = 0;
 z.eatT += dt;
 z.hp -= d;
 z.slowT = 0;
-z.speed = 34 * rand(0.94,1.08);
-z.speed = ZTYPES.normal.speed * rand(0.92,1.08);
+z.speed = 34 * rand(world.rng,0.94,1.08);
+z.speed = ZTYPES.normal.speed * rand(world.rng,0.92,1.08);
 z.state = 'dying'; z.deathT = 0;
 z.state = 'eat'; z.eatT = 0; z.eatPlant = food;
 z.state = 'vault'; z.vt = 0; z.fromX = z.x;

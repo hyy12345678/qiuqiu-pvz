@@ -30,11 +30,11 @@
   function clamp(v, a, b) {
     return v < a ? a : v > b ? b : v;
   }
-  function rand(a, b) {
-    return a + Math.random() * (b - a);
+  function rand(rng, a, b) {
+    return a + rng() * (b - a);
   }
-  function randi(a, b) {
-    return Math.floor(rand(a, b + 1));
+  function randi(rng, a, b) {
+    return Math.floor(rand(rng, a, b + 1));
   }
   function lerp(a, b, t) {
     return a + (b - a) * t;
@@ -65,6 +65,11 @@
       t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
+  }
+  var FX_SEED_XOR = 2654435769;
+  var DRAW_SEED_XOR = 1374496523;
+  function randomSeed() {
+    return Math.random() * 4294967296 >>> 0;
   }
 
   // src/core/data/plants.js
@@ -266,9 +271,9 @@
       this.tone(190, 90, 0.07, "sine", 0.1);
     },
     groan() {
-      const f = rand(75, 120);
-      this.tone(f, f * 0.72, rand(0.6, 0.95), "sawtooth", 0.05);
-      this.tone(f * 1.5, f * 1.1, rand(0.5, 0.8), "triangle", 0.028);
+      const f = rand(Math.random, 75, 120);
+      this.tone(f, f * 0.72, rand(Math.random, 0.6, 0.95), "sawtooth", 0.05);
+      this.tone(f * 1.5, f * 1.1, rand(Math.random, 0.5, 0.8), "triangle", 0.028);
     },
     chomp() {
       this.noise(0.09, 0.15, 500);
@@ -435,7 +440,13 @@
 
   // src/core/world.js
   function createWorld(init = {}) {
+    const seed = init.seed === void 0 ? randomSeed() : init.seed >>> 0;
     return {
+      seed,
+      rng: init.rng || mulberry32(seed),
+      // 战斗：出怪、速度、射击概率、资源时刻
+      fxRng: init.fxRng || mulberry32((seed ^ FX_SEED_XOR) >>> 0),
+      // 表现：粒子、动画初相、表现计时
       state: "menu",
       // menu | help | select | play | won | lost
       level: 0,
@@ -512,7 +523,7 @@
     world.lastRows = [];
     world.mowers = Array.from({ length: ROWS }, (_, r) => ({ row: r, x: LX - 52, state: "idle" }));
     world.slots = world.slots.map((s) => ({ type: s.type, cool: 0 }));
-    const built = buildSpawns(lv);
+    const built = buildSpawns(lv, world.rng);
     world.events = built.events;
     world.total = built.total;
     world.evIdx = 0;
@@ -531,7 +542,7 @@
   }
   function startQuiz(world) {
     world.state = "quiz";
-    world.quiz = { idx: 0, energy: 50, questions: makeQuiz(), feedback: 0, correct: true };
+    world.quiz = { idx: 0, energy: 50, questions: makeQuiz(world.rng), feedback: 0, correct: true };
     SFX.click();
   }
   function answerQuiz(world, a) {
@@ -575,41 +586,41 @@
 
   // src/core/particles.js
   function addLeafBurst(world, x, y) {
-    for (let k = 0; k < 12; k++) world.parts.push({ x, y: y + rand(-14, 14), vx: rand(-80, 80), vy: rand(-130, -20), g: 270, life: rand(0.35, 0.75), max: 0.75, size: rand(3, 6), color: ["#63b23f", "#8fd44a", "#4a9330"][k % 3] });
+    for (let k = 0; k < 12; k++) world.parts.push({ x, y: y + rand(world.fxRng, -14, 14), vx: rand(world.fxRng, -80, 80), vy: rand(world.fxRng, -130, -20), g: 270, life: rand(world.fxRng, 0.35, 0.75), max: 0.75, size: rand(world.fxRng, 3, 6), color: ["#63b23f", "#8fd44a", "#4a9330"][k % 3] });
   }
   function addDirtPuff(world, x, y) {
-    for (let k = 0; k < 9; k++) world.parts.push({ x: x + rand(-16, 16), y, vx: rand(-45, 45), vy: rand(-100, -30), g: 280, life: rand(0.3, 0.6), max: 0.6, size: rand(3, 6), color: ["#8a6b42", "#a5875a"][k % 2] });
+    for (let k = 0; k < 9; k++) world.parts.push({ x: x + rand(world.fxRng, -16, 16), y, vx: rand(world.fxRng, -45, 45), vy: rand(world.fxRng, -100, -30), g: 280, life: rand(world.fxRng, 0.3, 0.6), max: 0.6, size: rand(world.fxRng, 3, 6), color: ["#8a6b42", "#a5875a"][k % 2] });
   }
   function addFlamePuff(world, x, y) {
-    for (let k = 0; k < 6; k++) world.parts.push({ x, y, vx: rand(-35, 35), vy: rand(-80, -20), g: -50, life: rand(0.2, 0.45), max: 0.45, size: rand(2, 5), color: ["#ffb347", "#ff8a2e"][k % 2] });
+    for (let k = 0; k < 6; k++) world.parts.push({ x, y, vx: rand(world.fxRng, -35, 35), vy: rand(world.fxRng, -80, -20), g: -50, life: rand(world.fxRng, 0.2, 0.45), max: 0.45, size: rand(world.fxRng, 2, 5), color: ["#ffb347", "#ff8a2e"][k % 2] });
   }
   function addPaperShreds(world, x, y) {
     for (let k = 0; k < 14; k++) world.parts.push({
-      x: x + rand(-10, 10),
-      y: y + rand(-12, 12),
-      vx: rand(-110, 70),
-      vy: rand(-140, -30),
+      x: x + rand(world.fxRng, -10, 10),
+      y: y + rand(world.fxRng, -12, 12),
+      vx: rand(world.fxRng, -110, 70),
+      vy: rand(world.fxRng, -140, -30),
       g: 260,
-      life: rand(0.45, 0.95),
+      life: rand(world.fxRng, 0.45, 0.95),
       max: 0.95,
-      size: rand(3, 6),
+      size: rand(world.fxRng, 3, 6),
       color: ["#f4f0e2", "#ded8c4", "#c9c2ac"][k % 3]
     });
     for (let k = 0; k < 4; k++) world.parts.push({
-      x: x + rand(-8, 8),
-      y: y + rand(-6, 6),
-      vx: rand(-40, 40),
-      vy: rand(-60, -20),
+      x: x + rand(world.fxRng, -8, 8),
+      y: y + rand(world.fxRng, -6, 6),
+      vx: rand(world.fxRng, -40, 40),
+      vy: rand(world.fxRng, -60, -20),
       g: 200,
-      life: rand(0.3, 0.6),
+      life: rand(world.fxRng, 0.3, 0.6),
       max: 0.6,
-      size: rand(2, 3.5),
+      size: rand(world.fxRng, 2, 3.5),
       color: "#5a5a52"
     });
   }
   function addPeaSplat(world, x, y, type) {
     const cols = type === "snow" ? ["#bfe9ff", "#8fd0f2"] : type === "fire" ? ["#ff9a2e", "#ffd23e"] : type === "ball" ? ["#e8483c", "#ffd23e"] : type === "bullet" ? ["#e8edf2", "#8d949c"] : type === "spore" ? ["#dcc0f0", "#b478e0"] : ["#8fd44a", "#b8e88a"];
-    for (let k = 0; k < 9; k++) world.parts.push({ x, y, vx: rand(-100, 100), vy: rand(-100, 45), g: 250, life: rand(0.2, 0.45), max: 0.45, size: rand(2, 5.5), color: cols[k % 2] });
+    for (let k = 0; k < 9; k++) world.parts.push({ x, y, vx: rand(world.fxRng, -100, 100), vy: rand(world.fxRng, -100, 45), g: 250, life: rand(world.fxRng, 0.2, 0.45), max: 0.45, size: rand(world.fxRng, 2, 5.5), color: cols[k % 2] });
   }
 
   // src/core/entities.js
@@ -628,11 +639,11 @@
       col,
       hp: def.hp,
       maxHp: def.hp,
-      phase: Math.random() * TAU,
+      phase: rand(world.fxRng, 0, TAU),
       cx: cellCX(col),
       fy: cellFY(row),
-      fireT: rand(0.5, 1.3),
-      sunT: rand(6, 9),
+      fireT: rand(world.rng, 0.5, 1.3),
+      sunT: rand(world.rng, 6, 9),
       recoil: 0,
       flash: 0,
       armed: false,
@@ -666,29 +677,29 @@
     SFX.boom();
     world.decals.push({ x, fy: LY + row * CH + CH / 2, ttl: 6, max: 6, r: big ? 95 : 55 });
     for (let i = 0; i < 46; i++) {
-      const a = rand(0, TAU), sp = rand(40, big ? 340 : 210);
+      const a = rand(world.fxRng, 0, TAU), sp = rand(world.fxRng, 40, big ? 340 : 210);
       world.parts.push({
         x,
         y: LY + row * CH + CH / 2,
         vx: Math.cos(a) * sp,
         vy: Math.sin(a) * sp - 70,
         g: 230,
-        life: rand(0.3, 0.85),
+        life: rand(world.fxRng, 0.3, 0.85),
         max: 0.85,
-        size: rand(3, 10),
-        color: ["#fff3b0", "#ffdf6e", "#ff9a2e", "#ff5a2e", "#9a9a92"][randi(0, 4)]
+        size: rand(world.fxRng, 3, 10),
+        color: ["#fff3b0", "#ffdf6e", "#ff9a2e", "#ff5a2e", "#9a9a92"][randi(world.fxRng, 0, 4)]
       });
     }
     for (let k = 0; k < 6; k++) {
       world.parts.push({
-        x: x + rand(-20, 20),
+        x: x + rand(world.fxRng, -20, 20),
         y: LY + row * CH + CH / 2,
-        vx: rand(-15, 15),
-        vy: rand(-70, -35),
+        vx: rand(world.fxRng, -15, 15),
+        vy: rand(world.fxRng, -70, -35),
         g: -30,
-        life: rand(0.7, 1.2),
+        life: rand(world.fxRng, 0.7, 1.2),
         max: 1.2,
-        size: rand(9, 16),
+        size: rand(world.fxRng, 9, 16),
         color: "rgba(90,85,80,0.5)"
       });
     }
@@ -705,17 +716,17 @@
     SFX.boom();
     world.decals.push({ x, fy: LY + row * CH + CH / 2, ttl: 4, max: 4, r: 72 });
     for (let i = 0; i < 30; i++) {
-      const a = rand(0, TAU), sp = rand(30, 240);
+      const a = rand(world.fxRng, 0, TAU), sp = rand(world.fxRng, 30, 240);
       world.parts.push({
         x,
         y: LY + row * CH + CH / 2,
         vx: Math.cos(a) * sp,
         vy: Math.sin(a) * sp - 50,
         g: 240,
-        life: rand(0.25, 0.6),
+        life: rand(world.fxRng, 0.25, 0.6),
         max: 0.6,
-        size: rand(2, 6),
-        color: ["#ffdf6e", "#ff9a2e", "#ff5a2e", "#9a9a92"][randi(0, 3)]
+        size: rand(world.fxRng, 2, 6),
+        color: ["#ffdf6e", "#ff9a2e", "#ff5a2e", "#9a9a92"][randi(world.fxRng, 0, 3)]
       });
     }
     const c = col !== void 0 ? col : Math.floor((x - LX) / CW);
@@ -739,7 +750,7 @@
     }
     if (z.type === "newspaper" && !z.angry && z.acc <= 0 && z.state !== "dying") {
       z.angry = true;
-      z.speed = 34 * rand(0.94, 1.08);
+      z.speed = 34 * rand(world.rng, 0.94, 1.08);
       z.slowT = 0;
       addPaperShreds(world, z.x, LY + (z.row + 1) * CH - 76);
       SFX.paperTear();
@@ -754,22 +765,22 @@
   }
   function spawnZombie(world, type) {
     const def = ZTYPES[type];
-    let row = randi(0, ROWS - 1);
+    let row = randi(world.rng, 0, ROWS - 1);
     if (world.lastRows.length >= 2 && world.lastRows[0] === row && world.lastRows[1] === row) {
-      row = (row + randi(1, ROWS - 1)) % ROWS;
+      row = (row + randi(world.rng, 1, ROWS - 1)) % ROWS;
     }
     world.lastRows.unshift(row);
     if (world.lastRows.length > 3) world.lastRows.length = 3;
     world.zombies.push({
       type,
       row,
-      x: W + 40 + rand(0, 40),
-      speed: def.speed * rand(0.92, 1.08),
+      x: W + 40 + rand(world.rng, 0, 40),
+      speed: def.speed * rand(world.rng, 0.92, 1.08),
       hp: def.hp,
       acc: def.acc,
       maxHp: def.hp + def.acc,
       state: "walk",
-      animT: rand(0, TAU),
+      animT: rand(world.fxRng, 0, TAU),
       eatT: 0,
       slowT: 0,
       poleLost: false,
@@ -823,8 +834,8 @@
       if (!lv.night) {
         world.skyTimer -= dt;
         if (world.skyTimer <= 0) {
-          world.skyTimer = rand(4.5, 6.5);
-          spawnSun(world, rand(LX + 30, LX + COLS * CW - 30), -30, rand(LY + 60, LY + ROWS * CH - 40), true);
+          world.skyTimer = rand(world.rng, 4.5, 6.5);
+          spawnSun(world, rand(world.rng, LX + 30, LX + COLS * CW - 30), -30, rand(world.rng, LY + 60, LY + ROWS * CH - 40), true);
         }
       }
     }
@@ -844,9 +855,9 @@
           if (t > 0) {
             p.sunT -= dt;
             if (p.sunT <= 0) {
-              p.sunT = rand(8, 10);
+              p.sunT = rand(world.rng, 8, 10);
               const small = p.type === "sunshroom";
-              spawnSun(world, p.cx + rand(-14, 14), p.fy - (small ? 46 : 88), p.fy - 30, false, small ? 25 : 50);
+              spawnSun(world, p.cx + rand(world.rng, -14, 14), p.fy - (small ? 46 : 88), p.fy - 30, false, small ? 25 : 50);
             }
           }
           break;
@@ -870,7 +881,7 @@
               p.recoil = 1;
               p.flash = 0.1;
               const py = p.fy - 44;
-              const isMissile = Math.random() < 0.15;
+              const isMissile = world.rng() < 0.15;
               const type = isMissile ? "missile" : "bullet";
               const dmg = isMissile ? 90 : 25;
               const vx = isMissile ? 300 : 520;
@@ -930,8 +941,8 @@
       const pea = world.peas[i];
       pea.prevX = pea.x;
       pea.x += pea.vx * dt;
-      if (pea.type === "fire" && Math.random() < 0.6) {
-        world.parts.push({ x: pea.x - 8, y: pea.y + rand(-3, 3), vx: rand(-30, -10), vy: rand(-25, 5), g: -60, life: rand(0.15, 0.3), max: 0.3, size: rand(2, 4), color: "#ffb347" });
+      if (pea.type === "fire" && world.fxRng() < 0.6) {
+        world.parts.push({ x: pea.x - 8, y: pea.y + rand(world.fxRng, -3, 3), vx: rand(world.fxRng, -30, -10), vy: rand(world.fxRng, -25, 5), g: -60, life: rand(world.fxRng, 0.15, 0.3), max: 0.3, size: rand(world.fxRng, 2, 4), color: "#ffb347" });
       }
       if (pea.type === "pea" || pea.type === "snow") {
         for (const p of world.plants) {
@@ -988,7 +999,7 @@
         z.dustT = (z.dustT || 0) + dt;
         if (z.dustT > 0.5 && z.x > LX - 30 && z.x < W) {
           z.dustT = 0;
-          world.parts.push({ x: z.x + rand(-6, 10), y: LY + (z.row + 1) * CH - 6, vx: rand(-14, 6), vy: rand(-22, -8), g: 30, life: rand(0.3, 0.55), max: 0.55, size: rand(2, 4), color: "rgba(150,140,110,0.4)" });
+          world.parts.push({ x: z.x + rand(world.fxRng, -6, 10), y: LY + (z.row + 1) * CH - 6, vx: rand(world.fxRng, -14, 6), vy: rand(world.fxRng, -22, -8), g: 30, life: rand(world.fxRng, 0.3, 0.55), max: 0.55, size: rand(world.fxRng, 2, 4), color: "rgba(150,140,110,0.4)" });
         }
         if (z.type === "vault" && !z.poleLost) {
           let target = null;
@@ -1021,7 +1032,7 @@
           z.x = z.toX;
           z.state = "walk";
           z.poleLost = true;
-          z.speed = ZTYPES.normal.speed * rand(0.92, 1.08);
+          z.speed = ZTYPES.normal.speed * rand(world.rng, 0.92, 1.08);
           z.vy = 0;
           addDirtPuff(world, z.x, LY + (z.row + 1) * CH - 6);
         } else {
@@ -1063,8 +1074,8 @@
     for (const m of world.mowers) {
       if (m.state === "run") {
         m.x += 330 * dt;
-        if (Math.random() < 0.55) {
-          world.parts.push({ x: m.x + rand(6, 26), y: LY + m.row * CH + CH - 8, vx: rand(-60, 20), vy: rand(-140, -60), g: 300, life: rand(0.25, 0.5), max: 0.5, size: rand(2, 4), color: "#7cc24a" });
+        if (world.fxRng() < 0.55) {
+          world.parts.push({ x: m.x + rand(world.fxRng, 6, 26), y: LY + m.row * CH + CH - 8, vx: rand(world.fxRng, -60, 20), vy: rand(world.fxRng, -140, -60), g: 300, life: rand(world.fxRng, 0.25, 0.5), max: 0.5, size: rand(world.fxRng, 2, 4), color: "#7cc24a" });
         }
         for (const z of world.zombies) {
           if (z.row === m.row && z.state !== "dying" && z.x < m.x + 52 && z.x > m.x - 70) {
@@ -1119,7 +1130,7 @@
     if (world.zombies.length > 0) {
       world.groanTimer -= dt;
       if (world.groanTimer <= 0) {
-        world.groanTimer = rand(4, 9);
+        world.groanTimer = rand(world.fxRng, 4, 9);
         SFX.groan();
       }
     }
@@ -1144,7 +1155,9 @@
   }
 
   // src/main.js
-  var G = createWorld();
+  var SEED = randomSeed();
+  var G = createWorld({ seed: SEED });
+  var drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
   var cv = document.getElementById("game");
   var ctx = cv.getContext("2d");
   var DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -4629,7 +4642,7 @@
     G.hotspots.length = 0;
     ctx.save();
     if (G.shake > 0 && G.state === "play") {
-      ctx.translate(rand(-1, 1) * G.shake * 14, rand(-1, 1) * G.shake * 14);
+      ctx.translate(rand(drawRng, -1, 1) * G.shake * 14, rand(drawRng, -1, 1) * G.shake * 14);
     }
     if (G.state === "menu") renderMenu();
     else if (G.state === "help") renderHelp();

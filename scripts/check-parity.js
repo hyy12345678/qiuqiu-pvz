@@ -1,9 +1,14 @@
-// 重构护栏：证明「搬家阶段」只动了代码位置，没动行为。
+// 重构护栏：辅助核对「搬家阶段」的代码行没有增删，不证明行为等价。
+//
+// 能力边界（重要）：默认与 --legacy 模式比较的是「规范化行的多集合」。
+// 它能发现行内容的增删，但不能发现语句换序、跨函数搬动、import 关系变化、
+// 文件边界变化或字符串内部的空白变化。这些盲区由 scripts/check-fingerprint.js
+// （原始内容哈希）与 tests/ 下的行为测试兜住，不要用本脚本冒充行为证明。
 //
 // 三种模式：
 //   默认（快照模式）   当前 src 的规范化行 必须等于 scripts/parity-baseline.txt —— 零容忍。
 //                      基线在 P3c 落定（原 legacy 单文件已完成搬家 + 两处已审改动的行为变化），
-//                      此后每次改动都会立刻显形；确认过要改行为时用 --rebase 重新盖章。
+//                      此后行内容的任何增删都会立刻显形；确认过要改行为时用 --rebase 重新盖章。
 //   --legacy（溯源模式）与 legacy/ 手写单文件逐行比较。legacy 由 tag pre-refactor-baseline
 //                      固定，是「这个重构最初从哪儿搬来」的证据；改动它没有意义，所以差异
 //                      靠下面的授权清单逐行豁免，清单之外一律 FAIL。
@@ -256,8 +261,8 @@ async function main() {
     return;
   }
 
-  // 默认：当前 src 必须与盖章快照逐行相等。快照本身就是 src 的规范化行，所以没有签名归一化，
-  // import/re-export 行也照常参与比较 —— 搬家阶段的任何越界都会显形。
+  // 默认：当前 src 必须与盖章快照逐行相等。快照本身就是 src 的规范化行，所以没有签名归一化。
+  // import/re-export 行不参与比较（见 IMPORT_LINE），因此 import 关系的变化只能由严格指纹发现。
   const snap = fs.existsSync(SNAPSHOT)
     ? fs.readFileSync(SNAPSHOT, 'utf8').split('\n').filter(l => l.length > 0)
     : [];
@@ -298,4 +303,9 @@ function report(title, nBase, nCur, a, b, verbose, hint) {
   process.exitCode = 1;
 }
 
-main().catch(e => { console.error(e.message || e); process.exit(1); });
+// 供 tests/parity-tool.test.mjs 直接调用；只在作为命令运行时才执行检查。
+module.exports = { normalize, normalizeTokens, multisetDiff, stripComments };
+
+if (require.main === module) {
+  main().catch(e => { console.error(e.message || e); process.exit(1); });
+}

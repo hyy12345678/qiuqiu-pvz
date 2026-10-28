@@ -41,19 +41,40 @@ console.log('smoke source: ' + label);
 // ---- 桩环境 ----
 globalThis.__tNow = 0;
 globalThis.__raf = null;
-function makeCtx() {
-  return new Proxy({}, {
-    get(t, p) {
+// Canvas 桩用白名单而不是「未知属性一律返回空函数」：后者会把拼错的方法名、
+// 新增但未登记的绘制 API 全部吞掉，渲染场景只剩「不抛错」这一条信息。
+const CTX_METHODS = new Set([
+  'beginPath', 'fill', 'stroke', 'moveTo', 'lineTo', 'arc', 'arcTo', 'ellipse',
+  'quadraticCurveTo', 'bezierCurveTo', 'closePath', 'rect', 'fillRect', 'strokeRect',
+  'save', 'restore', 'translate', 'rotate', 'scale', 'clip', 'fillText', 'strokeText',
+  'drawImage', 'setTransform', 'createLinearGradient', 'createRadialGradient',
+]);
+const CTX_PROPS = new Set([
+  'fillStyle', 'strokeStyle', 'lineWidth', 'lineJoin', 'lineCap', 'font',
+  'textAlign', 'textBaseline', 'globalAlpha', 'globalCompositeOperation',
+]);
+function makeGradient() { return { addColorStop() {} }; }
+function makeCtx(label) {
+  const t = {};
+  return new Proxy(t, {
+    get(target, p) {
       if (typeof p !== 'string') return undefined;
-      if (!(p in t)) {
-        t[p] = (...a) => String(p).startsWith('create') ? { addColorStop() {} } : undefined;
+      if (p in target) return target[p];
+      if (CTX_PROPS.has(p)) return undefined;      // 允许读取尚未写入的样式属性
+      if (CTX_METHODS.has(p)) {
+        const fn = (...args) => (p.startsWith('create') ? makeGradient() : undefined);
+        target[p] = fn;
+        return fn;
       }
-      return t[p];
+      throw new Error('Canvas 桩缺少 API「' + p + '」（' + label + '）：新增绘制调用必须显式登记');
     },
-    set(t, p, v) { t[p] = v; return true; }
+    set(target, p, v) {
+      if (typeof p === 'string' && CTX_PROPS.has(p)) { target[p] = v; return true; }
+      throw new Error('Canvas 桩不支持写入属性「' + String(p) + '」（' + label + '）');
+    }
   });
 }
-const ctxProxy = makeCtx();
+const ctxProxy = makeCtx('主画布');
 const fakeCanvas = {
   width: 0, height: 0, style: {},
   getContext: () => ctxProxy,
@@ -62,7 +83,7 @@ const fakeCanvas = {
 };
 globalThis.document = {
   getElementById: () => fakeCanvas,
-  createElement: () => ({ width:0, height:0, getContext: () => makeCtx(), style:{} }),
+  createElement: () => ({ width:0, height:0, getContext: () => makeCtx('离屏画布'), style:{} }),
   addEventListener: () => {},
 };
 globalThis.window = globalThis;
@@ -71,6 +92,11 @@ globalThis.addEventListener = () => {};
 globalThis.localStorage = { getItem: () => null, setItem: () => {} };
 Object.defineProperty(globalThis, 'performance', { value: { now: () => globalThis.__tNow }, configurable: true });
 globalThis.requestAnimationFrame = cb => { globalThis.__raf = cb; };
+
+// 桩自检：未知 Canvas API 必须抛错，否则渲染场景会退化成「什么都没执行也没报错」。
+let stubCaught = false;
+try { makeCtx('自检').definitelyNotARealCanvasApi(); } catch (e) { stubCaught = /Canvas 桩缺少 API/.test(e.message); }
+if (!stubCaught) throw new Error('Canvas 桩自检失败：未知 API 没有抛错');
 
 vm.runInThisContext(js, { filename: 'game.js' });
 
@@ -82,8 +108,19 @@ function pump(seconds){
     globalThis.__tNow += 1000/60;
     const cb = globalThis.__raf;
     globalThis.__raf = null;
-    if(cb) cb(globalThis.__tNow);
+    if(typeof cb !== 'function') throw new Error('rAF 链中断：第 ' + f + ' 帧没有待执行的回调');
+    cb(globalThis.__tNow);
+    if(typeof globalThis.__raf !== 'function') throw new Error('rAF 链在第 ' + f + ' 帧后中断：frame() 没有重新排下一帧');
   }
+}
+// 帧链自检：没有待执行回调时必须报错，否则「画面冻住」会被 pump 静默跳过。
+{
+  const saved = globalThis.__raf;
+  globalThis.__raf = null;
+  let caught = false;
+  try { pump(0.1); } catch(e){ caught = /rAF 链/.test(e.message); }
+  globalThis.__raf = saved;
+  if(!caught) throw new Error('S0: 帧链中断没有被检测到');
 }
 function makeZombie(type, row, x){
   const def = ZTYPES[type];

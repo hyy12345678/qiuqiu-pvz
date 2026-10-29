@@ -75,10 +75,11 @@ function makeCtx(label) {
   });
 }
 const ctxProxy = makeCtx('主画布');
+globalThis.__canvasHandlers = new Map();
 const fakeCanvas = {
   width: 0, height: 0, style: {},
   getContext: () => ctxProxy,
-  addEventListener() {},
+  addEventListener(type, handler) { globalThis.__canvasHandlers.set(type, handler); },
   getBoundingClientRect: () => ({ left: 0, top: 0, width: 1024, height: 640 }),
 };
 globalThis.document = {
@@ -289,9 +290,9 @@ if(nz.state !== 'dying') throw new Error('G7: enraged zombie did not die');
 pump(1);
 // G-b: 两种姿态绘制不报错
 const nzDraw = makeZombie('newspaper', 2, cellCX(3));
-drawZombieEntity(nzDraw);                       // 看报
+drawZombieEntity(0, nzDraw);                       // 看报
 nzDraw.angry = true; nzDraw.acc = 0; nzDraw.speed = 34;
-drawZombieEntity(nzDraw);                       // 暴怒
+drawZombieEntity(0, nzDraw);                       // 暴怒
 drawZombieHeadIcon(100, 100, 1, 'newspaper');   // 图鉴头像
 
 // ===== 场景 H：夜间关卡（无天降太阳、开局补偿阳光） =====
@@ -304,16 +305,16 @@ if(G.visual.nightHint <= 0) throw new Error('H4: night hint banner not armed');
 G.t = 1;
 pump(28);
 if(G.suns.some(s => s.fromSky)) throw new Error('H3: night level spawned sky sun');
-if(bgTheme !== 'night') throw new Error('H5: night background not rendered');
+if(bgCache.theme !== 'night') throw new Error('H5: night background not rendered');
 // 白天关卡应正常天降太阳
 startLevel(G, 0); G.slots = []; G.slots.push({type:'sunflower',cool:0}); beginPlay(G, 50);
 if(G.sun !== 50) throw new Error('H6: day level should not get the night bonus, got ' + G.sun);
 G.t = 1; pump(20);
 if(!G.suns.some(s => s.fromSky)) throw new Error('H7: day level produced no sky sun');
-if(bgTheme !== 'day') throw new Error('H8: day background not restored');
+if(bgCache.theme !== 'day') throw new Error('H8: day background not restored');
 
 // ===== 场景 I：蘑菇与咖啡豆（白天打盹 → 咖啡豆唤醒；夜里落地即开工） =====
-function press(lx, ly){ handlePress({ x:lx, y:ly }); }
+function press(lx, ly){ globalThis.__canvasHandlers.get('mousedown')({ clientX:lx, clientY:ly, button:0 }); }
 startLevel(G, 0);
 G.slots = [{type:'puff',cool:0},{type:'sunshroom',cool:0},{type:'coffee',cool:0}];
 beginPlay(G);
@@ -343,11 +344,11 @@ pump(11);
 if(!G.suns.some(s => !s.fromSky && s.value === 25)) throw new Error('I9: 阳光菇应产 25 阳光');
 if(G.suns.some(s => !s.fromSky && s.value !== 25)) throw new Error('I10: 场上不该出现其它产量的植物阳光');
 // 渲染三种新植物与两种蘑菇姿态、孢子弹道，确认不抛错
-drawPlantEntity(shroom);
-shroom.asleep = true; drawPlantEntity(shroom); shroom.asleep = false;
-drawPlantIcon('puff', 80, 80, 1);
-drawPlantIcon('sunshroom', 80, 80, 1);
-drawPlantIcon('coffee', 80, 80, 1);
+drawPlantEntity(0, shroom);
+shroom.asleep = true; drawPlantEntity(0, shroom); shroom.asleep = false;
+drawPlantIcon(0, 'puff', 80, 80, 1);
+drawPlantIcon(0, 'sunshroom', 80, 80, 1);
+drawPlantIcon(0, 'coffee', 80, 80, 1);
 // 拦截 ctx.fillStyle，确认孢子用的是自己的紫色弹道而不是回落到普通豌豆绿
 function peaFills(type){
   const fills = [];

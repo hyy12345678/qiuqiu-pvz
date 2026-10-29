@@ -23,12 +23,20 @@
 | `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试。 |
 | `npm run test:smoke` | `headless_test.js` 的 A–I 源码冒烟（打包后在 vm 里跑），保留为第二条独立验证路径。 |
 | `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面与触屏冒烟 + 5 条受控绘制轨迹基线。 |
-| `npm run parity` / `parity:dist` / `parity:legacy` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对 / 与 legacy 原始版本的行级对照。 |
+| `npm run parity` / `parity:dist` / `parity:legacy` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对 / 与重构前基线的行级**溯源对照**（预期非绿，见下）。 |
 | `npm run fingerprint` | `src/**` 原始字节 SHA-256 清单，任何未登记的源码变化都会变红。 |
 | `npm run parity:rebase` / `fingerprint:update` / `test:browser:update` | 重新盖章工具。**只在对应轮次完成人工审计后使用**；绘制轨迹基线尤其需要单独批准。 |
 
 改 Canvas 绘制时 `tests/helpers/scenario.mjs` 的 ctx 白名单会对外抛错，这是有意的：
 新增绘制 API 必须显式登记，避免测试默默吞掉画面。
+
+### 重构前的基线在哪里
+
+工作区不再保存重构前的单文件版本。`npm run parity:legacy` 和 `node headless_test.js`（不带参数）
+需要它时，由 `scripts/legacy-source.js` 执行
+`git show pre-refactor-baseline:植物大战僵尸-网页版.html` 现取到系统临时目录并缓存。
+因此这两个入口要求带该 tag 的完整检出（浅克隆会明确报错），而**不是**绿灯护栏：
+`parity:legacy` 的授权清单停在 P3c，R1 之后的结构迁移差异都会在这里显形，`verify` 链不包含它。
 
 ## 两种交付形态
 
@@ -57,9 +65,8 @@ macOS arm64 上的 **Node 20.19.4 / 22.16.0 / 22.23.2**，各自跑通 `npm test
 | `src/` | 源码：`core/`（世界、战斗、动作、数据）、`render/`（绘制与场景）、`ui/`（界面状态与设备输入）、`audio/`、`platform/`、`shell.html`、`main.js`（只做装配） |
 | `dist/` | 发布产物（见上表） |
 | `tests/` | 规则单测、`scenario-*.test.mjs` 场景测试、`browser/` 真实产物冒烟与绘制轨迹基线 |
-| `scripts/` | 构建与护栏工具（CommonJS） |
-| `headless_test.js` | 历史 A–I 冒烟驱动，仍留在 `verify` 链里 |
-| `legacy/`、根目录 `植物大战僵尸-网页版.html` | 重构前的原始单文件版本，是 `parity:legacy` 的对照物与历史溯源件，**不是可交付产物**；清理另有一轮 |
+| `scripts/` | 构建与护栏工具（CommonJS），含 `legacy-source.js`（从 tag 现取历史基线到临时目录） |
+| `headless_test.js` | 历史 A–I 冒烟驱动，仍留在 `verify` 链里（目标固定 `src/main.js`） |
 | `docs/重构方案-v0.2.md` | 重构总方案与分轮定义（R0–R5） |
 | `docs/重构执行计划-R*.md` | 每轮的执行计划与验收记录（R0 … R5b） |
 | `docs/测试基线.md` | 各轮验收证据汇总，含需由本人执行的人工验收清单（真机触屏、字体、音效、手感） |

@@ -2,22 +2,23 @@
 //
 // 只能测「脚本形态」的代码：驱动脚本与被测代码跑在同一个 vm 上下文里，靠的是顶层
 // var/const 变成全局。esbuild 的 iife 产物把所有符号关在闭包中，驱动看不到 G，
-// 所以发布产物用 npm run check:dist（离线自包含 + 语法）与 parity:dist 把关，
+// 所以发布产物由 npm run build（内含离线自包含与语法校验）与 parity:dist 逐字节把关，
 // 行为覆盖测 src/main.js；等 P6 拆成模块后再给产物加一个测试入口。
 //
 // 用法：
-//   node headless_test.js                       # 默认测 legacy 单文件基线
-//   node headless_test.js src/main.js           # 测模块源码头（拼接后）
+//   node headless_test.js                       # 默认测历史基线（从 tag pre-refactor-baseline 现取）
+//   node headless_test.js src/main.js           # 测模块源码头（拼接后）—— npm run test:smoke 用的就是这条
 //
-// 注意：跑 legacy 会在场景 D2 失败 —— 那是基线自带的缺陷（renderMenu 的夜间小月亮分支给未声明
-// 的 g 赋值，严格模式抛错打断 rAF 链），P3c 在 src 里修掉了。legacy 是冻结的溯源件，不回头改。
-// 场景 I 依赖新增的蘑菇 / 咖啡豆，legacy 里没有对应实现，跑 legacy 会在 I1 抛错。
-// 因此 npm run verify 不再包含 test:smoke:legacy；它只能验证到 P3c 为止的历史行为。
+// 注意：legacy 目标已不是绿灯入口（R6 起 package.json 里没有对应脚本，verify 只跑 src 目标）。
+// 它跑不通是预期结果：基线自带缺陷（renderMenu 的夜间小月亮分支给未声明的 g 赋值，严格模式抛错
+// 打断 rAF 链，P3c 才在 src 里修掉），且场景 I 依赖的蘑菇 / 咖啡豆在基线里还不存在。
+// legacy 是冻结的溯源件，不回头改；这里的价值只剩「同一份驱动能对照历史行为到哪一步」。
 const fs = require('fs'), vm = require('vm'), path = require('path');
 const esbuild = require('esbuild');
 const { esbuildOpts } = require('./scripts/esbuild-opts');
+const { legacySource } = require('./scripts/legacy-source');
 
-const target = process.argv[2] || require('path').join(__dirname, 'legacy', '植物大战僵尸-网页版.html');
+const target = process.argv[2] || legacySource();
 let js, label = target;
 if (target.endsWith('.js')) {
   js = fs.readFileSync(target, 'utf8');

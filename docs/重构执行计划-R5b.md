@@ -136,3 +136,9 @@ min 与 pretty 只差 `minify` 开关：同一入口、同一 `esbuildOpts`、�
 - 真机触屏、字体栅格化、真实音效与手感由用户人工验收，清单未代勾。
 - 提交：`9900c48`，13 个文件、+283/−18；`dist/` 标准产物内容未变，故不在提交内。
 
+---
+
+**后续**：根目录旧 HTML、`legacy/`、`headless_test.js` 与 `test:smoke:legacy` 的历史件清理在独立的 R6 轮执行
+（两份 HTML 已删、`parity:legacy` 与冒烟默认目标改为从 tag `pre-refactor-baseline` 现取、`test:smoke:legacy` 入口删除），
+见 [R6 清理轮执行计划](重构执行计划-R6-清理.md)。
+

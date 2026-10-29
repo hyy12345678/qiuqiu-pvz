@@ -18,7 +18,6 @@
     "test:browser": "node --test tests/browser/*.test.mjs",
     "test:browser:update": "UPDATE_TRACE=1 node --test tests/browser/render-baseline.test.mjs",
     "test:smoke": "node headless_test.js src/main.js",
-    "test:smoke:legacy": "node headless_test.js",
     "verify": "npm run parity && npm run fingerprint && npm run test && npm run build && npm run parity:dist && npm run test:smoke && npm run test:browser"
   },
   "engines": {

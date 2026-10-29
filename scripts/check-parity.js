@@ -9,11 +9,13 @@
 //   默认（快照模式）   当前 src 的规范化行 必须等于 scripts/parity-baseline.txt —— 零容忍。
 //                      基线在 P3c 落定（原 legacy 单文件已完成搬家 + 两处已审改动的行为变化），
 //                      此后行内容的任何增删都会立刻显形；确认过要改行为时用 --rebase 重新盖章。
-//   --legacy（溯源模式）与 legacy/ 手写单文件逐行比较。legacy 由 tag pre-refactor-baseline
-//                      固定，是「这个重构最初从哪儿搬来」的证据；改动它没有意义，所以差异
+//   --legacy（溯源模式）与 tag pre-refactor-baseline 里的手写单文件逐行比较；工作区已不再保留
+//                      该文件，取源由 scripts/legacy-source.js 用 `git show` 现取到临时目录缓存。
+//                      这个 tag 是「这个重构最初从哪儿搬来」的证据，改动它没有意义，所以差异
 //                      靠下面的授权清单逐行豁免，清单之外一律 FAIL。
 //                      此模式冻结在 P3c：它证明的是「搬家没改行为」，功能开发开始后就失效了
 //                      （新增植物会带来上百行无法逐条列举的合法新增），所以不在 verify 链里。
+//                      需要带该 tag 的完整检出，浅克隆会直接报错。
 //   --dist（字节模式）  产物内联脚本必须等于「当前 src 重新打一遍包」的结果，逐字节比较。
 //                      不与 legacy 直接比：esbuild 会 const→var、十六进制→十进制、同名符号消歧重命名
 //                      （g→g2），拿未打包的 legacy 比打包后的 dist 全是假阳性。
@@ -23,7 +25,7 @@
 // 用法：
 //   node scripts/check-parity.js              # src vs 快照
 //   node scripts/check-parity.js --rebase     # 用当前 src 重写快照（确认过行为变化后才用）
-//   node scripts/check-parity.js --legacy     # legacy vs src（授权清单模式）
+//   node scripts/check-parity.js --legacy     # tag 基线 vs src（授权清单模式，预期非绿）
 //   node scripts/check-parity.js --dist       # esbuild(src) vs dist 产物内联脚本
 //   node scripts/check-parity.js --verbose    # 打印全部差异
 'use strict';
@@ -32,9 +34,9 @@ const path = require('path');
 const esbuild = require('esbuild');
 const { esbuildOpts } = require('./esbuild-opts');
 const { escapeForInline, ENTRY } = require('./inline');
+const { legacySource, LEGACY_FILE } = require('./legacy-source');
 
 const ROOT = path.join(__dirname, '..');
-const BASELINE = path.join(ROOT, 'legacy', '植物大战僵尸-网页版.html');
 const DIST = path.join(ROOT, 'dist', '植物大战僵尸-网页版.html');
 const SRC_DIR = path.join(ROOT, 'src');
 const SNAPSHOT = path.join(__dirname, 'parity-baseline.txt');
@@ -257,11 +259,14 @@ async function main() {
   const cur = normalize(files.map(f => fs.readFileSync(f, 'utf8')).join('\n'));
 
   if (args.has('--legacy')) {
-    const base = normalize(extractScript(fs.readFileSync(BASELINE, 'utf8')));
+    const file = legacySource();
+    console.log('提示：--legacy 是历史溯源对照，不是绿灯护栏。授权清单停在 P3c，'
+      + '此后 R1–R5 的结构迁移差异都在这里显形，verify 链不包含本模式。');
+    const base = normalize(extractScript(fs.readFileSync(file, 'utf8')));
     const { onlyA: a0, onlyB: b0 } = multisetDiff(base, cur);
     const a = consumeAuthorized(a0, AUTHORIZED_LEGACY_ONLY.concat(P3C_LEGACY_ONLY));
     const b = consumeAuthorized(b0, AUTHORIZED_SRC_ONLY.concat(P3C_SRC_ONLY));
-    report('parity[legacy]: legacy/植物大战僵尸-网页版.html vs src/**', base.length, cur.length, a, b, verbose);
+    report('parity[legacy]: tag pre-refactor-baseline 的 ' + LEGACY_FILE + ' vs src/**', base.length, cur.length, a, b, verbose);
     return;
   }
 

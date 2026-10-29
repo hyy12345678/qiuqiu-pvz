@@ -196,8 +196,8 @@ function multisetDiff(a, b) {
 
 // 与 scripts/build.js 完全相同的配置重新打一遍包 —— 配置一旦漂移，这个检查就失去意义，
 // 所以 esbuildOpts 与 ENTRY 都必须从构建侧共享的模块里取。
-async function bundleEntry() {
-  const r = await esbuild.build({ ...esbuildOpts([ENTRY]), write: false, outbase: path.join(ROOT, 'src') });
+async function bundleEntry(opts = {}) {
+  const r = await esbuild.build({ ...esbuildOpts([ENTRY], opts), write: false, outbase: path.join(ROOT, 'src') });
   return { outputText: r.outputFiles[0].text };
 }
 
@@ -217,11 +217,12 @@ function consumeAuthorized(list, authorized) {
 // dist 模式：产物内联脚本必须与「当前 src 的 bundle」逐字节一致（只允许可可证伪的构建戳差异）。
 // 这一侧不再扯上 legacy —— 源码是否忠实由 line 模式单独负责，两者串起来就是完整链条：
 //   legacy ≡ src（行级）  且  bundle(src) ≡ 产物（字节级）  ⇒  产物 ≡ legacy
-async function checkDist() {
-  const expected = escapeForInline((await bundleEntry()).outputText);
-  const raw = extractScript(fs.readFileSync(DIST, 'utf8')).replace(/^\s*\/\* build:[\s\S]*?\*\/\n/, '');
+// --dist --minify 用同一入口的 minify 配置比对，专用于验证 min 产物也来自同一份源码。
+async function checkDist({ minify = false, file = DIST } = {}) {
+  const expected = escapeForInline((await bundleEntry({ minify })).outputText);
+  const raw = extractScript(fs.readFileSync(file, 'utf8')).replace(/^\s*\/\* build:[\s\S]*?\*\/\n/, '');
   const actual = raw.trim();
-  console.log('parity[byte]: esbuild(src/main.js) vs dist/植物大战僵尸-网页版.html 内联脚本');
+  console.log('parity[byte]: esbuild(src/main.js' + (minify ? ', minify' : '') + ') vs ' + path.relative(ROOT, file) + ' 内联脚本');
   if (actual === expected.trim()) {
     console.log('PASS —— 产物与当前源码的 bundle 逐字节一致（' + (expected.length / 1024).toFixed(1) + ' KB）');
     return true;
@@ -242,10 +243,13 @@ async function checkDist() {
 }
 
 async function main() {
-  const args = new Set(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  const args = new Set(argv);
   const verbose = args.has('--verbose');
   if (args.has('--dist')) {
-    process.exitCode = (await checkDist()) ? 0 : 1;
+    const fileArg = argv.find(a => a.startsWith('--file='));
+    const file = fileArg ? path.resolve(ROOT, fileArg.slice('--file='.length)) : DIST;
+    process.exitCode = (await checkDist({ minify: args.has('--minify'), file })) ? 0 : 1;
     return;
   }
 

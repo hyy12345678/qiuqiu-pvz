@@ -50,6 +50,7 @@ async function serve() {
     console.log('dev server: http://localhost:' + PORT + '/');
     console.log('或双击打开: ' + path.join(OUT_DIR, OUT_NAME));
     console.log('改 src/ 下的文件后刷新浏览器即可；Ctrl-C 停止。');
+    console.log('注意：dev 会把 /* dev build */ 写进发布文件，验收或提交前必须跑 npm run build 重新生成标准产物。');
   });
 }
 

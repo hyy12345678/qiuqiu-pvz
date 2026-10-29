@@ -8,6 +8,7 @@ const ROOT = path.join(__dirname, '..');
 const SHELL = path.join(ROOT, 'src', 'shell.html');
 const OUT_DIR = path.join(ROOT, 'dist');
 const OUT_NAME = '植物大战僵尸-网页版.html';   // 发布产物名含中文，集中在此声明，勿在别处硬编码
+const MIN_NAME = '植物大战僵尸-网页版.min.html';   // minified 只做等价验证，不是标准发布产物，见 .gitignore
 const TOKEN = '__BUNDLE__';
 
 // 内联进 <script> 前必须处理的三类源码破坏字符：
@@ -48,11 +49,11 @@ function assertOffline(html) {
   if (net) throw new Error('产物含联网调用：' + net.join(' | '));
 }
 
-function writeDist(html) {
+function writeDist(html, name = OUT_NAME) {
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  const out = path.join(OUT_DIR, OUT_NAME);
+  const out = path.join(OUT_DIR, name);
   fs.writeFileSync(out, html);
   return out;
 }
 
-module.exports = { inlineBundle, escapeForInline, assertCompiles, writeDist, OUT_DIR, OUT_NAME, SHELL, ENTRY: path.join(ROOT, 'src', 'main.js'), ROOT };
+module.exports = { inlineBundle, escapeForInline, assertCompiles, assertOffline, writeDist, OUT_DIR, OUT_NAME, MIN_NAME, SHELL, ENTRY: path.join(ROOT, 'src', 'main.js'), ROOT };

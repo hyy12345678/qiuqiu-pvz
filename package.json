@@ -10,6 +10,7 @@
     "parity": "node scripts/check-parity.js",
     "parity:legacy": "node scripts/check-parity.js --legacy",
     "parity:dist": "node scripts/check-parity.js --dist",
+    "parity:dist:min": "node scripts/check-parity.js --dist --minify --file=dist/植物大战僵尸-网页版.min.html",
     "parity:rebase": "node scripts/check-parity.js --rebase",
     "fingerprint": "node scripts/check-fingerprint.js",
     "fingerprint:update": "node scripts/check-fingerprint.js --update",

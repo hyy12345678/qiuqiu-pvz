@@ -1,12 +1,13 @@
-// 构建：src 模块图 → esbuild 单文件 bundle → 注入 shell.html → dist/植物大战僵尸-网页版.html
+// 构建：src 模块图 → esbuild 单文件 bundle → 注入 shell.html → dist/*.html
 // 产物必须完全离线自包含：无外部请求、无运行时依赖。
 // 用法：node scripts/build.js [--minify] [--version x.y.z]
+// 标准发布产物是 pretty 那一份；--minify 只写 <name>.min.html 供等价验证，不覆盖发布产物。
 'use strict';
 const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 const { esbuildOpts } = require('./esbuild-opts');
-const { inlineBundle, writeDist, ENTRY, ROOT } = require('./inline');
+const { inlineBundle, writeDist, ENTRY, MIN_NAME, OUT_NAME, ROOT } = require('./inline');
 
 function argOf(flag, dflt) {
   const i = process.argv.indexOf(flag);
@@ -27,14 +28,14 @@ async function build() {
     process.exit(1);
   }
 
-  const stamp = '/* build: v' + version + (minify ? ' minified' : ' pretty') + ' */';
-  const out = writeDist(inlineBundle(result.outputFiles[0].text, stamp));
-  console.log('built ' + path.relative(ROOT, out) + '  (' + (fs.statSync(out).size / 1024).toFixed(1) + ' KB, ' + (minify ? 'minified' : 'pretty') + ')');
+  const stamp = '/* build: v' + version + (minify ? ' minified */' : ' pretty */');
+  const out = writeDist(inlineBundle(result.outputFiles[0].text, stamp), minify ? MIN_NAME : OUT_NAME);
+  console.log('built ' + path.relative(ROOT, out) + '  (' + (fs.statSync(out).size / 1024).toFixed(1) + ' KB, ' + (minify ? 'minified，仅验证用' : 'pretty，标准发布产物') + ')');
   return out;
 }
 
 if (require.main === module) {
   build().catch(e => { console.error(e.message || e); process.exit(1); });
 } else {
-  module.exports = { build, OUT_NAME };
+  module.exports = { build, OUT_NAME, MIN_NAME };
 }

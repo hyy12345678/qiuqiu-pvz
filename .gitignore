@@ -12,6 +12,8 @@ node_modules/
 
 # 构建产物 dist/ 故意纳入版本管理：这个项目的交付物就是那个单文件 HTML，
 # 双击即玩、无需构建环境，所以产物必须跟着提交走。
+# 例外：minified 只用于等价验证，标准发布产物始终是 pretty 那一份。
+dist/*.min.html
 
 # 浏览器测试失败时追加的现场文件（轨迹/截图），基线本身在 tests/browser/baselines/ 里跟踪
 tests/browser/artifacts/

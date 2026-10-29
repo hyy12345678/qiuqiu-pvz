@@ -1,15 +1,32 @@
 // 浏览器验收的共享工具：发布页 URL、上下文创建、逻辑坐标点击、Canvas 像素摘要。
 // 只读 Canvas（getImageData），不替换、不注入调试全局。
 
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-export const DIST = path.join(ROOT, 'dist', '植物大战僵尸-网页版.html');
+// 默认打标准发布产物；PVZ_DIST 可指向另一份构建（例如只用于验证的 min 产物），
+// 这样同一套冒烟与受控轨迹能对两种交付形态跑同一条断言。
+export const DIST = process.env.PVZ_DIST
+  ? path.resolve(ROOT, process.env.PVZ_DIST)
+  : path.join(ROOT, 'dist', '植物大战僵尸-网页版.html');
 export const DIST_URL = pathToFileURL(DIST).href;
 
 export const W = 1024, H = 640;
+
+const RELEASE_STAMP = /^\/\* build: v\d+\.\d+\.\d+ (?:pretty|minified) \*\/$/;
+
+/** 发布页必须带发布构建戳：npm run dev 会把 dev build 注释写进同一个文件，冒充发布产物时在这里判红。 */
+export function assertReleaseStamp(file = DIST) {
+  const line = fs.readFileSync(file, 'utf8').split('\n', 20).find(l => l.startsWith('/* build:'));
+  if (!line) throw new Error(path.relative(ROOT, file) + ' 缺少发布构建戳，请先 npm run build');
+  if (!RELEASE_STAMP.test(line)) {
+    throw new Error(path.relative(ROOT, file) + ' 不是发布构建，戳为 ' + line + '；验收前须重新 npm run build');
+  }
+  return line;
+}
 
 export async function launch() {
   return chromium.launch({ headless: true });
@@ -17,6 +34,7 @@ export async function launch() {
 
 /** 打开发布页，收集页面错误、控制台错误与外部请求。init 需在页面脚本之前注入。 */
 export async function openRelease(browser, options = {}, init = null) {
+  assertReleaseStamp();
   const context = await browser.newContext({
     viewport: { width: 1024, height: 640 },
     deviceScaleFactor: 1,

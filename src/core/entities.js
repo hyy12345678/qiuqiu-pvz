@@ -19,6 +19,7 @@ export function placePlant(world, type, row, col){
     cx: cellCX(col), fy: cellFY(row),
     fireT: rand(world.rng,0.5,1.3), sunT: rand(world.rng,6,9), recoil:0, flash:0,
     armed:false, armT:0, fuse: type==='cherry' ? 1.05 : 0,
+    lifeT: def.life || 0, maxLifeT: def.life || 0,   // 限时登场的角色靠它倒计时；其余植物为 0，不参与
     asleep: !!def.mushroom && !isNight(world),   // 蘑菇白天种下先打盹，等咖啡豆唤醒
   };
   world.grid[row][col] = p;

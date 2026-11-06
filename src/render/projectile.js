@@ -76,6 +76,35 @@ export function drawPea(p){
     ctx.restore();
     return;
   }
+  if(p.type==='beam'){
+    // 哉佩利敖光线：长拖尾外焰 + 白色光芯 + 端头冷白光晕
+    let g = ctx.createLinearGradient(-150, 0, 10, 0);
+    g.addColorStop(0, 'rgba(143,216,255,0)');
+    g.addColorStop(0.6, 'rgba(143,216,255,0.4)');
+    g.addColorStop(1, 'rgba(223,246,255,0.9)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(-150,-1.2); ctx.lineTo(6,-7.5); ctx.lineTo(13,0); ctx.lineTo(6,7.5); ctx.lineTo(-150,1.2);
+    ctx.closePath(); ctx.fill();
+    g = ctx.createLinearGradient(-72, 0, 10, 0);
+    g.addColorStop(0, 'rgba(255,255,255,0)');
+    g.addColorStop(1, 'rgba(255,255,255,0.95)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(-72,-0.8); ctx.lineTo(8,-3); ctx.lineTo(12,0); ctx.lineTo(8,3); ctx.lineTo(-72,0.8);
+    ctx.closePath(); ctx.fill();
+    g = ctx.createRadialGradient(10, 0, 1, 10, 0, 20);
+    g.addColorStop(0, 'rgba(255,255,255,0.95)');
+    g.addColorStop(0.4, 'rgba(180,232,255,0.55)');
+    g.addColorStop(1, 'rgba(120,200,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(10, 0, 20, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(223,246,255,0.5)'; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(-46,-6.5); ctx.lineTo(-26,-2.5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-60,5.5); ctx.lineTo(-36,2); ctx.stroke();
+    ctx.restore();
+    return;
+  }
   if(p.type==='missile'){
     // 导弹：火焰尾 + 弹体 + 尾翼
     ctx.globalAlpha = 0.5;

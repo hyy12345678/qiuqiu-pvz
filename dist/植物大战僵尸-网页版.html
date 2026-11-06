@@ -1435,6 +1435,170 @@
     ctx.stroke();
     ctx.restore();
   }
+  function drawTiga(t, ph, recoil, lifeRatio, flash) {
+    const silver = "#d9dee6", silverHi = "#f6f9fc", silverDk = "#98a2ae", line = "#3f4652";
+    const purple = "#6a5cae", purpleDk = "#42387a";
+    const red = "#d6413a", redDk = "#8f201c";
+    const fire = (recoil || 0) > 0.55 || (flash || 0) > 0;
+    const ratio = clamp(lifeRatio == null ? 1 : lifeRatio, 0, 1);
+    const low = ratio < 0.25;
+    const timer = ratio > 0.5 ? "#5fd6a8" : ratio > 0.25 ? "#ffd23e" : "#ff4b3a";
+    const timerGlow = ratio > 0.5 ? "rgba(120,236,198,0.55)" : ratio > 0.25 ? "rgba(255,210,90,0.6)" : "rgba(255,92,70,0.65)";
+    const timerOn = !low || Math.sin(t * 9 + ph) > -0.1;
+    const bob = Math.sin(t * 1.7 + ph) * 1.5;
+    ctx.save();
+    ctx.translate(0, -bob);
+    ctx.lineCap = "round";
+    if (fire) {
+      let g2 = ctx.createRadialGradient(6, -58, 4, 6, -58, 54);
+      g2.addColorStop(0, "rgba(223,246,255,0.5)");
+      g2.addColorStop(1, "rgba(143,216,255,0)");
+      ctx.fillStyle = g2;
+      ctx.beginPath();
+      ctx.arc(6, -58, 54, 0, TAU);
+      ctx.fill();
+    }
+    const step = Math.sin(t * 1.3 + ph) * 1.2;
+    for (const s of [[-6, -step], [6, step]]) {
+      const x = s[0], dy = s[1];
+      ctx.beginPath();
+      ctx.moveTo(x, -44);
+      ctx.quadraticCurveTo(x + dy, -26, x * 0.85 + dy * 0.5, -8);
+      ctx.strokeStyle = line;
+      ctx.lineWidth = 13;
+      ctx.stroke();
+      ctx.strokeStyle = silver;
+      ctx.lineWidth = 10;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x * 0.92 + dy * 0.3, -22);
+      ctx.lineTo(x * 0.86 + dy * 0.5, -10);
+      ctx.strokeStyle = red;
+      ctx.lineWidth = 4.5;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(x * 0.85 + dy * 0.5 + 2.5, -4, 8.5, 4.4, 0, 0, TAU);
+      O(silver, line, 2);
+    }
+    let g = ctx.createLinearGradient(-14, -72, 14, -42);
+    g.addColorStop(0, silverHi);
+    g.addColorStop(0.55, silver);
+    g.addColorStop(1, silverDk);
+    ctx.beginPath();
+    ctx.moveTo(-13, -44);
+    ctx.quadraticCurveTo(-16, -63, -11, -74);
+    ctx.lineTo(11, -74);
+    ctx.quadraticCurveTo(16, -63, 13, -44);
+    ctx.quadraticCurveTo(0, -38, -13, -44);
+    ctx.closePath();
+    O(g, line, 2.4);
+    g = ctx.createLinearGradient(0, -74, 0, -52);
+    g.addColorStop(0, purple);
+    g.addColorStop(1, purpleDk);
+    ctx.beginPath();
+    ctx.moveTo(-11, -73);
+    ctx.quadraticCurveTo(0, -64, 11, -73);
+    ctx.quadraticCurveTo(6, -55, 0, -53);
+    ctx.quadraticCurveTo(-6, -55, -11, -73);
+    ctx.closePath();
+    O(g, purpleDk, 1.8);
+    ctx.beginPath();
+    ctx.moveTo(-12, -47);
+    ctx.quadraticCurveTo(0, -41, 12, -47);
+    ctx.lineTo(12, -44);
+    ctx.quadraticCurveTo(0, -37, -12, -44);
+    ctx.closePath();
+    O(red, redDk, 1.4);
+    if (timerOn) {
+      g = ctx.createRadialGradient(0, -60, 1, 0, -60, 15);
+      g.addColorStop(0, timerGlow);
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(0, -60, 15, 0, TAU);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, -60, 6.2, 0, TAU);
+      O(timer, "rgba(63,70,82,0.85)", 1.8);
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.beginPath();
+      ctx.arc(-1.8, -61.8, 1.6, 0, TAU);
+      ctx.fill();
+    }
+    const limb = (x1, y1, x2, y2, cx1, cy1) => {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.quadraticCurveTo(cx1, cy1, x2, y2);
+      ctx.strokeStyle = line;
+      ctx.lineWidth = 11;
+      ctx.stroke();
+      ctx.strokeStyle = silver;
+      ctx.lineWidth = 8;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x2, y2, 5.4, 0, TAU);
+      O(silverHi, line, 2);
+    };
+    if (fire) {
+      limb(15, -78, 15, -40, 16, -59);
+      limb(-10, -56, 29, -58, 10, -63);
+    } else {
+      const sw = Math.sin(t * 1.5 + ph) * 1.4;
+      limb(-12, -70, -17 + sw, -46, -17, -58);
+      limb(12, -70, 17 - sw, -46, 17, -58);
+    }
+    ctx.save();
+    ctx.translate(0, -85);
+    ctx.rotate(Math.sin(t * 0.9 + ph) * 0.02);
+    g = ctx.createLinearGradient(0, -14, 0, 10);
+    g.addColorStop(0, silverHi);
+    g.addColorStop(1, silverDk);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 10.5, 13, 0, 0, TAU);
+    O(g, line, 2.2);
+    ctx.beginPath();
+    ctx.moveTo(-1.6, -12);
+    ctx.lineTo(0, -21);
+    ctx.lineTo(1.6, -12);
+    ctx.lineTo(1.2, 7);
+    ctx.lineTo(-1.2, 7);
+    ctx.closePath();
+    O(purple, purpleDk, 1.3);
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(2.4, -7);
+    ctx.lineTo(0, -4);
+    ctx.lineTo(-2.4, -7);
+    ctx.closePath();
+    O("#9fe4ff", "#4a86a8", 1.2);
+    for (const ex of [-5.4, 5.4]) {
+      ctx.save();
+      ctx.translate(ex, 2);
+      ctx.rotate(ex < 0 ? -0.16 : 0.16);
+      const ge = ctx.createLinearGradient(0, -4, 0, 4);
+      ge.addColorStop(0, "#fff8d0");
+      ge.addColorStop(1, "#ffc93e");
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 4.3, 3, 0, 0, TAU);
+      O(ge, "#8a5a10", 1.3);
+      ctx.restore();
+    }
+    ctx.restore();
+    if (flash > 0) {
+      ctx.save();
+      ctx.globalAlpha = clamp(flash / 0.4, 0, 1);
+      g = ctx.createRadialGradient(24, -58, 1, 24, -58, 20);
+      g.addColorStop(0, "rgba(255,255,255,0.95)");
+      g.addColorStop(0.45, "rgba(180,232,255,0.6)");
+      g.addColorStop(1, "rgba(120,200,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(24, -58, 20, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
   function drawBallIcon(x, y, r, spin) {
     ctx.save();
     ctx.translate(x, y);
@@ -1765,14 +1929,19 @@
       case "coffee":
         drawCoffee(t, p.phase);
         break;
+      case "tiga":
+        drawTiga(t, p.phase, p.recoil, p.maxLifeT ? p.lifeT / p.maxLifeT : 1, p.flash);
+        break;
     }
     if (p.asleep) drawSleepZzz(t, p.phase);
     ctx.restore();
   }
+  var ICON_FIT = { tiga: 0.76 };
   function drawPlantIcon(t, type, x, y, s) {
+    const fit = ICON_FIT[type] || 1;
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(s, s);
+    ctx.scale(s * fit, s * fit);
     switch (type) {
       case "qiuqiu":
         drawQiuqiu(t, 1, 0);
@@ -1809,6 +1978,9 @@
         break;
       case "coffee":
         drawCoffee(t, 11);
+        break;
+      case "tiga":
+        drawTiga(t, 12, 0, 0.85, 0);
         break;
     }
     ctx.restore();
@@ -2422,9 +2594,10 @@
     cherry: { name: "樱桃炸弹", cost: 150, hp: 300, cool: 32, desc: "轰！炸飞一片区域的僵尸" },
     puff: { name: "小喷菇", cost: 0, hp: 300, cool: 7.5, mushroom: true, desc: "免费，但射程只有两格" },
     sunshroom: { name: "阳光菇", cost: 25, hp: 300, cool: 7.5, mushroom: true, desc: "比向日葵便宜，产阳光也只有一半" },
-    coffee: { name: "咖啡豆", cost: 25, hp: 300, cool: 20, desc: "点一株白天打盹的蘑菇，把它唤醒" }
+    coffee: { name: "咖啡豆", cost: 25, hp: 300, cool: 20, desc: "点一株白天打盹的蘑菇，把它唤醒" },
+    tiga: { name: "迪迦奥特曼", cost: 275, hp: 1200, cool: 30, life: 25, desc: "光之巨人限时登场，蓄力后发射哉佩利敖光线贯穿整行" }
   };
-  var PLANT_ORDER = ["qiuqiu", "sunflower", "peashooter", "snowpea", "repeater", "wallnut", "potato", "torch", "cherry", "puff", "sunshroom", "coffee"];
+  var PLANT_ORDER = ["qiuqiu", "sunflower", "peashooter", "snowpea", "repeater", "wallnut", "potato", "torch", "cherry", "puff", "sunshroom", "coffee", "tiga"];
 
   // src/render/hud.js
   var BANK_Y = 8;
@@ -2522,8 +2695,9 @@
       ctx.save();
       if (!afford) ctx.globalAlpha = 0.55;
       ctx.fillStyle = "rgba(60,40,15,0.25)";
+      const fit = ICON_FIT[s.type] || 1;
       ctx.beginPath();
-      ctx.ellipse(x + CARD_W / 2, y + CARD_H - 24, 16, 4, 0, 0, TAU);
+      ctx.ellipse(x + CARD_W / 2, y + CARD_H - 24, 16 * fit, 4 * fit, 0, 0, TAU);
       ctx.fill();
       drawPlantIcon(t, s.type, x + CARD_W / 2, y + CARD_H - 22, 0.5);
       ctx.restore();
@@ -3109,8 +3283,9 @@
       if (s) {
         addHotspot(ui, x, y, slotW, slotH, "slot" + i, { type: "slot", index: i });
         ctx.fillStyle = "rgba(60,40,15,0.3)";
+        const fit = ICON_FIT[s.type] || 1;
         ctx.beginPath();
-        ctx.ellipse(x + slotW / 2, y + slotH - 26, 18, 4, 0, 0, TAU);
+        ctx.ellipse(x + slotW / 2, y + slotH - 26, 18 * fit, 4 * fit, 0, 0, TAU);
         ctx.fill();
         drawPlantIcon(t, s.type, x + slotW / 2, y + slotH - 26, 0.6);
         drawText(PLANTS[s.type].name, x + slotW / 2, y + 13, 11, "#e8d2a0", null, 0, "center", "700");
@@ -3120,11 +3295,11 @@
       }
     }
     drawText("植物图鉴（点击加入队伍）", 200, 244, 15, "#e8d2a0", null, 0, "left", "700");
-    const cw = 108, ch = 92;
+    const cw = 108, ch = 78;
     for (let i = 0; i < PLANT_ORDER.length; i++) {
       const type = PLANT_ORDER[i];
       const def = PLANTS[type];
-      const x = 76 + i % 4 * (cw + 12), y = 254 + Math.floor(i / 4) * (ch + 8);
+      const x = 76 + i % 4 * (cw + 12), y = 254 + Math.floor(i / 4) * (ch + 6);
       const inTeam = world.slots.some((s) => s.type === type);
       const hover = ui.mouse.x >= x && ui.mouse.x <= x + cw && ui.mouse.y >= y && ui.mouse.y <= y + ch;
       addHotspot(ui, x, y, cw, ch, "pick" + type, { type: "plantPick", plant: type });
@@ -3148,10 +3323,11 @@
       ctx.fillStyle = "rgba(255,255,255,0.3)";
       ctx.fillRect(x + 4, y + 3, cw - 8, 6);
       ctx.fillStyle = "rgba(60,40,15,0.25)";
+      const fit = ICON_FIT[type] || 1;
       ctx.beginPath();
-      ctx.ellipse(x + cw / 2, y + ch - 30, 18, 4, 0, 0, TAU);
+      ctx.ellipse(x + cw / 2, y + ch - 26, 17 * fit, 3.6 * fit, 0, 0, TAU);
       ctx.fill();
-      drawPlantIcon(t, type, x + cw / 2, y + ch - 28, 0.52);
+      drawPlantIcon(t, type, x + cw / 2, y + ch - 24, 0.42);
       drawText(def.name, x + cw / 2, y + 13, 12, "#3c2a10", "rgba(255,246,220,0.5)", 2, "center", "800");
       drawSunIcon(t, x + 24, y + ch - 11, 0.3);
       drawText(String(def.cost), x + 42, y + ch - 11, 12, "#6b4c10", null, 0, "left", "800");
@@ -3197,7 +3373,7 @@
     for (let i2 = 0; i2 < tips.length; i2++) {
       drawText(tips[i2], zx + 22, zy + 88 + i2 * 20, 12.5, "#d8c090", null, 0, "left", "600");
     }
-    drawButton(ui, 88, H - 88, 150, 46, "返回", "back", { type: "nav", state: "menu" }, {});
+    drawButton(ui, 56, 20, 128, 40, "返回", "back", { type: "nav", state: "menu" }, { size: 17 });
     drawButton(
       ui,
       W - 286,
@@ -3314,7 +3490,7 @@
     });
   }
   function addPeaSplat(world, x, y, type) {
-    const cols = type === "snow" ? ["#bfe9ff", "#8fd0f2"] : type === "fire" ? ["#ff9a2e", "#ffd23e"] : type === "ball" ? ["#e8483c", "#ffd23e"] : type === "bullet" ? ["#e8edf2", "#8d949c"] : type === "spore" ? ["#dcc0f0", "#b478e0"] : ["#8fd44a", "#b8e88a"];
+    const cols = type === "snow" ? ["#bfe9ff", "#8fd0f2"] : type === "fire" ? ["#ff9a2e", "#ffd23e"] : type === "ball" ? ["#e8483c", "#ffd23e"] : type === "bullet" ? ["#e8edf2", "#8d949c"] : type === "spore" ? ["#dcc0f0", "#b478e0"] : type === "beam" ? ["#dff6ff", "#8fd8ff"] : ["#8fd44a", "#b8e88a"];
     for (let k = 0; k < 9; k++) world.visual.parts.push({ x, y, vx: rand(world.fxRng, -100, 100), vy: rand(world.fxRng, -100, 45), g: 250, life: rand(world.fxRng, 0.2, 0.45), max: 0.45, size: rand(world.fxRng, 2, 5.5), color: cols[k % 2] });
   }
 
@@ -3344,6 +3520,9 @@
       armed: false,
       armT: 0,
       fuse: type === "cherry" ? 1.05 : 0,
+      lifeT: def.life || 0,
+      maxLifeT: def.life || 0,
+      // 限时登场的角色靠它倒计时；其余植物为 0，不参与
       asleep: !!def.mushroom && !isNight(world)
       // 蘑菇白天种下先打盹，等咖啡豆唤醒
     };
@@ -4138,6 +4317,53 @@
       ctx.restore();
       return;
     }
+    if (p.type === "beam") {
+      let g = ctx.createLinearGradient(-150, 0, 10, 0);
+      g.addColorStop(0, "rgba(143,216,255,0)");
+      g.addColorStop(0.6, "rgba(143,216,255,0.4)");
+      g.addColorStop(1, "rgba(223,246,255,0.9)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(-150, -1.2);
+      ctx.lineTo(6, -7.5);
+      ctx.lineTo(13, 0);
+      ctx.lineTo(6, 7.5);
+      ctx.lineTo(-150, 1.2);
+      ctx.closePath();
+      ctx.fill();
+      g = ctx.createLinearGradient(-72, 0, 10, 0);
+      g.addColorStop(0, "rgba(255,255,255,0)");
+      g.addColorStop(1, "rgba(255,255,255,0.95)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(-72, -0.8);
+      ctx.lineTo(8, -3);
+      ctx.lineTo(12, 0);
+      ctx.lineTo(8, 3);
+      ctx.lineTo(-72, 0.8);
+      ctx.closePath();
+      ctx.fill();
+      g = ctx.createRadialGradient(10, 0, 1, 10, 0, 20);
+      g.addColorStop(0, "rgba(255,255,255,0.95)");
+      g.addColorStop(0.4, "rgba(180,232,255,0.55)");
+      g.addColorStop(1, "rgba(120,200,255,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(10, 0, 20, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(223,246,255,0.5)";
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(-46, -6.5);
+      ctx.lineTo(-26, -2.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-60, 5.5);
+      ctx.lineTo(-36, 2);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
     if (p.type === "missile") {
       ctx.globalAlpha = 0.5;
       ctx.beginPath();
@@ -4641,6 +4867,46 @@
             explode(world, p.cx, p.row, true);
           }
           break;
+        case "tiga": {
+          if (t > 0) {
+            p.lifeT -= dt;
+            if (p.lifeT <= 0) {
+              removePlant(world, p);
+              for (let k = 0; k < 12; k++) {
+                v.parts.push({
+                  x: p.cx + rand(world.fxRng, -16, 16),
+                  y: p.fy - rand(world.fxRng, 6, 84),
+                  vx: rand(world.fxRng, -28, 28),
+                  vy: rand(world.fxRng, -200, -90),
+                  g: -30,
+                  life: rand(world.fxRng, 0.35, 0.7),
+                  max: 0.7,
+                  size: rand(world.fxRng, 2, 5),
+                  color: "#9fe4ff"
+                });
+              }
+              world.ports.sound("hop");
+              break;
+            }
+          }
+          p.fireT -= dt;
+          let has = false;
+          for (const z of world.zombies) {
+            if (z.row === p.row && z.state !== "dying" && z.x > p.cx - 8 && z.x < W + 50) {
+              has = true;
+              break;
+            }
+          }
+          if (has && p.fireT <= 0 && t > 0) {
+            p.fireT = 6.5;
+            p.recoil = 1;
+            p.flash = 0.4;
+            world.peas.push({ x: p.cx - 30, y: p.fy - 58, row: p.row, type: "beam", dmg: 400, vx: 720, prevX: p.cx - 30 });
+            v.shake = Math.max(v.shake, 0.22);
+            world.ports.sound("missile");
+          }
+          break;
+        }
       }
     }
     for (let i = world.peas.length - 1; i >= 0; i--) {
@@ -4660,30 +4926,39 @@
         }
       }
       let hit = false;
+      const beam = pea.type === "beam";
       for (const z of world.zombies) {
-        if (z.row === pea.row && z.state !== "dying" && pea.x >= z.x - 24 && pea.x <= z.x + 16) {
-          if (pea.type === "missile") {
-            explodeMissile(world, pea.x, pea.row, Math.floor((pea.x - LX) / CW));
-            hit = true;
-            break;
+        if (z.row !== pea.row || z.state === "dying") continue;
+        if (beam) {
+          const front = z.x - 24;
+          if (pea.prevX < front && pea.x >= front) {
+            damageZombie(world, z, pea.dmg);
+            addPeaSplat(world, pea.x, pea.y, "beam");
           }
-          damageZombie(world, z, pea.dmg);
-          if (pea.type === "snow") {
-            z.slowT = 6;
-          }
-          if (pea.type === "fire") {
-            for (const z2 of world.zombies) {
-              if (z2 !== z && z2.row === pea.row && z2.state !== "dying" && Math.abs(z2.x - z.x) < 45) {
-                damageZombie(world, z2, 20);
-              }
-            }
-          }
-          addPeaSplat(world, pea.x, pea.y, pea.type);
-          if (pea.type === "bullet") world.ports.sound("bulletHit");
-          else world.ports.sound("splat");
+          continue;
+        }
+        if (!(pea.x >= z.x - 24 && pea.x <= z.x + 16)) continue;
+        if (pea.type === "missile") {
+          explodeMissile(world, pea.x, pea.row, Math.floor((pea.x - LX) / CW));
           hit = true;
           break;
         }
+        damageZombie(world, z, pea.dmg);
+        if (pea.type === "snow") {
+          z.slowT = 6;
+        }
+        if (pea.type === "fire") {
+          for (const z2 of world.zombies) {
+            if (z2 !== z && z2.row === pea.row && z2.state !== "dying" && Math.abs(z2.x - z.x) < 45) {
+              damageZombie(world, z2, 20);
+            }
+          }
+        }
+        addPeaSplat(world, pea.x, pea.y, pea.type);
+        if (pea.type === "bullet") world.ports.sound("bulletHit");
+        else world.ports.sound("splat");
+        hit = true;
+        break;
       }
       if (hit || pea.x > W + 60) world.peas.splice(i, 1);
     }

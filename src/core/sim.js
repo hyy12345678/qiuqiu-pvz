@@ -108,6 +108,35 @@ export function updatePlay(world, dt){
           explode(world, p.cx, p.row, true);
         }
         break;
+      case 'tiga': {
+        // 彩色计时器：光之巨人只留 PLANTS.tiga.life 秒，到点自行飞走——用高伤害换限时，免得变成永久炮台
+        if(t > 0){
+          p.lifeT -= dt;
+          if(p.lifeT <= 0){
+            removePlant(world, p);
+            for(let k=0;k<12;k++){
+              v.parts.push({ x:p.cx+rand(world.fxRng,-16,16), y:p.fy-rand(world.fxRng,6,84),
+                vx:rand(world.fxRng,-28,28), vy:rand(world.fxRng,-200,-90), g:-30,
+                life:rand(world.fxRng,0.35,0.7), max:0.7, size:rand(world.fxRng,2,5), color:'#9fe4ff' });
+            }
+            world.ports.sound('hop');
+            break;
+          }
+        }
+        p.fireT -= dt;
+        let has = false;
+        for(const z of world.zombies){
+          if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < W+50){ has = true; break; }
+        }
+        if(has && p.fireT <= 0 && t > 0){
+          p.fireT = 6.5; p.recoil = 1; p.flash = 0.4;
+          // 起点放在巨人身体左侧：光线扫过整行，贴脸啃它的僵尸也算被照到
+          world.peas.push({ x:p.cx-30, y:p.fy-58, row:p.row, type:'beam', dmg:400, vx:720, prevX:p.cx-30 });
+          v.shake = Math.max(v.shake, 0.22);
+          world.ports.sound('missile');
+        }
+        break;
+      }
     }
   }
 
@@ -128,27 +157,38 @@ export function updatePlay(world, dt){
       }
     }
     let hit = false;
+    const beam = pea.type === 'beam';
     for(const z of world.zombies){
-      if(z.row===pea.row && z.state!=='dying' && pea.x >= z.x-24 && pea.x <= z.x+16){
-        if(pea.type==='missile'){
-          explodeMissile(world, pea.x, pea.row, Math.floor((pea.x - LX)/CW));
-          hit = true;
-          break;
+      if(z.row!==pea.row || z.state==='dying') continue;
+      if(beam){
+        // 光线一帧能跑十几到几十像素，命中窗口有 40 像素宽：按区间判重叠会连着结算好几帧。
+        // 所以只在本帧扫过僵尸前沿那一刻结算，天然保证「一只僵尸一发光线只吃一次、且不消失」。
+        const front = z.x - 24;
+        if(pea.prevX < front && pea.x >= front){
+          damageZombie(world, z, pea.dmg);
+          addPeaSplat(world, pea.x, pea.y, 'beam');
         }
-        damageZombie(world, z, pea.dmg);
-        if(pea.type==='snow'){ z.slowT = 6; }
-        if(pea.type==='fire'){
-          for(const z2 of world.zombies){
-            if(z2!==z && z2.row===pea.row && z2.state!=='dying' && Math.abs(z2.x-z.x)<45){
-              damageZombie(world, z2, 20);
-            }
-          }
-        }
-        addPeaSplat(world, pea.x, pea.y, pea.type);
-        if(pea.type==='bullet') world.ports.sound('bulletHit'); else world.ports.sound('splat');
+        continue;              // 贯穿：不置 hit，光线飞到屏幕右缘才消失
+      }
+      if(!(pea.x >= z.x-24 && pea.x <= z.x+16)) continue;
+      if(pea.type==='missile'){
+        explodeMissile(world, pea.x, pea.row, Math.floor((pea.x - LX)/CW));
         hit = true;
         break;
       }
+      damageZombie(world, z, pea.dmg);
+      if(pea.type==='snow'){ z.slowT = 6; }
+      if(pea.type==='fire'){
+        for(const z2 of world.zombies){
+          if(z2!==z && z2.row===pea.row && z2.state!=='dying' && Math.abs(z2.x-z.x)<45){
+            damageZombie(world, z2, 20);
+          }
+        }
+      }
+      addPeaSplat(world, pea.x, pea.y, pea.type);
+      if(pea.type==='bullet') world.ports.sound('bulletHit'); else world.ports.sound('splat');
+      hit = true;
+      break;
     }
     if(hit || pea.x > W+60) world.peas.splice(i,1);
   }

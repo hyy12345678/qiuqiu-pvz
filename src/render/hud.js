@@ -7,7 +7,7 @@ import { PLANTS } from '../core/data/plants.js';
 import { addHotspot } from '../ui/hotspots.js';
 import { ctx } from './target.js';
 import { rr, O, drawText } from './paint.js';
-import { drawPlantIcon } from './plant.js';
+import { drawPlantIcon, ICON_FIT } from './plant.js';
 import { drawZombieHeadIcon } from './zombie.js';
 
 const BANK_Y = 8, BANK_H = 88;
@@ -79,7 +79,8 @@ export function drawSeedBank(t, world, ui){
     ctx.save();
     if(!afford) ctx.globalAlpha = 0.55;
     ctx.fillStyle = 'rgba(60,40,15,0.25)';
-    ctx.beginPath(); ctx.ellipse(x+CARD_W/2, y+CARD_H-24, 16, 4, 0, 0, TAU); ctx.fill();
+    const fit = ICON_FIT[s.type] || 1;
+    ctx.beginPath(); ctx.ellipse(x+CARD_W/2, y+CARD_H-24, 16*fit, 4*fit, 0, 0, TAU); ctx.fill();
     drawPlantIcon(t, s.type, x+CARD_W/2, y+CARD_H-22, 0.5);
     ctx.restore();
     drawText(def.name, x+CARD_W/2, y+12, 11.5, '#42300f', 'rgba(255,246,220,0.5)', 2, 'center', '700');

@@ -1,4 +1,5 @@
-// 植物数值表：cost 阳光消耗、hp 生命、cool 卡片冷却（秒）、mushroom 是否蘑菇（白天需咖啡豆唤醒）。
+// 植物数值表：cost 阳光消耗、hp 生命、cool 卡片冷却（秒）、mushroom 是否蘑菇（白天需咖啡豆唤醒）、
+// life 登场限时（秒，光之巨人的彩色计时器；到点自行离场，换到来的是高伤害）。
 
 export const PLANTS = {
   qiuqiu:     { name:'球球',     cost:150, hp:900,  cool:20,  desc:'5岁的小男孩，加特林火力全开' },
@@ -13,5 +14,6 @@ export const PLANTS = {
   puff:       { name:'小喷菇',   cost:0,   hp:300,  cool:7.5, mushroom:true, desc:'免费，但射程只有两格' },
   sunshroom:  { name:'阳光菇',   cost:25,  hp:300,  cool:7.5, mushroom:true, desc:'比向日葵便宜，产阳光也只有一半' },
   coffee:     { name:'咖啡豆',   cost:25,  hp:300,  cool:20,  desc:'点一株白天打盹的蘑菇，把它唤醒' },
+  tiga:       { name:'迪迦奥特曼', cost:275, hp:1200, cool:30, life:25, desc:'光之巨人限时登场，蓄力后发射哉佩利敖光线贯穿整行' },
 };
-export const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee'];
+export const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee','tiga'];

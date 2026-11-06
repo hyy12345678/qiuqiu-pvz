@@ -6,7 +6,7 @@ import { LEVELS } from '../../core/data/levels.js';
 import { addHotspot } from '../../ui/hotspots.js';
 import { ctx } from '../target.js';
 import { rr, O, drawText } from '../paint.js';
-import { drawPlantIcon } from '../plant.js';
+import { drawPlantIcon, ICON_FIT } from '../plant.js';
 import { drawZombieHeadIcon } from '../zombie.js';
 import { drawSunIcon } from '../hud.js';
 import { drawButton } from './common.js';
@@ -48,7 +48,8 @@ export function renderSelect(t, world, ui){
     if(s){
       addHotspot(ui, x, y, slotW, slotH, 'slot'+i, { type:'slot', index:i });
       ctx.fillStyle = 'rgba(60,40,15,0.3)';
-      ctx.beginPath(); ctx.ellipse(x+slotW/2, y+slotH-26, 18, 4, 0, 0, TAU); ctx.fill();
+      const fit = ICON_FIT[s.type] || 1;
+      ctx.beginPath(); ctx.ellipse(x+slotW/2, y+slotH-26, 18*fit, 4*fit, 0, 0, TAU); ctx.fill();
       drawPlantIcon(t, s.type, x+slotW/2, y+slotH-26, 0.6);
       drawText(PLANTS[s.type].name, x+slotW/2, y+13, 11, '#e8d2a0', null, 0, 'center', '700');
       drawText(String(PLANTS[s.type].cost), x+slotW/2, y+slotH-9, 11, '#ffd83d', null, 0, 'center', '700');
@@ -58,11 +59,12 @@ export function renderSelect(t, world, ui){
   }
 
   drawText('植物图鉴（点击加入队伍）', 200, 244, 15, '#e8d2a0', null, 0, 'left', '700');
-  const cw = 108, ch = 92;
+  // 13 格要摆成 4 列 4 行且底部不越过木板（590），所以卡片压到 78 高、行距 84
+  const cw = 108, ch = 78;
   for(let i=0;i<PLANT_ORDER.length;i++){
     const type = PLANT_ORDER[i];
     const def = PLANTS[type];
-    const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+8);
+    const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+6);
     const inTeam = world.slots.some(s=>s.type===type);
     const hover = ui.mouse.x>=x && ui.mouse.x<=x+cw && ui.mouse.y>=y && ui.mouse.y<=y+ch;
     addHotspot(ui, x, y, cw, ch, 'pick'+type, { type:'plantPick', plant:type });
@@ -78,8 +80,9 @@ export function renderSelect(t, world, ui){
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.fillRect(x+4, y+3, cw-8, 6);
     ctx.fillStyle = 'rgba(60,40,15,0.25)';
-    ctx.beginPath(); ctx.ellipse(x+cw/2, y+ch-30, 18, 4, 0, 0, TAU); ctx.fill();
-    drawPlantIcon(t, type, x+cw/2, y+ch-28, 0.52);
+    const fit = ICON_FIT[type] || 1;
+    ctx.beginPath(); ctx.ellipse(x+cw/2, y+ch-26, 17*fit, 3.6*fit, 0, 0, TAU); ctx.fill();
+    drawPlantIcon(t, type, x+cw/2, y+ch-24, 0.42);
     drawText(def.name, x+cw/2, y+13, 12, '#3c2a10', 'rgba(255,246,220,0.5)', 2, 'center', '800');
     drawSunIcon(t, x+24, y+ch-11, 0.3);
     drawText(String(def.cost), x+42, y+ch-11, 12, '#6b4c10', null, 0, 'left', '800');
@@ -118,7 +121,8 @@ export function renderSelect(t, world, ui){
     drawText(tips[i2], zx+22, zy+88+i2*20, 12.5, '#d8c090', null, 0, 'left', '600');
   }
 
-  drawButton(ui, 88, H-88, 150, 46, '返回', 'back', { type:'nav', state:'menu' }, {});
+  // 图鉴排到第四行后左下角已被占满，返回键移到页头
+  drawButton(ui, 56, 20, 128, 40, '返回', 'back', { type:'nav', state:'menu' }, { size:17 });
   drawButton(ui, W-286, H-88, 198, 46, world.slots.length ? '开 始 游 戏' : '请先选择植物', 'go',
     { type:'startQuiz' },
     { disabled: !world.slots.length, size:19 });

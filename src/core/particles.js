@@ -25,6 +25,7 @@ export function addPeaSplat(world,x,y,type){
     : type==='ball' ? ['#e8483c','#ffd23e']
     : type==='bullet' ? ['#e8edf2','#8d949c']
     : type==='spore' ? ['#dcc0f0','#b478e0']
+    : type==='beam' ? ['#dff6ff','#8fd8ff']
     : ['#8fd44a','#b8e88a'];
   for(let k=0;k<9;k++) world.visual.parts.push({ x, y, vx:rand(world.fxRng,-100,100), vy:rand(world.fxRng,-100,45), g:250, life:rand(world.fxRng,0.2,0.45), max:0.45, size:rand(world.fxRng,2,5.5), color:cols[k%2] });
 }

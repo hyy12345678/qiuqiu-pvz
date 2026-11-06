@@ -477,6 +477,149 @@ export function drawCoffee(t, ph){
   ctx.restore();
 }
 
+// ---- 迪迦奥特曼：银紫红复合型人形，胸口彩色计时器随剩余时间转红闪烁 ----
+// 开火的后座帧把双臂收成十字，光线从交叉点右方射出去；其余时间双臂自然下垂。
+export function drawTiga(t, ph, recoil, lifeRatio, flash){
+  const silver = '#d9dee6', silverHi = '#f6f9fc', silverDk = '#98a2ae', line = '#3f4652';
+  const purple = '#6a5cae', purpleDk = '#42387a';
+  const red = '#d6413a', redDk = '#8f201c';
+  const fire = (recoil || 0) > 0.55 || (flash || 0) > 0;
+  const ratio = clamp(lifeRatio == null ? 1 : lifeRatio, 0, 1);
+  const low = ratio < 0.25;
+  const timer = ratio > 0.5 ? '#5fd6a8' : ratio > 0.25 ? '#ffd23e' : '#ff4b3a';
+  const timerGlow = ratio > 0.5 ? 'rgba(120,236,198,0.55)'
+    : ratio > 0.25 ? 'rgba(255,210,90,0.6)' : 'rgba(255,92,70,0.65)';
+  const timerOn = !low || Math.sin(t*9 + ph) > -0.1;
+  const bob = Math.sin(t*1.7 + ph)*1.5;
+
+  ctx.save();
+  ctx.translate(0, -bob);
+  ctx.lineCap = 'round';
+
+  if(fire){
+    let g = ctx.createRadialGradient(6,-58,4, 6,-58,54);
+    g.addColorStop(0,'rgba(223,246,255,0.5)');
+    g.addColorStop(1,'rgba(143,216,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(6,-58,54,0,TAU); ctx.fill();
+  }
+
+  // 腿 + 小腿红甲 + 靴
+  const step = Math.sin(t*1.3 + ph)*1.2;
+  for(const s of [[-6,-step],[6,step]]){
+    const x = s[0], dy = s[1];
+    ctx.beginPath(); ctx.moveTo(x,-44); ctx.quadraticCurveTo(x+dy,-26, x*0.85+dy*0.5,-8);
+    ctx.strokeStyle = line; ctx.lineWidth = 13; ctx.stroke();
+    ctx.strokeStyle = silver; ctx.lineWidth = 10; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x*0.92+dy*0.3,-22); ctx.lineTo(x*0.86+dy*0.5,-10);
+    ctx.strokeStyle = red; ctx.lineWidth = 4.5; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x*0.85+dy*0.5+2.5,-4,8.5,4.4,0,0,TAU);
+    O(silver, line, 2);
+  }
+
+  // 躯干
+  let g = ctx.createLinearGradient(-14,-72, 14,-42);
+  g.addColorStop(0,silverHi); g.addColorStop(0.55,silver); g.addColorStop(1,silverDk);
+  ctx.beginPath();
+  ctx.moveTo(-13,-44);
+  ctx.quadraticCurveTo(-16,-63,-11,-74);
+  ctx.lineTo(11,-74);
+  ctx.quadraticCurveTo(16,-63,13,-44);
+  ctx.quadraticCurveTo(0,-38,-13,-44);
+  ctx.closePath();
+  O(g, line, 2.4);
+  // 胸口紫色护甲
+  g = ctx.createLinearGradient(0,-74, 0,-52);
+  g.addColorStop(0,purple); g.addColorStop(1,purpleDk);
+  ctx.beginPath();
+  ctx.moveTo(-11,-73); ctx.quadraticCurveTo(0,-64, 11,-73);
+  ctx.quadraticCurveTo(6,-55, 0,-53); ctx.quadraticCurveTo(-6,-55,-11,-73);
+  ctx.closePath();
+  O(g, purpleDk, 1.8);
+  // 腰部红带
+  ctx.beginPath();
+  ctx.moveTo(-12,-47); ctx.quadraticCurveTo(0,-41, 12,-47);
+  ctx.lineTo(12,-44); ctx.quadraticCurveTo(0,-37,-12,-44);
+  ctx.closePath();
+  O(red, redDk, 1.4);
+
+  // 彩色计时器
+  if(timerOn){
+    g = ctx.createRadialGradient(0,-60,1, 0,-60,15);
+    g.addColorStop(0,timerGlow); g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0,-60,15,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(0,-60,6.2,0,TAU);
+    O(timer, 'rgba(63,70,82,0.85)', 1.8);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.beginPath(); ctx.arc(-1.8,-61.8,1.6,0,TAU); ctx.fill();
+  }
+
+  // 手臂
+  const limb = (x1,y1,x2,y2,cx1,cy1)=>{
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(cx1,cy1,x2,y2);
+    ctx.strokeStyle = line; ctx.lineWidth = 11; ctx.stroke();
+    ctx.strokeStyle = silver; ctx.lineWidth = 8; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x2,y2,5.4,0,TAU);
+    O(silverHi, line, 2);
+  };
+  if(fire){
+    // 竖臂在后，横臂压在上面，交叉点朝右出光
+    limb(15,-78, 15,-40, 16,-59);
+    limb(-10,-56, 29,-58, 10,-63);
+  } else {
+    const sw = Math.sin(t*1.5 + ph)*1.4;
+    limb(-12,-70, -17+sw,-46, -17,-58);
+    limb(12,-70, 17-sw,-46, 17,-58);
+  }
+
+  // 头
+  ctx.save();
+  ctx.translate(0,-85);
+  ctx.rotate(Math.sin(t*0.9 + ph)*0.02);
+  g = ctx.createLinearGradient(0,-14, 0,10);
+  g.addColorStop(0,silverHi); g.addColorStop(1,silverDk);
+  ctx.beginPath(); ctx.ellipse(0,0,10.5,13,0,0,TAU);
+  O(g, line, 2.2);
+  // 中央冠鳍
+  ctx.beginPath();
+  ctx.moveTo(-1.6,-12); ctx.lineTo(0,-21); ctx.lineTo(1.6,-12);
+  ctx.lineTo(1.2,7); ctx.lineTo(-1.2,7);
+  ctx.closePath();
+  O(purple, purpleDk, 1.3);
+  // 额头水晶
+  ctx.beginPath();
+  ctx.moveTo(0,-10); ctx.lineTo(2.4,-7); ctx.lineTo(0,-4); ctx.lineTo(-2.4,-7);
+  ctx.closePath();
+  O('#9fe4ff', '#4a86a8', 1.2);
+  // 双眼
+  for(const ex of [-5.4, 5.4]){
+    ctx.save();
+    ctx.translate(ex, 2);
+    ctx.rotate(ex < 0 ? -0.16 : 0.16);
+    const ge = ctx.createLinearGradient(0,-4, 0,4);
+    ge.addColorStop(0,'#fff8d0'); ge.addColorStop(1,'#ffc93e');
+    ctx.beginPath(); ctx.ellipse(0,0,4.3,3,0,0,TAU);
+    O(ge, '#8a5a10', 1.3);
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // 十字出光口
+  if(flash > 0){
+    ctx.save();
+    ctx.globalAlpha = clamp(flash/0.4, 0, 1);
+    g = ctx.createRadialGradient(24,-58,1, 24,-58,20);
+    g.addColorStop(0,'rgba(255,255,255,0.95)');
+    g.addColorStop(0.45,'rgba(180,232,255,0.6)');
+    g.addColorStop(1,'rgba(120,200,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(24,-58,20,0,TAU); ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+
 // ---- 球球：彩色小皮球 ----
 export function drawBallIcon(x,y,r,spin){
   ctx.save(); ctx.translate(x,y); ctx.rotate(spin||0);
@@ -682,15 +825,21 @@ export function drawPlantEntity(t, p){
     case 'puff': drawPuff(t, p.phase, p.asleep); break;
     case 'sunshroom': drawSunshroom(t, p.phase, p.asleep); break;
     case 'coffee': drawCoffee(t, p.phase); break;
+    case 'tiga': drawTiga(t, p.phase, p.recoil, p.maxLifeT ? p.lifeT/p.maxLifeT : 1, p.flash); break;
   }
   if(p.asleep) drawSleepZzz(t, p.phase);
   ctx.restore();
 }
 
+// 图标缩放修正：比其它植物高出一截的角色要收一下，否则图鉴卡、卡槽、种子槽里的名字都会压在脑袋上。
+// 导出给绘制投影（脚下阴影）用，保证人和影子一起缩。
+export const ICON_FIT = { tiga: 0.76 };
+
 export function drawPlantIcon(t, type, x, y, s){
+  const fit = ICON_FIT[type] || 1;
   ctx.save();
   ctx.translate(x, y);
-  ctx.scale(s, s);
+  ctx.scale(s*fit, s*fit);
   switch(type){
     case 'qiuqiu': drawQiuqiu(t, 1, 0); break;
     case 'sunflower': drawSunflower(t, 1); break;
@@ -704,6 +853,7 @@ export function drawPlantIcon(t, type, x, y, s){
     case 'puff': drawPuff(t, 9, false); break;
     case 'sunshroom': drawSunshroom(t, 10, false); break;
     case 'coffee': drawCoffee(t, 11); break;
+    case 'tiga': drawTiga(t, 12, 0, 0.85, 0); break;
   }
   ctx.restore();
 }

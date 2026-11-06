@@ -11,14 +11,15 @@
 - 鼠标与触屏皆可；数字键 1–8 选卡，`P` 暂停，`Esc` 取消选择，`M` 切音乐。
 - 进度与「解锁全关」开关存在浏览器 `localStorage`，无服务端、无在线存档。
 - 玩法细节（蘑菇打盹与咖啡豆、报纸僵尸护盾与暴怒、夜关没有天降太阳、小推车）见游戏内「操作说明」。
+- 第 13 种植物「迪迦奥特曼」（275 阳光）只登场 25 秒，蓄力后发射贯穿整行的哉佩利敖光线。
 
 ## 命令
 
 | 命令 | 作用 |
 |---|---|
 | `npm run dev` | esbuild watch + 本地服务（默认 `http://localhost:8787/`）。**会把 `/* dev build */` 写进 `dist/` 同名文件**，验收或提交前必须重新 `npm run build`。 |
-| `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 162 KB）。 |
-| `npm run build:min` | 等价验证构建 → `dist/植物大战僵尸-网页版.min.html`（约 97 KB）。只用于验证，`.gitignore` 已排除，不提交。 |
+| `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 171 KB）。 |
+| `npm run build:min` | 等价验证构建 → `dist/植物大战僵尸-网页版.min.html`（约 102 KB）。只用于验证，`.gitignore` 已排除，不提交。 |
 | `npm run verify` | 全链护栏，依次跑 `parity` → `fingerprint` → `test` → `build` → `parity:dist` → `test:smoke` → `test:browser`。 |
 | `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试。 |
 | `npm run test:smoke` | `headless_test.js` 的 A–I 源码冒烟（打包后在 vm 里跑），保留为第二条独立验证路径。 |
@@ -69,4 +70,5 @@ macOS arm64 上的 **Node 20.19.4 / 22.16.0 / 22.23.2**，各自跑通 `npm test
 | `headless_test.js` | 历史 A–I 冒烟驱动，仍留在 `verify` 链里（目标固定 `src/main.js`） |
 | `docs/重构方案-v0.2.md` | 重构总方案与分轮定义（R0–R5） |
 | `docs/重构执行计划-R*.md` | 每轮的执行计划与验收记录（R0 … R5b） |
+| `docs/功能执行计划-F1-迪迦奥特曼.md` | R6 之后的功能轮（新增植物角色），格式与重构轮一致 |
 | `docs/测试基线.md` | 各轮验收证据汇总，含需由本人执行的人工验收清单（真机触屏、字体、音效、手感） |

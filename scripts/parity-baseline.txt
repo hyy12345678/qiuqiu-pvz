@@ -23,7 +23,9 @@
 : ['#8fd44a','#b8e88a'];
 : ['#c8f0a0','#7cc84e','#3f8a2e'];
 : p.type==='spore' ? ['#f0dcff','#b478e0','#6b3f96']
+: ratio > 0.25 ? 'rgba(255,210,90,0.6)' : 'rgba(255,92,70,0.65)';
 : type==='ball' ? ['#e8483c','#ffd23e']
+: type==='beam' ? ['#dff6ff','#8fd8ff']
 : type==='bullet' ? ['#e8edf2','#8d949c']
 : type==='fire' ? ['#ff9a2e','#ffd23e']
 : type==='spore' ? ['#dcc0f0','#b478e0']
@@ -42,6 +44,7 @@ O('#5a5f66', '#2c2f33', 2.2);
 O('#6b7076', '#3c4046', 1.4);
 O('#6b7076', '#3c4046', 1.6);
 O('#7cc24a', '#2c5214', 1.8);
+O('#9fe4ff', '#4a86a8', 1.2);
 O('#a3b187', '#4a5238', 1.8);
 O('#a8763c', '#5f3c18', 2.4);
 O('#b02a20', '#5e120c', 1.6);
@@ -115,7 +118,10 @@ O(g, C.line, 2.4);
 O(g, capOut, 2.4);
 O(g, col[2], 1.8);
 O(g, disabled ? '#3a3a34' : '#2e4a14', 3);
+O(g, line, 2.2);
+O(g, line, 2.4);
 O(g, pal.line, 2.6);
+O(g, purpleDk, 1.8);
 O(g, selected ? '#ffe86e' : '#5f451f', selected ? 3.4 : 2.2);
 O(g, won ? '#6b4c20' : '#1c1016', 4);
 O(g,'#1c3a70',2.2);
@@ -123,6 +129,7 @@ O(g,'#6e1810',2.2);
 O(g,'#a05c10',2.2);
 O(g,line,2.4);
 O(g2, active ? '#ffe86e' : '#5f451f', active?3:2.2);
+O(ge, '#8a5a10', 1.3);
 O(gi, '#20140a', 2.5);
 O(ng, '#8fa4d8', 2.4);
 O(null, '#2c5214', 4.5);
@@ -137,6 +144,11 @@ O(pal.dark, pal.line, 2.4);
 O(pal.main, pal.line, 2.6);
 O(pal.mouth, null);
 O(pal.mouth, pal.line, 2);
+O(purple, purpleDk, 1.3);
+O(red, redDk, 1.4);
+O(silver, line, 2);
+O(silverHi, line, 2);
+O(timer, 'rgba(63,70,82,0.85)', 1.8);
 [0,'A4',1],[1,'C5',1],[2,'E5',1],[3,'D5',1.5],[4.5,'C5',.5],[5,'B4',1],
 [12,'A4',1],[13,'C5',1],[14,'E5',1],[15,'G5',1.5],[16.5,'E5',.5],[17,'D5',1],
 [18,'C5',1],[19,'B4',1],[20,'A4',2],[22,'E4',1],[23,'G4',1]];
@@ -161,6 +173,7 @@ addHotspot(ui, x, y-4, CARD_W, CARD_H+4, 'card'+i, { type:'pickSlot', index:i })
 addLeafBurst(world, p.cx, p.fy-30);
 addLeafBurst(world, p.cx, p.fy-30);
 addPaperShreds(world, z.x, LY + (z.row+1)*CH - 76);
+addPeaSplat(world, pea.x, pea.y, 'beam');
 addPeaSplat(world, pea.x, pea.y, pea.type);
 angry(){ this.tone(150, 62, 0.4, 'sawtooth', 0.14); this.noise(0.32, 0.09, 620, 0.04); },
 ans = a + b;
@@ -178,6 +191,8 @@ bg.addColorStop(0,'#4a3418'); bg.addColorStop(1,'#33220e');
 bindCanvas(cv);
 bindInput({
 boom(){ this.noise(0.6, 0.5, 320); this.tone(120, 32, 0.5, 'sine', 0.4); },
+break;
+break;
 break;
 break;
 break;
@@ -232,6 +247,9 @@ case 'sunflower': drawSunflower(t, 1); break;
 case 'sunflower': drawSunflower(t, p.phase); break;
 case 'sunshroom': drawSunshroom(t, 10, false); break;
 case 'sunshroom': drawSunshroom(t, p.phase, p.asleep); break;
+case 'tiga': drawTiga(t, 12, 0, 0.85, 0); break;
+case 'tiga': drawTiga(t, p.phase, p.recoil, p.maxLifeT ? p.lifeT/p.maxLifeT : 1, p.flash); break;
+case 'tiga': {
 case 'torch': drawTorch(t, 8); break;
 case 'torch': drawTorch(t, p.phase); break;
 case 'unlockAll': toggleUnlockAll(world); return;
@@ -260,13 +278,14 @@ const CW = 80, CH = 96;
 const DRAW_SEED_XOR = 0x51ED270B;
 const FX_SEED_XOR = 0x9E3779B9;
 const G = createWorld({ seed: SEED, ports, unlocked: loadUnlocked(), unlockAll: loadUnlockAll() });
+const ICON_FIT = { tiga: 0.76 };
 const LEVELS = [
 const LX = 265, LY = 112;
 const MELODY = [
 const MUSIC_BEAT = 0.4, MUSIC_LOOP = 24 * MUSIC_BEAT;
 const NOTE = { A2:110, C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196,
 const PLANTS = {
-const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee'];
+const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee','tiga'];
 const R = mulberry32(20260814);
 const SEED = randomSeed();
 const SFX = {
@@ -296,6 +315,7 @@ const animMul = (z.type==='vault' && !z.poleLost) ? 1.7 : (z.angry ? 2.1 : 1);
 const armSway = walk ? Math.sin(ph+1.1)*3 : (eat ? Math.sin(z.eatT*9)*2.4 : 0);
 const at = z.animT || 0;
 const b = bar*3;
+const beam = pea.type === 'beam';
 const bgCache = createBackgroundCache();
 const bl = 12, pu = Math.sin(t*6)*1.5;
 const blink = Math.sin(t*1.7+ph) > 0.965;
@@ -306,6 +326,7 @@ const blink = isBlinking(t, ph);
 const blink = isBlinking(t, ph+1);
 const blink = isBlinking(t, ph+2);
 const bob = Math.sin(t*1.6+ph)*1.6;
+const bob = Math.sin(t*1.7 + ph)*1.5;
 const bob = Math.sin(t*2.4+ph)*2.2;
 const bob = walk ? Math.abs(Math.cos(ph))*2.6 : 0;
 const btns = [
@@ -332,7 +353,7 @@ const correct = a === q.questions[q.idx].answer;
 const cur = q.questions[q.idx];
 const curBeat = pos / MUSIC_BEAT;
 const cv = document.getElementById('game');
-const cw = 108, ch = 92;
+const cw = 108, ch = 78;
 const cx = (i - (title.length-1)/2) * tGap;
 const cx = (i - (title.length-1)/2) * tGap;
 const cx = px + ((k*97 + t*70) % pw);
@@ -362,12 +383,18 @@ const f = rand(Math.random, 75, 120);
 const f = this.ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value = freq||800;
 const finalCount = Math.max(4, Math.round(n*0.33));
 const finalT = Math.max(t+7, 90);
+const fire = (recoil || 0) > 0.55 || (flash || 0) > 0;
+const fit = ICON_FIT[s.type] || 1;
+const fit = ICON_FIT[s.type] || 1;
+const fit = ICON_FIT[type] || 1;
+const fit = ICON_FIT[type] || 1;
 const flagAt = (frac)=>{
 const flame = (h, col, off)=>{
 const flash = world.sunFlash > 0 && Math.sin(t*30) > 0;
 const food = findEatTarget(world, z);
 const frac = s.cool / def.cool;
 const frameState = { t: 0, rng: drawRng, musicOn: SFX.musicOn };
+const front = z.x - 24;
 const fx = R()*W, fy = LY + 22 + R()*(ROWS*CH-26);
 const fx = inner.x + inner.w*(1-frac);
 const fy = fyBase + (z.vy || 0);
@@ -375,6 +402,7 @@ const fyBase = (fyOverride !== undefined) ? fyOverride : LY + (z.row+1)*CH - 4;
 const g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);
 const g = this.ctx.createGain(); g.gain.setValueAtTime(vol, t0);
 const game = createGame({
+const ge = ctx.createLinearGradient(0,-4, 0,4);
 const ghost = { type:selType, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0,
 const h = hitHotspot(ui, p);
 const h = ui.hotspots[i];
@@ -412,9 +440,11 @@ const leftLabel = lastLv ? '再玩一次' : '下一关';
 const leg=(x,dy)=>{
 const legDraw = (hipX, footX, lift)=>{
 const light = (r+c)%2===0;
+const limb = (x1,y1,x2,y2,cx1,cy1)=>{
 const lines = [
 const locked = !world.unlockAll && i+1 > world.unlocked;
 const long = k%2===0;
+const low = ratio < 0.25;
 const lunge = eat ? Math.abs(Math.sin(z.eatT*9))*5 : 0;
 const lv = LEVELS[i];
 const lv = LEVELS[world.level];
@@ -458,6 +488,7 @@ const prev = ctx;
 const progress = i/pre;
 const pulse = 1 + Math.sin(t*4 + s.t)*0.05;
 const pulse = asleep ? 0 : 0.5 + Math.sin(t*3.4+ph)*0.14;
+const purple = '#6a5cae', purpleDk = '#42387a';
 const pw = 560, ph = 330, px = W/2-pw/2, py = H/2-ph/2-20;
 const pw = 660, ph = 520, px = W/2-pw/2, py = H/2-ph/2-10;
 const pw=640, ph=400, px=W/2-pw/2, py=H/2-ph/2;
@@ -476,9 +507,11 @@ const r = clamp(throwT||0, 0, 1);
 const r = useCard(world, ui.sel, row, col);
 const rand = (a, b) => a + rng() * (b - a);
 const randi = (a, b) => Math.floor(a + rng() * (b - a + 1));
+const ratio = clamp(lifeRatio == null ? 1 : lifeRatio, 0, 1);
 const reach = p.type==='puff' ? p.cx + CW*2 : W + 50;
 const reading = z.type==='newspaper' && !angry;
 const rec = (recoil||0)*7;
+const red = '#d6413a', redDk = '#8f201c';
 const rot = Math.sin(t*1.5 + i)*0.04;
 const run = m.state==='run';
 const s = world.slots[i];
@@ -493,6 +526,7 @@ const scale = dpr === undefined ? DPR : dpr;
 const seed = init.seed === undefined ? randomSeed() : (init.seed >>> 0);
 const selType = world.slots[ui.sel].type;
 const selected = ui.sel === i;
+const silver = '#d9dee6', silverHi = '#f6f9fc', silverDk = '#98a2ae', line = '#3f4652';
 const skin='#ffd9ae', skinD='#eeb183', line='#6e4218';
 const slotW = 72, slotH = 100;
 const slowMul = z.slowT > 0 ? 0.45 : 1;
@@ -500,8 +534,10 @@ const slowed = z.slowT > 0;
 const small = p.type === 'sunshroom';
 const spin = t*2 + r*18;
 const src = this.ctx.createBufferSource(); src.buffer = buf;
+const step = Math.sin(t*1.3 + ph)*1.2;
 const step = Math.sin(t*2.6+ph)*1.6;
 const sub = '网 页 版 · 离 线 可 玩';
+const sw = Math.sin(t*1.5 + ph)*1.4;
 const sw2 = sub.length * 21 + 56;
 const sway = Math.sin(t*1.9+ph)*3, bob = Math.sin(t*2.2+ph)*2.4;
 const swing = walk ? Math.sin(ph) : 0;
@@ -521,6 +557,9 @@ const tScale = title.length > 6 ? 64/86 : 1;
 const tSize = Math.round(86 * tScale);
 const target = world.grid[row][col];
 const tieWave = Math.sin(at*3.1)*2;
+const timer = ratio > 0.5 ? '#5fd6a8' : ratio > 0.25 ? '#ffd23e' : '#ff4b3a';
+const timerGlow = ratio > 0.5 ? 'rgba(120,236,198,0.55)'
+const timerOn = !low || Math.sin(t*9 + ph) > -0.1;
 const tips = [
 const title = '球球的植物大战僵尸';
 const type = PLANT_ORDER[i];
@@ -539,12 +578,13 @@ const won = world.state==='won';
 const worried = dmg > 0.55;
 const x = ((t*(6+k*1.4) + k*163) % (W+80)) - 40;
 const x = ((t*14 + k*197) % (W+60)) - 30;
-const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+8);
+const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+6);
 const x = CARD_X0 + i*(CARD_W+CARD_GAP);
 const x = LX + R()*COLS*CW, y = LY + R()*ROWS*CH;
 const x = LX + hc.col*CW, y = LY + hc.row*CH;
 const x = LX+c*CW, y = LY+r*CH;
 const x = R()*W, y = LY+ROWS*CH+12+R()*28;
+const x = s[0], dy = s[1];
 const x = sx0 + i*(slotW+10), y = 118;
 const x = x0 + i*(cardW+gap), y = 258;
 const x0 = 600, x1 = 985, y = 611, h = 20;
@@ -567,6 +607,7 @@ const zs = world.zombies.filter(z=>z.row===r).sort((a,b)=>a.x-b.x);
 const zt = lv.types[k][0];
 const zx = 640, zy = 270;
 const zx0 = x+cardW/2 - (zs.length-1)*21;
+continue;
 continue;
 continue;
 ctx = canvas.getContext('2d');
@@ -608,9 +649,17 @@ ctx.beginPath();
 ctx.beginPath();
 ctx.beginPath();
 ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
 ctx.beginPath(); ctx.arc(-1, -14, 3.4, 0.3, Math.PI-0.3); ctx.stroke();
 ctx.beginPath(); ctx.arc(-1.5,3.2,1,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-1.6,-58.6,1.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-1.8,-61.8,1.6,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-10,-8,2.4,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-10,0,6,0,TAU); ctx.fillStyle = col[1]; ctx.fill();
 ctx.beginPath(); ctx.arc(-11,-16-Math.abs(Math.sin(t*18))*5,3.4,0,TAU); ctx.fill();
@@ -657,6 +706,8 @@ ctx.beginPath(); ctx.arc(0,-30,34,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(0,-52,34,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(0,-57,5,0,TAU);
 ctx.beginPath(); ctx.arc(0,-58,13,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,-60,15,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0,-60,6.2,0,TAU);
 ctx.beginPath(); ctx.arc(0,-66,2.6+Math.sin(t*25)*1,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(0,0,13.5,0,TAU);
 ctx.beginPath(); ctx.arc(0,0,14,0,TAU);
@@ -672,6 +723,7 @@ ctx.beginPath(); ctx.arc(0,0,7.8,0,TAU);
 ctx.beginPath(); ctx.arc(0,0,r,0,TAU);
 ctx.beginPath(); ctx.arc(0,3.5,6.5,0.3,Math.PI-0.3); ctx.stroke();
 ctx.beginPath(); ctx.arc(1.7,-2.4,0.8,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(10, 0, 20, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(10,-16,2.6,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(12,-34,1.8,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(12,2,2, -0.5, 1.2); ctx.stroke();
@@ -683,6 +735,7 @@ ctx.beginPath(); ctx.arc(175, y0+48, 4, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(175, y0+48, 5.2, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(18,-4,0.8,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(2,-2.6,1.7,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(24,-58,20,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(4,-11,2.6,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(4,-2.6,1.4,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(4,-22,3.4,0.6,2.6); ctx.stroke();
@@ -691,6 +744,7 @@ ctx.beginPath(); ctx.arc(5.5, ey-1, 3.6, Math.PI*1.15, Math.PI*1.85); ctx.stroke
 ctx.beginPath(); ctx.arc(6, -1, 1.2, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(6,-14,2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(6,-17,6,0,TAU); O('#f7f2e4','#6e1810',1.6);
+ctx.beginPath(); ctx.arc(6,-58,54,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(6.2,-4,0.9,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(7,-24.4,1.5,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(7,-36,4.6,0,TAU); O(skin,line,2);
@@ -744,6 +798,7 @@ ctx.beginPath(); ctx.arc(x, y, 2.2+(k%3), 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(x, y, 2.2, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(x, y, 7, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(x,y,r,0,TAU);
+ctx.beginPath(); ctx.arc(x2,y2,5.4,0,TAU);
 ctx.beginPath(); ctx.arc(xx, yy, 1.7, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(-1,-9.5,15.5,4.6,-0.06,0,TAU);
 ctx.beginPath(); ctx.ellipse(-1,7.5,6,2.6,0,0,TAU); ctx.fill();
@@ -780,6 +835,8 @@ ctx.beginPath(); ctx.ellipse(0,-4,24,14,0,Math.PI,0);
 ctx.beginPath(); ctx.ellipse(0,-47,12,4.4,0,0,TAU); ctx.stroke();
 ctx.beginPath(); ctx.ellipse(0,-47,20,7.5,0,0,TAU);
 ctx.beginPath(); ctx.ellipse(0,-47,5.5,2,0,0,TAU); ctx.stroke();
+ctx.beginPath(); ctx.ellipse(0,0,10.5,13,0,0,TAU);
+ctx.beginPath(); ctx.ellipse(0,0,4.3,3,0,0,TAU);
 ctx.beginPath(); ctx.ellipse(0,3,25,7.5,0,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(0,3,32,10,0,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(10,2,3,2,0,0,TAU); ctx.fill();
@@ -814,11 +871,12 @@ ctx.beginPath(); ctx.ellipse(hx-20, hy-6.5, 4.5, 7, 0, 0, TAU);
 ctx.beginPath(); ctx.ellipse(hx-3.5, hy-7.5, 4.6, 5.6, 0, 0, TAU);
 ctx.beginPath(); ctx.ellipse(ox+33, oy, 3.5, 5, 0, 0, TAU);
 ctx.beginPath(); ctx.ellipse(ox+33, oy, 7, 9, 0, 0, TAU);
+ctx.beginPath(); ctx.ellipse(x*0.85+dy*0.5+2.5,-4,8.5,4.4,0,0,TAU);
 ctx.beginPath(); ctx.ellipse(x+26*s, y+12*s, 34*s, 7*s, 0, 0, TAU); ctx.fill();
-ctx.beginPath(); ctx.ellipse(x+CARD_W/2, y+CARD_H-24, 16, 4, 0, 0, TAU); ctx.fill();
-ctx.beginPath(); ctx.ellipse(x+cw/2, y+ch-30, 18, 4, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(x+CARD_W/2, y+CARD_H-24, 16*fit, 4*fit, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(x+cw/2, y+ch-26, 17*fit, 3.6*fit, 0, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(x+dy*0.4+2.5,-3,8,4.6,0,0,TAU);
-ctx.beginPath(); ctx.ellipse(x+slotW/2, y+slotH-26, 18, 4, 0, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(x+slotW/2, y+slotH-26, 18*fit, 4*fit, 0, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(x-r*0.38,y-r*0.48,r*0.28,r*0.15,-0.6,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.moveTo(-1,-39); ctx.quadraticCurveTo(6,-24,0,-3); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-10,-4); ctx.lineTo(-14,-8); ctx.lineTo(-8,-4); ctx.closePath();
@@ -848,8 +906,10 @@ ctx.beginPath(); ctx.moveTo(-27,-66+armSway); ctx.lineTo(-44,-62+armSway);
 ctx.beginPath(); ctx.moveTo(-3,-77); ctx.lineTo(4,-77); ctx.lineTo(0.5,-72); ctx.closePath();
 ctx.beginPath(); ctx.moveTo(-30,-60+armSway); ctx.lineTo(-32,-132);
 ctx.beginPath(); ctx.moveTo(-4,-15); ctx.quadraticCurveTo(-3,-19,-1,-21); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-46,-6.5); ctx.lineTo(-26,-2.5); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-5,-40); ctx.lineTo(-12,-36.5); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-5.5,5.8); ctx.lineTo(-1.8,5.8); ctx.lineTo(-3.6,10.5); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(-60,5.5); ctx.lineTo(-36,2); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-7,-14); ctx.lineTo(-1,-24); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-8,-3); ctx.lineTo(-3,-3); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-8,-30); ctx.lineTo(-4,-33); ctx.stroke();
@@ -915,13 +975,16 @@ ctx.beginPath(); ctx.moveTo(hx-7,hy-7); ctx.lineTo(hx-1,hy-7); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(px+14, py+k*66); ctx.lineTo(px+pw-14, py+k*66); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(wx+Math.cos(wa)*(r-2.5), 10+Math.sin(wa)*(r-2.5));
 ctx.beginPath(); ctx.moveTo(wx+Math.cos(wa+1.57)*(r-2.5), 10+Math.sin(wa+1.57)*(r-2.5));
+ctx.beginPath(); ctx.moveTo(x*0.92+dy*0.3,-22); ctx.lineTo(x*0.86+dy*0.5,-10);
 ctx.beginPath(); ctx.moveTo(x+6,452); ctx.lineTo(x+14,443); ctx.lineTo(x+22,452); ctx.closePath(); ctx.fill(); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(x+cw-20, y+14); ctx.lineTo(x+cw-17, y+17.5); ctx.lineTo(x+cw-11.5, y+10.5); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(x+dir*3*s, y); ctx.quadraticCurveTo(x+dir*14*s, y-3*s, x+dir*23*s, y-2*s); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(x+dy*0.4-4,-3.4); ctx.lineTo(x+dy*0.4+9,-3.4); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(x, LY-30); ctx.lineTo(x+7, LY-38); ctx.lineTo(x+14, LY-30); ctx.closePath(); ctx.fill(); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(x,-16); ctx.lineTo(x+dy*0.4,-4);
+ctx.beginPath(); ctx.moveTo(x,-44); ctx.quadraticCurveTo(x+dy,-26, x*0.85+dy*0.5,-8);
 ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-2,y-5); ctx.moveTo(x,y); ctx.lineTo(x+2,y-6); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(cx1,cy1,x2,y2);
 ctx.beginPath(); ctx.rect(-12, 5.6, 2.8, 3.2); ctx.fill(); ctx.stroke();
 ctx.beginPath(); ctx.rect(-14,-14,27,5.5);
 ctx.beginPath(); ctx.rect(-8.2, 6.2, 2.8, 3); ctx.fill(); ctx.stroke();
@@ -982,6 +1045,13 @@ ctx.closePath();
 ctx.closePath();
 ctx.closePath();
 ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath();
+ctx.closePath(); ctx.fill();
+ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill(); ctx.stroke();
 ctx.drawImage(c, 0, 0, W, H);
@@ -1153,6 +1223,7 @@ ctx.fillStyle = 'rgba(255,255,255,0.55)';
 ctx.fillStyle = 'rgba(255,255,255,0.6)';
 ctx.fillStyle = 'rgba(255,255,255,0.65)';
 ctx.fillStyle = 'rgba(255,255,255,0.7)';
+ctx.fillStyle = 'rgba(255,255,255,0.7)';
 ctx.fillStyle = 'rgba(255,255,255,0.92)';
 ctx.fillStyle = 'rgba(30,18,6,0.35)';
 ctx.fillStyle = 'rgba(30,50,15,0.35)';
@@ -1174,6 +1245,12 @@ ctx.fillStyle = ['#ffd23e','#8fd44a','#ff8ab0','#7cc4ec'][k%4];
 ctx.fillStyle = ['#ffd23e','#ff8ab0','#fff'][k%3];
 ctx.fillStyle = col; ctx.fill();
 ctx.fillStyle = fill;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
+ctx.fillStyle = g;
 ctx.fillStyle = g;
 ctx.fillStyle = g;
 ctx.fillStyle = g;
@@ -1254,10 +1331,12 @@ ctx.globalAlpha = alpha;
 ctx.globalAlpha = clamp(1 - (-58-yy+34)/40, 0, 1)*0.8;
 ctx.globalAlpha = clamp(1 - (d-0.25)/0.7, 0, 1);
 ctx.globalAlpha = clamp(d.ttl/d.max, 0, 1) * 0.55;
+ctx.globalAlpha = clamp(flash/0.4, 0, 1);
 ctx.globalAlpha = clamp(muzzle,0,1);
 ctx.globalAlpha = clamp(p.life/p.max, 0, 1);
 ctx.globalAlpha = flash/0.09;
 ctx.globalCompositeOperation = 'multiply';
+ctx.lineCap = 'round';
 ctx.lineCap = 'round';
 ctx.lineCap = 'round';
 ctx.lineCap='round';
@@ -1266,6 +1345,9 @@ ctx.lineTo(-13,-43); ctx.lineTo(-10,-37); ctx.lineTo(-17,-39);
 ctx.lineTo(-6,-79); ctx.lineTo(-9,-40);
 ctx.lineTo(-73, -101 + Math.sin(t*4.2)*2.4);
 ctx.lineTo(0+tieWave,-44);
+ctx.lineTo(1.2,7); ctx.lineTo(-1.2,7);
+ctx.lineTo(11,-74);
+ctx.lineTo(12,-44); ctx.quadraticCurveTo(0,-37,-12,-44);
 ctx.lineTo(13,-43); ctx.lineTo(10,-37); ctx.lineTo(17,-39);
 ctx.lineTo(4,-44);
 ctx.lineTo(6,-79); ctx.lineTo(9,-40);
@@ -1283,9 +1365,14 @@ ctx.lineWidth = 2.5;
 ctx.moveTo(-1,2);
 ctx.moveTo(-1,2);
 ctx.moveTo(-1.5,-76); ctx.lineTo(2.5,-76);
+ctx.moveTo(-1.6,-12); ctx.lineTo(0,-21); ctx.lineTo(1.6,-12);
 ctx.moveTo(-10,4); ctx.lineTo(10,4); ctx.lineTo(8,20);
+ctx.moveTo(-11,-73); ctx.quadraticCurveTo(0,-64, 11,-73);
 ctx.moveTo(-11.5,-19); ctx.lineTo(9.5,-20.5); ctx.lineTo(8,-26); ctx.lineTo(-9.5,-24.5);
+ctx.moveTo(-12,-47); ctx.quadraticCurveTo(0,-41, 12,-47);
+ctx.moveTo(-13,-44);
 ctx.moveTo(-14+off, -49);
+ctx.moveTo(-150,-1.2); ctx.lineTo(6,-7.5); ctx.lineTo(13,0); ctx.lineTo(6,7.5); ctx.lineTo(-150,1.2);
 ctx.moveTo(-16,-9);
 ctx.moveTo(-16,-9); ctx.lineTo(14,-11); ctx.lineTo(10.5,-40); ctx.lineTo(-13,-38);
 ctx.moveTo(-17,-74);
@@ -1293,6 +1380,8 @@ ctx.moveTo(-23,-6);
 ctx.moveTo(-32,-132);
 ctx.moveTo(-7,-1); ctx.quadraticCurveTo(-9.5,-15,-6.5,-25);
 ctx.moveTo(-7,-7); ctx.lineTo(-2.4,-2.4); ctx.moveTo(0,-9); ctx.lineTo(0,-3);
+ctx.moveTo(-72,-0.8); ctx.lineTo(8,-3); ctx.lineTo(12,0); ctx.lineTo(8,3); ctx.lineTo(-72,0.8);
+ctx.moveTo(0,-10); ctx.lineTo(2.4,-7); ctx.lineTo(0,-4); ctx.lineTo(-2.4,-7);
 ctx.moveTo(0,-14); ctx.lineTo(long?4.6:3.4, long?-27:-22); ctx.lineTo(long?-4.6:-3.4, long?-27:-22);
 ctx.moveTo(0,470);
 ctx.moveTo(1,2);
@@ -1316,6 +1405,7 @@ ctx.moveTo(x, y); ctx.lineTo(x+1, y-6-R()*3);
 ctx.moveTo(x, y); ctx.lineTo(x+3, y-4-R()*3);
 ctx.moveTo(x, y); ctx.lineTo(x-2, y-5-R()*3);
 ctx.moveTo(x,y);
+ctx.quadraticCurveTo(-16,-63,-11,-74);
 ctx.quadraticCurveTo(-17+off+w1, -49-h*0.45, w2*0.5+off, -49-h);
 ctx.quadraticCurveTo(-18,-79,-12,-79);
 ctx.quadraticCurveTo(-2+tieWave,-60,-1.5,-76);
@@ -1324,9 +1414,11 @@ ctx.quadraticCurveTo(-20,-27, 0,-28);
 ctx.quadraticCurveTo(-52, -108, -31, -104);
 ctx.quadraticCurveTo(-54, -128 + Math.sin(t*4.2)*3.4, -76, -121 + Math.sin(t*4.2+1)*3.6);
 ctx.quadraticCurveTo(0,-14, -23,-6);
+ctx.quadraticCurveTo(0,-38,-13,-44);
 ctx.quadraticCurveTo(0,28,-8,20);
 ctx.quadraticCurveTo(0,3,-7,-1); ctx.closePath();
 ctx.quadraticCurveTo(1,-46, -2,-44);
+ctx.quadraticCurveTo(16,-63,13,-44);
 ctx.quadraticCurveTo(17+off+w1, -49-h*0.42, 14+off, -49);
 ctx.quadraticCurveTo(18,-79,12,-79);
 ctx.quadraticCurveTo(180, 400, 380, 462);
@@ -1335,6 +1427,7 @@ ctx.quadraticCurveTo(3+tieWave,-60, 1.5+tieWave,-48);
 ctx.quadraticCurveTo(5,-16, -2-rec*0.5, -32+bob);
 ctx.quadraticCurveTo(5,-16, -2-rec*0.5, -32+bob);
 ctx.quadraticCurveTo(560, 415, 760, 465);
+ctx.quadraticCurveTo(6,-55, 0,-53); ctx.quadraticCurveTo(-6,-55,-11,-73);
 ctx.quadraticCurveTo(7,-22, hx, hy+16);
 ctx.quadraticCurveTo(7,-22, hx, hy+16);
 ctx.quadraticCurveTo(900, 430, 1024, 468);
@@ -1405,17 +1498,28 @@ ctx.restore();
 ctx.restore();
 ctx.restore();
 ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
+ctx.restore();
 ctx.rotate(-0.22 + wob);
 ctx.rotate(Math.sin(at*14)*0.012);
+ctx.rotate(Math.sin(t*0.9 + ph)*0.02);
 ctx.rotate(Math.sin(t*1.8+ph)*0.03);
 ctx.rotate(TAU/10);
 ctx.rotate(TAU/14);
 ctx.rotate(d*1.5);
+ctx.rotate(ex < 0 ? -0.16 : 0.16);
 ctx.rotate(r*0.07);
 ctx.rotate(rot);
 ctx.rotate(swing*0.035);
 ctx.rotate(swing*0.06 + (eat ? Math.sin(z.eatT*9)*0.07 : Math.sin(at*1.7)*0.03));
 ctx.rotate(t*0.7);
+ctx.save();
+ctx.save();
+ctx.save();
+ctx.save();
 ctx.save();
 ctx.save();
 ctx.save();
@@ -1484,7 +1588,7 @@ ctx.save(); ctx.translate(x,y); ctx.rotate(spin||0);
 ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
 ctx.scale(dpr, dpr);
 ctx.scale(pulse, pulse);
-ctx.scale(s, s);
+ctx.scale(s*fit, s*fit);
 ctx.scale(scale, scale);
 ctx.scale(scale, scale);
 ctx.scale(scale, scale);
@@ -1549,6 +1653,7 @@ ctx.strokeStyle = 'rgba(120,95,60,0.3)'; ctx.lineWidth = 2;
 ctx.strokeStyle = 'rgba(140,200,240,0.4)'; ctx.lineWidth = 1.4;
 ctx.strokeStyle = 'rgba(210,130,20,0.6)'; ctx.lineWidth = 1.4; ctx.stroke();
 ctx.strokeStyle = 'rgba(220,90,45,0.85)'; ctx.lineWidth = 2.5;
+ctx.strokeStyle = 'rgba(223,246,255,0.5)'; ctx.lineWidth = 1.4;
 ctx.strokeStyle = 'rgba(230,150,20,0.6)'; ctx.lineWidth = 1.6;
 ctx.strokeStyle = 'rgba(255,220,80,0.55)'; ctx.lineWidth = 7;
 ctx.strokeStyle = 'rgba(255,240,160,0.75)'; ctx.lineWidth = 2;
@@ -1580,8 +1685,13 @@ ctx.strokeStyle = C.pants; ctx.lineWidth = 7; ctx.stroke();
 ctx.strokeStyle = C.skin; ctx.lineWidth = 6; ctx.stroke();
 ctx.strokeStyle = C.suit; ctx.lineWidth = 7; ctx.stroke();
 ctx.strokeStyle = C.suitD; ctx.lineWidth = 6.5; ctx.stroke();
+ctx.strokeStyle = line; ctx.lineWidth = 11; ctx.stroke();
+ctx.strokeStyle = line; ctx.lineWidth = 13; ctx.stroke();
 ctx.strokeStyle = ok ? 'rgba(255,250,200,0.9)' : 'rgba(230,60,40,0.9)';
 ctx.strokeStyle = pal.line; ctx.lineWidth = 2; ctx.lineCap='round';
+ctx.strokeStyle = red; ctx.lineWidth = 4.5; ctx.stroke();
+ctx.strokeStyle = silver; ctx.lineWidth = 10; ctx.stroke();
+ctx.strokeStyle = silver; ctx.lineWidth = 8; ctx.stroke();
 ctx.strokeStyle='#1c3a70'; ctx.lineWidth=1.8;
 ctx.strokeStyle='#2f5ca8'; ctx.lineWidth=4;
 ctx.strokeStyle='#3c4046'; ctx.lineWidth=6; ctx.lineCap='round'; ctx.stroke();
@@ -1605,17 +1715,20 @@ ctx.translate(-34, -78);
 ctx.translate(-7, -96);
 ctx.translate(-7, 6); ctx.rotate(-0.2);
 ctx.translate(-lunge*0.35, -bob);
+ctx.translate(0, -bob);
 ctx.translate(0, -hop);
 ctx.translate(0, Math.sin(t*2.2+ph)*0.9);
 ctx.translate(0, Math.sin(t*2.4+ph)*1.1);
 ctx.translate(0, Math.sin(t*2.6+ph)*0.9);
 ctx.translate(0, d*10);
+ctx.translate(0,-85);
 ctx.translate(14, -118 + ang*0.4);
 ctx.translate(2,-66);
 ctx.translate(W/2, 128);
 ctx.translate(W/2, H/2 - 30);
 ctx.translate(W/2, H/2 - 40);
 ctx.translate(cx, dy);
+ctx.translate(ex, 2);
 ctx.translate(hx, hy);
 ctx.translate(m.x, LY + m.row*CH + CH - 14);
 ctx.translate(p.cx, p.fy);
@@ -1631,6 +1744,7 @@ damageZombie(world, z, 1800);
 damageZombie(world, z, 90);
 damageZombie(world, z, 9999);
 damageZombie(world, z, pea.dmg);
+damageZombie(world, z, pea.dmg);
 damageZombie(world, z2, 20);
 dig(){ this.noise(0.12, 0.13, 1600); this.tone(320, 150, 0.09, 'triangle', 0.07); },
 document.addEventListener('gesturestart', e=> e.preventDefault());
@@ -1640,7 +1754,7 @@ drawBallIcon(-11, 0, 6, p.x*0.11 - 0.5);
 drawBallIcon(-19, 0, 5, p.x*0.11 - 1);
 drawBallIcon(0, 0, 7.5, p.x*0.11);
 drawBallIcon(6,-17,3.6, 0);
-drawButton(ui, 88, H-88, 150, 46, '返回', 'back', { type:'nav', state:'menu' }, {});
+drawButton(ui, 56, 20, 128, 40, '返回', 'back', { type:'nav', state:'menu' }, { size:17 });
 drawButton(ui, W-286, H-88, 198, 46, world.slots.length ? '开 始 游 戏' : '请先选择植物', 'go',
 drawButton(ui, W/2+110, 462, 180, 52, world.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', { type:'unlockAll' }, { size: 18 });
 drawButton(ui, W/2+15, py+ph-76, 200, 48, '主菜单', 'menu', { type:'nav', state:'menu' }, {});
@@ -1661,7 +1775,7 @@ drawMenuScene(t);
 drawPlantEntity(t, ghost);
 drawPlantIcon(t, s.type, x+CARD_W/2, y+CARD_H-22, 0.5);
 drawPlantIcon(t, s.type, x+slotW/2, y+slotH-26, 0.6);
-drawPlantIcon(t, type, x+cw/2, y+ch-28, 0.52);
+drawPlantIcon(t, type, x+cw/2, y+ch-24, 0.42);
 drawProgressBar(world);
 drawSeedBank(t, world, ui);
 drawShovelIcon(sx+32, sy+34, hoverS||active ? 1.08 : 1);
@@ -1770,6 +1884,7 @@ flame(40+Math.sin(t*7+ph)*6, '#ff7a1e', 0);
 for(const [t,w] of pool){ if((r-=w) <= 0) return t; }
 for(const b of btns){
 for(const d of world.visual.decals){
+for(const ex of [-5.4, 5.4]){
 for(const ex of [-5.5, 5.5]){
 for(const ex of [-9, 7]){
 for(const m of MELODY){
@@ -1779,12 +1894,14 @@ for(const p of world.peas) drawPea(p);
 for(const p of world.plants) if(p.row===r) drawPlantEntity(t, p);
 for(const p of world.plants){
 for(const p of world.visual.parts){
+for(const s of [[-6,-step],[6,step]]){
 for(const s of [[8,-36,2.6],[-11.5,-30,2.1],[2.5,-24.5,1.8]]){
 for(const s of world.slots) if(s.cool > 0) s.cool = Math.max(0, s.cool - dt);
 for(const s of world.suns) drawSun(t, s);
 for(const sx of [22, 738]){
 for(const wy of [LY+34, LY+ROWS*CH-140]){
 for(const wy of [LY+34, LY+ROWS*CH-140]){
+for(const z of world.zombies){
 for(const z of world.zombies){
 for(const z of world.zombies){
 for(const z of world.zombies){
@@ -1825,6 +1942,7 @@ for(let k=0;k<10;k++){
 for(let k=0;k<10;k++){
 for(let k=0;k<11;k++){
 for(let k=0;k<12;k++) world.visual.parts.push({ x, y:y+rand(world.fxRng,-14,14), vx:rand(world.fxRng,-80,80), vy:rand(world.fxRng,-130,-20), g:270, life:rand(world.fxRng,0.35,0.75), max:0.75, size:rand(world.fxRng,3,6), color:['#63b23f','#8fd44a','#4a9330'][k%3] });
+for(let k=0;k<12;k++){
 for(let k=0;k<12;k++){
 for(let k=0;k<12;k++){
 for(let k=0;k<14;k++) world.visual.parts.push({ x:x+rand(world.fxRng,-10,10), y:y+rand(world.fxRng,-12,12), vx:rand(world.fxRng,-110,70), vy:rand(world.fxRng,-140,-30), g:260,
@@ -1926,6 +2044,7 @@ function drawSunIcon(t, x,y,s){
 function drawSunflower(t, ph){
 function drawSunshroom(t, ph, asleep){
 function drawText(text, x, y, size, fill, stroke, sw, align, weight){
+function drawTiga(t, ph, recoil, lifeRatio, flash){
 function drawTopRightButtons(world, ui, musicOn){
 function drawTorch(t, ph){
 function drawWallnut(hpFrac, t, ph){
@@ -1994,9 +2113,12 @@ g = ctx.createLinearGradient(-12,-28,11,-8);
 g = ctx.createLinearGradient(-14,-40,12,-12);
 g = ctx.createLinearGradient(-15,-38,13,-10);
 g = ctx.createLinearGradient(-19,0,19,0);
+g = ctx.createLinearGradient(-72, 0, 10, 0);
 g = ctx.createLinearGradient(0, LY+ROWS*CH, 0, H);
+g = ctx.createLinearGradient(0,-14, 0,10);
 g = ctx.createLinearGradient(0,-28,0,-6);
 g = ctx.createLinearGradient(0,-36,0,-12);
+g = ctx.createLinearGradient(0,-74, 0,-52);
 g = ctx.createLinearGradient(0,0,0,H);
 g = ctx.createLinearGradient(0,0,198,0);
 g = ctx.createLinearGradient(0,70,0,H-40);
@@ -2014,13 +2136,19 @@ g = ctx.createRadialGradient(-6,-40,3, 0,-31,23);
 g = ctx.createRadialGradient(-6,-7,3, 0,0,18);
 g = ctx.createRadialGradient(-6,-8,4, 0,0,25);
 g = ctx.createRadialGradient(0,-58,1, 0,-58,13);
+g = ctx.createRadialGradient(0,-60,1, 0,-60,15);
+g = ctx.createRadialGradient(10, 0, 1, 10, 0, 20);
 g = ctx.createRadialGradient(102, wy+47, 8, 102, wy+47, 104);
 g = ctx.createRadialGradient(175, y0+48, 3, 175, y0+48, 70);
+g = ctx.createRadialGradient(24,-58,1, 24,-58,20);
 g = ctx.createRadialGradient(876,56,5, 884,64,28);
 g = ctx.createRadialGradient(880,70,10, 880,70,150);
 g = ctx.createRadialGradient(884,64,10, 884,64,130);
 g = ctx.createRadialGradient(hx+42,hy,1, hx+42,hy,14);
 g = ctx.createRadialGradient(x+CARD_W/2, y+CARD_H*0.42, 6, x+CARD_W/2, y+CARD_H/2, CARD_H*0.75);
+g.addColorStop(0, 'rgba(143,216,255,0)');
+g.addColorStop(0, 'rgba(255,255,255,0)');
+g.addColorStop(0, 'rgba(255,255,255,0.95)');
 g.addColorStop(0, cap[0]); g.addColorStop(0.6, cap[1]); g.addColorStop(1, cap[2]);
 g.addColorStop(0, flash ? '#fff8d0' : '#f8ecbe'); g.addColorStop(1, flash ? '#ffe98a' : '#e2c88a');
 g.addColorStop(0, hover ? '#96c862' : '#7aa848'); g.addColorStop(1, hover ? '#649838' : '#4e7a2a');
@@ -2071,6 +2199,7 @@ g.addColorStop(0,'#fff6c8'); g.addColorStop(0.7,'#ffd042'); g.addColorStop(1,'#f
 g.addColorStop(0,'#fffdf0'); g.addColorStop(1,'#cdd6ea');
 g.addColorStop(0,'rgba(170,200,255,0.10)'); g.addColorStop(1,'rgba(170,200,255,0)');
 g.addColorStop(0,'rgba(214,230,255,0.5)'); g.addColorStop(1,'rgba(214,230,255,0)');
+g.addColorStop(0,'rgba(223,246,255,0.5)');
 g.addColorStop(0,'rgba(255,120,90,0.85)'); g.addColorStop(1,'rgba(255,80,60,0)');
 g.addColorStop(0,'rgba(255,190,80,'+(0.3+Math.sin(t*8+ph)*0.08)+')');
 g.addColorStop(0,'rgba(255,214,124,0.42)'); g.addColorStop(1,'rgba(255,214,124,0)');
@@ -2080,12 +2209,25 @@ g.addColorStop(0,'rgba(255,244,160,0.95)');
 g.addColorStop(0,'rgba(255,244,180,0.9)'); g.addColorStop(1,'rgba(255,244,180,0)');
 g.addColorStop(0,'rgba(255,246,200,0.6)'); g.addColorStop(1,'rgba(255,246,200,0)');
 g.addColorStop(0,'rgba(255,250,200,0.95)');
+g.addColorStop(0,'rgba(255,255,255,0.95)');
 g.addColorStop(0,'rgba(40,28,12,0.9)'); g.addColorStop(1,'rgba(40,28,12,0)');
 g.addColorStop(0,'rgba(40,70,25,0)'); g.addColorStop(1,'rgba(24,46,14,0.62)');
 g.addColorStop(0,C.suit); g.addColorStop(1,C.suitD);
 g.addColorStop(0,col[0]); g.addColorStop(1,col[1]);
 g.addColorStop(0,pal.hi); g.addColorStop(0.6,pal.main); g.addColorStop(1,pal.dark);
+g.addColorStop(0,purple); g.addColorStop(1,purpleDk);
+g.addColorStop(0,silverHi); g.addColorStop(0.55,silver); g.addColorStop(1,silverDk);
+g.addColorStop(0,silverHi); g.addColorStop(1,silverDk);
+g.addColorStop(0,timerGlow); g.addColorStop(1,'rgba(255,255,255,0)');
+g.addColorStop(0.4, 'rgba(180,232,255,0.55)');
+g.addColorStop(0.45,'rgba(180,232,255,0.6)');
 g.addColorStop(0.45,'rgba(255,214,90,0.4)');
+g.addColorStop(0.6, 'rgba(143,216,255,0.4)');
+g.addColorStop(1, 'rgba(120,200,255,0)');
+g.addColorStop(1, 'rgba(223,246,255,0.9)');
+g.addColorStop(1, 'rgba(255,255,255,0.95)');
+g.addColorStop(1,'rgba(120,200,255,0)');
+g.addColorStop(1,'rgba(143,216,255,0)');
 g.addColorStop(1,'rgba(255,150,50,0)');
 g.addColorStop(1,'rgba(255,180,60,0)');
 g.addColorStop(1,'rgba(255,190,60,0)');
@@ -2101,6 +2243,7 @@ g.gain.setValueAtTime(0.0001, t0);
 g2.addColorStop(0, active ? '#efd28a' : '#b8946a'); g2.addColorStop(1, active ? '#c8a24e' : '#8a6b42');
 game.start();
 gatling(){ this.tone(240, 120, 0.06, 'square', 0.07); this.noise(0.05, 0.06, 2200); },
+ge.addColorStop(0,'#fff8d0'); ge.addColorStop(1,'#ffc93e');
 get canvas(){ return canvas; },
 get theme(){ return theme; },
 gi.addColorStop(0,'#4a3418'); gi.addColorStop(1,'#33220e');
@@ -2116,6 +2259,7 @@ hotspots:[],
 hoverCell:null,
 hp: def.hp, acc: def.acc, maxHp: def.hp + def.acc,
 i += size;
+if(!(pea.x >= z.x-24 && pea.x <= z.x+16)) continue;
 if(!(target && target.asleep)) return { ok:false, reason:'invalid-target', def };
 if(!AC) return false;
 if(!Number.isInteger(li) || li < 0 || li >= LEVELS.length) return { ok:false, reason:'bad-level' };
@@ -2160,6 +2304,7 @@ if(angry && walk) ctx.rotate(-0.11);
 if(angry){
 if(asleep){
 if(b > this.lastBeat && b <= ahead){
+if(beam){
 if(blink > -0.6){
 if(blink){
 if(blink){
@@ -2183,11 +2328,15 @@ if(e.announce){
 if(e.button === 2) return;
 if(f1 && f1!==f0) o.frequency.exponentialRampToValueAtTime(Math.max(f1,20), t0+dur);
 if(fill){ ctx.fillStyle = fill; ctx.fill(); }
+if(fire){
+if(fire){
+if(flash > 0){
 if(flash > 0){
 if(food){
 if(fuse < 0.4) s = 1 + Math.abs(Math.sin(fuse*38))*0.24*(0.4-fuse)/0.4 + 0.06;
 if(fuse < 0.7){
 if(h){ dispatch(h.action); return; }
+if(has && p.fireT <= 0 && t > 0){
 if(has && p.fireT <= 0 && t > 0){
 if(hc && world.state==='play' && !world.paused){
 if(hit || pea.x > W+60) world.peas.splice(i,1);
@@ -2232,8 +2381,10 @@ if(p.g) p.vy += p.g*dt;
 if(p.hp <= 0){
 if(p.hp <= 0){ removePlant(world, p); addLeafBurst(world, p.cx, p.fy-30); continue; }
 if(p.life <= 0){ v.parts.splice(i,1); continue; }
+if(p.lifeT <= 0){
 if(p.sunT <= 0){
 if(p.type==='ball'){
+if(p.type==='beam'){
 if(p.type==='bullet'){
 if(p.type==='fire'){
 if(p.type==='missile'){
@@ -2243,6 +2394,7 @@ if(p.type==='repeater'){
 if(p.type==='snow'){
 if(p.type==='torch' && p.row===pea.row && pea.prevX < p.cx && pea.x >= p.cx){
 if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h) return h;
+if(pea.prevX < front && pea.x >= front){
 if(pea.type === 'pea' || pea.type === 'snow'){
 if(pea.type==='bullet') world.ports.sound('bulletHit'); else world.ports.sound('splat');
 if(pea.type==='fire' && world.fxRng()<0.6){
@@ -2284,6 +2436,7 @@ if(t < 0.35) scale = 0.4 + easeOut(t/0.35)*0.7;
 if(t <= 0) continue;
 if(t > 0){
 if(t > 0){
+if(t > 0){
 if(t > 2.1) alpha = clamp((2.6-t)/0.5, 0, 1);
 if(t >= -3.2 && t < -1.4) txt = '准备……';
 if(t==='bucket'||t==='vault') ww += prog*3;
@@ -2292,6 +2445,7 @@ if(t==='newspaper') ww += prog*2;
 if(target) return { ok:false, reason:'occupied', def };
 if(target){
 if(this.ctx) return true;
+if(timerOn){
 if(tw > 0.9){
 if(ui.sel === slotIndex) ui.sel = -1;
 if(ui.sel === slotIndex){
@@ -2352,10 +2506,11 @@ if(z.acc > 0){
 if(z.deathT > 0.95) world.zombies.splice(i,1);
 if(z.dustT > 0.5 && z.x > LX-30 && z.x < W){
 if(z.hp <= 0 && z.state !== 'dying'){
+if(z.row!==pea.row || z.state==='dying') continue;
 if(z.row===m.row && z.state!=='dying' && z.x < m.x+52 && z.x > m.x-70){
 if(z.row===p.row && z.state!=='dying' && Math.abs(z.x - p.cx) < 34){
+if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < W+50){ has = true; break; }
 if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < reach){ has = true; break; }
-if(z.row===pea.row && z.state!=='dying' && pea.x >= z.x-24 && pea.x <= z.x+16){
 if(z.slowT > 0) z.slowT -= dt;
 if(z.state!=='dying' && z.x < LX + 14){
 if(z.state==='dying') continue;
@@ -2388,6 +2543,8 @@ let ctx = null;
 let d = ans + randi(-9, 9);
 let dt = (timestamp-last)/1000; last = timestamp;
 let g = ctx.createLinearGradient(-14,-40,14,-2);
+let g = ctx.createLinearGradient(-14,-72, 14,-42);
+let g = ctx.createLinearGradient(-150, 0, 10, 0);
 let g = ctx.createLinearGradient(-17,-80,15,-36);
 let g = ctx.createLinearGradient(-8,0,8,-26);
 let g = ctx.createLinearGradient(-9,4,9,22);
@@ -2414,6 +2571,7 @@ let g = ctx.createRadialGradient(0,-30,4, 0,-30,34);
 let g = ctx.createRadialGradient(0,-52,4, 0,-52,34);
 let g = ctx.createRadialGradient(0,0,1, 0,0,14);
 let g = ctx.createRadialGradient(0,0,4, 0,0,40);
+let g = ctx.createRadialGradient(6,-58,4, 6,-58,54);
 let g = ctx.createRadialGradient(d.x, d.fy, 4, d.x, d.fy, d.r);
 let g = ctx.createRadialGradient(hx-8,hy-9,4, hx,hy,26);
 let g = ctx.createRadialGradient(ox+36,oy,1, ox+36,oy,14);
@@ -2421,6 +2579,7 @@ let g = ctx.createRadialGradient(x-r*0.35,y-r*0.42,r*0.12, x,y,r*1.15);
 let g2 = ctx.createLinearGradient(0,sy,0,sy+72);
 let gi = ctx.createLinearGradient(0,zy,0,zy+220);
 let guard = 0;
+let has = false;
 let has = false;
 let hit = false;
 let last;
@@ -2441,8 +2600,14 @@ level:0, unlocked: init.unlocked === undefined ? 1 : init.unlocked,
 life:rand(world.fxRng,0.25,0.6), max:0.6, size:rand(world.fxRng,2,6),
 life:rand(world.fxRng,0.3,0.6), max:0.6, size:rand(world.fxRng,2,3.5), color:'#5a5a52' });
 life:rand(world.fxRng,0.3,0.85), max:0.85, size:rand(world.fxRng,3,10),
+life:rand(world.fxRng,0.35,0.7), max:0.7, size:rand(world.fxRng,2,5), color:'#9fe4ff' });
 life:rand(world.fxRng,0.45,0.95), max:0.95, size:rand(world.fxRng,3,6), color:['#f4f0e2','#ded8c4','#c9c2ac'][k%3] });
 life:rand(world.fxRng,0.7,1.2), max:1.2, size:rand(world.fxRng,9,16), color:'rgba(90,85,80,0.5)' });
+lifeT: def.life || 0, maxLifeT: def.life || 0,
+limb(-10,-56, 29,-58, 10,-63);
+limb(-12,-70, -17+sw,-46, -17,-58);
+limb(12,-70, 17-sw,-46, 17,-58);
+limb(15,-78, 15,-40, 16,-59);
 line: '#39412e',
 lose(){ const seq=[392,329.63,261.63,196]; seq.forEach((f,i)=>this.tone(f,f*0.94,0.4,'sawtooth',0.06,i*0.3)); },
 lv.night ? '夜战：天上不掉太阳，靠向日葵与阳光菇。' : '消灭全部僵尸即可过关，小心小推车。',
@@ -2471,13 +2636,16 @@ opts = opts || {};
 p.armT += dt;
 p.asleep = false;
 p.fireT -= dt;
+p.fireT -= dt;
 p.fireT = 0.4; p.recoil = 1; p.flash = 0.1;
 p.fireT = 1.4; p.recoil = 1; p.flash = 0.09;
 p.fireT = 1.5; p.recoil = 1; p.flash = 0.09;
+p.fireT = 6.5; p.recoil = 1; p.flash = 0.4;
 p.flash = Math.max(0, (p.flash||0) - dt);
 p.fuse -= dt;
 p.hp -= 100 * dt;
 p.life -= dt;
+p.lifeT -= dt;
 p.recoil = Math.max(0, p.recoil - dt*(p.type==='qiuqiu' ? 4 : 1.4));
 p.sunT -= dt;
 p.sunT = rand(world.rng,8, 10);
@@ -2507,6 +2675,7 @@ qiuqiu: { name:'球球', cost:150, hp:900, cool:20, desc:'5岁的小男孩，加
 qs.push({ text, answer: ans, options: opts });
 quiz:null,
 r = Math.min(r, w/2, h/2);
+removePlant(world, p);
 removePlant(world, p);
 removePlant(world, p);
 removePlant(world, p);
@@ -2560,6 +2729,7 @@ return { ok:true, kind:'coffee', def };
 return { ok:true, kind:'plant', def };
 return { ok:true, paused:world.paused };
 return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
+return;
 return;
 return;
 return;
@@ -2651,6 +2821,7 @@ this.tone(f, f*0.72, rand(Math.random, 0.6,0.95), 'sawtooth', 0.05);
 throwBall(){ this.tone(480, 940, 0.08, 'triangle', 0.1); this.noise(0.04, 0.03, 3500); },
 tickMusic(){
 tie: '#b8382c',
+tiga: { name:'迪迦奥特曼', cost:275, hp:1200, cool:30, life:25, desc:'光之巨人限时登场，蓄力后发射哉佩利敖光线贯穿整行' },
 tone(f0,f1,dur,type,vol,delay){
 torch: { name:'火炬树桩', cost:175, hp:300, cool:7.5, desc:'让穿过的豌豆变成火豌豆' },
 try { return fn(); }
@@ -2673,14 +2844,17 @@ unlockAll: init.unlockAll === undefined ? false : init.unlockAll,
 v.decals[i].ttl -= dt;
 v.groanTimer -= dt;
 v.parts.push({ x:m.x+rand(world.fxRng,6,26), y:LY+m.row*CH+CH-8, vx:rand(world.fxRng,-60,20), vy:rand(world.fxRng,-140,-60), g:300, life:rand(world.fxRng,0.25,0.5), max:0.5, size:rand(world.fxRng,2,4), color:'#7cc24a' });
+v.parts.push({ x:p.cx+rand(world.fxRng,-16,16), y:p.fy-rand(world.fxRng,6,84),
 v.parts.push({ x:pea.x-8, y:pea.y+rand(world.fxRng,-3,3), vx:rand(world.fxRng,-30,-10), vy:rand(world.fxRng,-25,5), g:-60, life:rand(world.fxRng,0.15,0.3), max:0.3, size:rand(world.fxRng,2,4), color:'#ffb347' });
 v.parts.push({ x:z.x+rand(world.fxRng,-6,10), y:LY+(z.row+1)*CH-6, vx:rand(world.fxRng,-14,6), vy:rand(world.fxRng,-22,-8), g:30, life:rand(world.fxRng,0.3,0.55), max:0.55, size:rand(world.fxRng,2,4), color:'rgba(150,140,110,0.4)' });
+v.shake = Math.max(v.shake, 0.22);
 v.waveText = { text:'一大波僵尸正在接近！', t:0 };
 v.waveText.t += dt;
 vault: { name:'撑杆僵尸', hp:500, acc:0, speed:36 },
 vg.addColorStop(0,'rgba(0,0,0,0)');
 vg.addColorStop(1,'rgba(10,20,8,0.22)');
 visual:{
+vx:rand(world.fxRng,-28,28), vy:rand(world.fxRng,-200,-90), g:-30,
 wallnut: { name:'坚果墙', cost:50, hp:4000, cool:24, desc:'坚固的屏障，阻挡僵尸' },
 waveText:null, nightHint:0, groanTimer:4,
 wheel(3, 8.4); wheel(27, 7);
@@ -2708,6 +2882,7 @@ world.peas.push({ x:p.cx+12, y:py+6, row:p.row, type:kind, dmg:20, vx:340, prevX
 world.peas.push({ x:p.cx+14, y:py, row:p.row, type:'spore', dmg:20, vx:300, prevX:p.cx+14 });
 world.peas.push({ x:p.cx+30, y:py, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+30 });
 world.peas.push({ x:p.cx+52, y:py, row:p.row, type, dmg, vx, prevX:p.cx+52 });
+world.peas.push({ x:p.cx-30, y:p.fy-58, row:p.row, type:'beam', dmg:400, vx:720, prevX:p.cx-30 });
 world.plants.push(p);
 world.plants=[]; world.zombies=[]; world.peas=[]; world.suns=[];
 world.ports.saveUnlockAll(world.unlockAll);
@@ -2733,8 +2908,10 @@ world.ports.sound('error');
 world.ports.sound('error');
 world.ports.sound('groan');
 world.ports.sound('hop');
+world.ports.sound('hop');
 world.ports.sound('horn');
 world.ports.sound('lose');
+world.ports.sound('missile');
 world.ports.sound('paperTear');
 world.ports.sound('plant');
 world.ports.sound('select');
@@ -3137,6 +3314,21 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 }
 }
 }
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
+}
 } else if(acc==='bucket'){
 } else if(acc==='flag'){
 } else if(acc==='newspaper'){
@@ -3174,6 +3366,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 } else {
 } else {
 } else {
+} else {
 });
 });
 });
@@ -3190,6 +3383,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 },
 }, {passive:false});
 }, {passive:false});
+};
 };
 };
 };

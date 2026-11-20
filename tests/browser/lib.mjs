@@ -16,7 +16,9 @@ export const DIST_URL = pathToFileURL(DIST).href;
 
 export const W = 1024, H = 640;
 
-const RELEASE_STAMP = /^\/\* build: v\d+\.\d+\.\d+ (?:pretty|minified) \*\/$/;
+// E1 D3：戳里多了「· src <8 位十六进制>」的源码摘要，用来判断产物是否由当前源码构建。
+// 摘要必须存在且格式完整——宁可判红，也不要让一份来历不明的产物通过验收。
+const RELEASE_STAMP = /^\/\* build: v\d+\.\d+\.\d+ (?:pretty|minified) · src [0-9a-f]{8} \*\/$/;
 
 /** 发布页必须带发布构建戳：npm run dev 会把 dev build 注释写进同一个文件，冒充发布产物时在这里判红。 */
 export function assertReleaseStamp(file = DIST) {

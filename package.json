@@ -11,14 +11,17 @@
     "parity:legacy": "node scripts/check-parity.js --legacy",
     "parity:dist": "node scripts/check-parity.js --dist",
     "parity:dist:min": "node scripts/check-parity.js --dist --minify --file=dist/植物大战僵尸-网页版.min.html",
-    "parity:rebase": "node scripts/check-parity.js --rebase",
+    "parity:rebase": "npm test && node scripts/check-parity.js --rebase --yes",
+    "parity:rebase:dry": "node scripts/check-parity.js --rebase",
     "fingerprint": "node scripts/check-fingerprint.js",
-    "fingerprint:update": "node scripts/check-fingerprint.js --update",
+    "fingerprint:update": "npm test && node scripts/check-fingerprint.js --update --yes",
+    "fingerprint:update:dry": "node scripts/check-fingerprint.js --update",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node --test tests/browser/*.test.mjs",
-    "test:browser:update": "UPDATE_TRACE=1 node --test tests/browser/render-baseline.test.mjs",
+    "test:browser:update": "npm test && UPDATE_TRACE=1 node --test tests/browser/render-baseline.test.mjs",
     "test:smoke": "node headless_test.js src/main.js",
-    "verify": "npm run parity && npm run fingerprint && npm run test && npm run build && npm run parity:dist && npm run test:smoke && npm run test:browser"
+    "dist:fresh": "git diff --exit-code -- dist/",
+    "verify": "npm run parity && npm run fingerprint && npm run test && npm run parity:dist && npm run build && npm run test:smoke && npm run test:browser"
   },
   "engines": {
     "node": ">=20"

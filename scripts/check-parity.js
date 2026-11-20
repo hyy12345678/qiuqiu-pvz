@@ -24,7 +24,10 @@
 //
 // 用法：
 //   node scripts/check-parity.js              # src vs 快照
-//   node scripts/check-parity.js --rebase     # 用当前 src 重写快照（确认过行为变化后才用）
+//   node scripts/check-parity.js --rebase     # dry-run：只打印「将吸收哪些行」，不写文件，退出码 1
+//   node scripts/check-parity.js --rebase --yes   # 确认后重写快照
+// 不带 --yes 不允许重写快照（E1 D4）：盖章是吸收差异，不等于验证通过。
+// npm run parity:rebase 已封装为「先 npm test 全绿，再 --rebase --yes」。
 //   node scripts/check-parity.js --legacy     # tag 基线 vs src（授权清单模式，预期非绿）
 //   node scripts/check-parity.js --dist       # esbuild(src) vs dist 产物内联脚本
 //   node scripts/check-parity.js --verbose    # 打印全部差异
@@ -216,9 +219,13 @@ function consumeAuthorized(list, authorized) {
   return { rest, used: list.length - rest.length };
 }
 
-// dist 模式：产物内联脚本必须与「当前 src 的 bundle」逐字节一致（只允许可可证伪的构建戳差异）。
-// 这一侧不再扯上 legacy —— 源码是否忠实由 line 模式单独负责，两者串起来就是完整链条：
-//   legacy ≡ src（行级）  且  bundle(src) ≡ 产物（字节级）  ⇒  产物 ≡ legacy
+// dist 模式：产物内联脚本必须与「当前 src 的 bundle」逐字节一致（构建戳整段剥离后比较）。
+// 它单独证明一件事：**仓库里的这份 dist 确实由当前 src/** 构建**，没有手改、没有忘记重新构建。
+//
+// 注意这条链条到 src 为止，不要往下推（E1 修正）：
+//   bundle(src) ≡ 产物（字节）且 src ≡ 快照（行）  ⇒  产物 ≡ 上次盖章的 src
+// 但 **不能**再推出「产物 ≡ legacy」：--legacy 自 R1 起就有结构迁移差异、冻结在 P3c，
+// 它是一个预期非绿的溯源工具，不是这条链条的一环。
 // --dist --minify 用同一入口的 minify 配置比对，专用于验证 min 产物也来自同一份源码。
 async function checkDist({ minify = false, file = DIST } = {}) {
   const expected = escapeForInline((await bundleEntry({ minify })).outputText);
@@ -277,6 +284,21 @@ async function main() {
     : [];
   if (args.has('--rebase')) {
     const { onlyA, onlyB } = multisetDiff(snap, cur);
+    // E1 D4：盖章是「吸收差异」，不是「验证通过」。没有 --yes 时只做 dry-run，绝不写文件。
+    if (!args.has('--yes')) {
+      const limit = verbose ? onlyA.length + onlyB.length : 20;
+      console.log('parity[rebase]: 将改写 ' + path.relative(ROOT, SNAPSHOT)
+        + '（基线 ' + snap.length + ' 行 → 当前 ' + cur.length + ' 行）');
+      console.log('  本次会吸收：移除 ' + onlyA.length + ' 行 / 新增 ' + onlyB.length + ' 行');
+      onlyA.slice(0, limit).forEach(l => console.log('  - ' + l));
+      onlyB.slice(0, limit).forEach(l => console.log('  + ' + l));
+      if (!verbose && (onlyA.length > limit || onlyB.length > limit)) {
+        console.log('  （已截断，加 --verbose 查看全部 ' + (onlyA.length + onlyB.length) + ' 项）');
+      }
+      console.log('\n未写入。确认这些差异都属于本次审查范围后：npm run parity:rebase');
+      process.exitCode = 1;
+      return;
+    }
     fs.writeFileSync(SNAPSHOT, cur.join('\n') + '\n');
     console.log('已重新盖章 ' + path.relative(ROOT, SNAPSHOT) + '：' + cur.length + ' 行'
       + '（本次吸收差异 移除 ' + onlyA.length + ' / 新增 ' + onlyB.length + '）');

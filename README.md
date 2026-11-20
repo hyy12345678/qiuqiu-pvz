@@ -26,7 +26,9 @@
 | `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面与触屏冒烟 + 5 条受控绘制轨迹基线。 |
 | `npm run parity` / `parity:dist` / `parity:legacy` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对 / 与重构前基线的行级**溯源对照**（预期非绿，见下）。 |
 | `npm run fingerprint` | `src/**` 原始字节 SHA-256 清单，任何未登记的源码变化都会变红。 |
-| `npm run parity:rebase` / `fingerprint:update` / `test:browser:update` | 重新盖章工具。**只在对应轮次完成人工审计后使用**；绘制轨迹基线尤其需要单独批准。 |
+| `npm run parity:rebase:dry` / `fingerprint:update:dry` | **先看**：只打印「这次会吸收哪些差异」，不写任何文件，退出码 1。 |
+| `npm run parity:rebase` / `fingerprint:update` / `test:browser:update` | 重新盖章工具。**会先跑 `npm test`，全绿才写基线**（E1 D4）；绘制轨迹基线尤其需要单独批准。 |
+| `npm run dist:fresh` | `git diff --exit-code -- dist/`：产物是否已随源码一并提交。**只进 CI**，不进 `verify`——提交前跑它必然红。 |
 
 改 Canvas 绘制时 `tests/helpers/scenario.mjs` 的 ctx 白名单会对外抛错，这是有意的：
 新增绘制 API 必须显式登记，避免测试默默吞掉画面。
@@ -43,12 +45,29 @@
 
 | 形态 | 文件 | 用途 | 是否提交 |
 |---|---|---|---|
-| pretty | `dist/植物大战僵尸-网页版.html` | **标准发布产物**，可读、可 diff，构建戳 `/* build: v<版本> pretty */` | 是 |
+| pretty | `dist/植物大战僵尸-网页版.html` | **标准发布产物**，可读、可 diff，构建戳 `/* build: v<版本> pretty · src <8位摘要> */` | 是 |
 | minified | `dist/植物大战僵尸-网页版.min.html` | 同一入口、同一 target，只多开 `minify`；用于证明压缩形态与 pretty 等价 | 否 |
 
 min 的等价验证方式：`npm run parity:dist:min` 证明它对应同一份源码构建；
 `PVZ_DIST=dist/植物大战僵尸-网页版.min.html npm run test:browser` 用同一套冒烟与 5 条绘制轨迹跑它。
 浏览器套件还会断言产物首部是发布戳，dev 产物冒充发布页会直接判红。
+
+## 构建戳与「产物是否最新」
+
+构建戳形如 `/* build: v0.1.0 pretty · src a597fbd8 */`。后半段是 `src/**` 清单的摘要（与 `npm run fingerprint` 同一套哈希），
+回答的是「这份产物是不是当前源码构建的」——**不用 git SHA**，因为 dist 先构建、后提交，提交后 SHA 会指向父提交。
+
+两道门各管一段，别混用：
+
+| 门 | 位置 | 回答 |
+|---|---|---|
+| `npm run parity:dist` | `verify` 链 **build 之前** | 仓库里**已提交的** dist 是不是当前源码构建的 |
+| `npm run dist:fresh` | 只在 CI | 重新构建之后，dist 有没有「改了但忘了提交」 |
+
+## CI
+
+`.github/workflows/verify.yml` 在 push / PR 上跑完整链（Node 22 + 与 lock 绑定的 Chromium），
+顺序与 `npm run verify` 同构，额外包含上面的 `parity:dist`（build 前）与 `dist:fresh`（build 后）。
 
 ## 环境与版本
 

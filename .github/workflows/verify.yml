@@ -1,0 +1,76 @@
+# E1 D5：把 verify 链搬进 CI。没有 CI 时，parity/fingerprint/轨迹基线全靠自觉执行；
+# 有了它，「提交的 dist 是否对应当前源码」「产物有没有一并提交」才成为不可绕过的门。
+#
+# 与 npm run verify 的两处差异（都是故意的，见 docs/工程执行计划-E1-护栏收口.md）：
+#   1. parity:dist 在 build **之前**跑 —— 检查的是仓库里那份 dist，而不是刚构建出来的自己（D1）。
+#   2. dist:fresh 只在 CI 跑 —— 它要求 dist 已提交，放进本地 verify 会逼着人先提交再验收（D2）。
+
+name: verify
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: 检出（保留 tag：parity:legacy 需要 pre-refactor-baseline）
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Node 22（engines 要求 >=20；20/22 均为本项目实测版本）
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: 安装依赖（严格按 package-lock.json）
+        run: npm ci
+
+      # 浏览器与 Playwright 版本绑定在 lock 文件里；同步安装对应 Chromium，
+      # 避免「本地绿、CI 红」这一类由浏览器版本漂移引起的假失败。
+      - name: 安装 Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: 源码护栏（行快照 + 字节指纹）
+        run: |
+          npm run parity
+          npm run fingerprint
+
+      - name: 规则与场景测试
+        run: npm run test
+
+      # D1：此时 dist 还是「仓库里提交的那一份」，这一步才有意义。
+      - name: 产物必须对应当前源码（build 之前）
+        run: npm run parity:dist
+
+      - name: 构建标准发布产物
+        run: npm run build
+
+      # D2：构建后再和 HEAD 比，确认 dist 没有「构建了但忘了提交」。
+      - name: 产物必须已提交（build 之后）
+        run: npm run dist:fresh
+
+      - name: A–I 冒烟
+        run: npm run test:smoke
+
+      - name: 浏览器验收（真产物 + 5 条绘制轨迹）
+        run: npm run test:browser
+
+      # 失败时把 Playwright 现场（截图/轨迹）带出来，省得重跑猜。
+      - name: 上传现场
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-artifacts
+          path: tests/browser/artifacts/
+          if-no-files-found: ignore
+          retention-days: 7

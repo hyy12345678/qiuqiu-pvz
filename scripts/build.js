@@ -8,6 +8,8 @@ const path = require('path');
 const esbuild = require('esbuild');
 const { esbuildOpts } = require('./esbuild-opts');
 const { inlineBundle, writeDist, ENTRY, MIN_NAME, OUT_NAME, ROOT } = require('./inline');
+// 构建戳里的源码摘要与 check-fingerprint 共用同一套清单与哈希，避免两份实现漂移。
+const { srcDigest } = require('./check-fingerprint');
 
 function argOf(flag, dflt) {
   const i = process.argv.indexOf(flag);
@@ -28,7 +30,10 @@ async function build() {
     process.exit(1);
   }
 
-  const stamp = '/* build: v' + version + (minify ? ' minified */' : ' pretty */');
+  // 戳里带源码摘要（E1 D3）：dist 先构建后提交，git SHA 在提交后会指向父提交，因此不用 SHA。
+  // 摘要回答的是「这份产物是否由当前 src/** 构建」，提交前后一致，min 与 pretty 共享同一个摘要。
+  const stamp = '/* build: v' + version + (minify ? ' minified' : ' pretty')
+    + ' · src ' + srcDigest(path.join(ROOT, 'src')) + ' */';
   const out = writeDist(inlineBundle(result.outputFiles[0].text, stamp), minify ? MIN_NAME : OUT_NAME);
   console.log('built ' + path.relative(ROOT, out) + '  (' + (fs.statSync(out).size / 1024).toFixed(1) + ' KB, ' + (minify ? 'minified，仅验证用' : 'pretty，标准发布产物') + ')');
   return out;

@@ -8,8 +8,11 @@
 //   fingerprint = 原始内容哈希，任何字节变化（含换行符、空白、import、文件边界）都会显形
 //
 // 用法：
-//   node scripts/check-fingerprint.js            # 验证，不写文件
-//   node scripts/check-fingerprint.js --update   # 审查差异并确认后，重写基线
+//   node scripts/check-fingerprint.js                  # 验证，不写文件
+//   node scripts/check-fingerprint.js --update         # dry-run：只打印「将吸收哪些差异」，不写文件，退出码 1
+//   node scripts/check-fingerprint.js --update --yes   # 确认后重写基线
+// 不带 --yes 不允许写基线（E1 D4）：盖章是吸收差异，不等于验证通过。
+// npm run fingerprint:update 已封装为「先 npm test 全绿，再 --update --yes」。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -67,13 +70,37 @@ function diffManifests(expected, actual) {
   return { added, missing, changed };
 }
 
+// 源码摘要：把清单（路径 + 逐文件 sha256）再哈希一次并截断，得到一个「这份源码是谁」的稳定短标识。
+// 构建戳用它回答「产物是不是当前源码构建的」——它不随 HEAD 漂移，因此提交前后一致，见 E1 文档 D3。
+function srcDigest(baseDir, len = 8) {
+  const manifest = buildManifest(baseDir);
+  const joined = manifest.map(e => e.path + '\0' + e.hash).join('\n');
+  return hashContent(Buffer.from(joined, 'utf8')).slice(0, len);
+}
+
 function main() {
   const update = process.argv.includes('--update');
+  const confirm = process.argv.includes('--yes');
   const current = buildManifest(SRC_DIR);
 
   if (update) {
     const before = fs.existsSync(BASELINE) ? parseManifest(fs.readFileSync(BASELINE, 'utf8')) : [];
     const d = diffManifests(before, current);
+    const total = d.added.length + d.missing.length + d.changed.length;
+
+    // E1 D4：盖章是「吸收差异」，不是「验证通过」。没有显式 --yes 时只做 dry-run。
+    if (!confirm) {
+      console.log('fingerprint[update]: 将重写 ' + path.relative(ROOT, BASELINE)
+        + '（基线 ' + before.length + ' 个文件 → 当前 ' + current.length + ' 个）');
+      console.log('  本次会吸收：新增 ' + d.added.length + ' / 缺失 ' + d.missing.length + ' / 变化 ' + d.changed.length
+        + '，共 ' + total + ' 处');
+      for (const p of d.added) console.log('  + ' + p);
+      for (const p of d.missing) console.log('  - ' + p);
+      for (const p of d.changed) console.log('  ~ ' + p);
+      console.log('\n未写入。确认这些变化都属于本次审查范围后：npm run fingerprint:update');
+      return 1;
+    }
+
     fs.writeFileSync(BASELINE, formatManifest(current));
     console.log('已重写 ' + path.relative(ROOT, BASELINE) + '：' + current.length + ' 个文件'
       + '（本次吸收 新增 ' + d.added.length + ' / 缺失 ' + d.missing.length + ' / 变化 ' + d.changed.length + '）');
@@ -100,7 +127,7 @@ function main() {
   return 1;
 }
 
-module.exports = { hashContent, buildManifest, formatManifest, parseManifest, diffManifests };
+module.exports = { hashContent, buildManifest, formatManifest, parseManifest, diffManifests, srcDigest };
 
 if (require.main === module) {
   process.exitCode = main();

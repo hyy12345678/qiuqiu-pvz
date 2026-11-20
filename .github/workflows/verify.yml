@@ -27,12 +27,12 @@ jobs:
       # parity:legacy 需要 pre-refactor-baseline 这个 tag（它不在 verify 链里，但保留检出深度
       # 可以让将来的考古工作不必重新 clone）。
       - name: 检出（保留 tag）
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Node 22（engines 要求 >=20；20/22 均为本项目实测版本）
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
@@ -56,7 +56,7 @@ jobs:
 
       - name: 上传现场
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: browser-artifacts
           path: tests/browser/artifacts/

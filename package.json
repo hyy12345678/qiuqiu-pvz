@@ -20,8 +20,10 @@
     "test:browser": "node --test tests/browser/*.test.mjs",
     "test:browser:update": "npm test && UPDATE_TRACE=1 node --test tests/browser/render-baseline.test.mjs",
     "test:smoke": "node headless_test.js src/main.js",
+    "test:inventory": "node scripts/check-test-inventory.js",
+    "test:inventory:update": "npm test && node scripts/check-test-inventory.js --update --yes",
     "dist:fresh": "git diff --exit-code -- dist/",
-    "verify": "npm run parity && npm run fingerprint && npm run test && npm run parity:dist && npm run build && npm run test:smoke && npm run test:browser"
+    "verify": "npm run parity && npm run fingerprint && npm run test && npm run test:inventory && npm run parity:dist && npm run build && npm run test:smoke && npm run test:browser"
   },
   "engines": {
     "node": ">=20"

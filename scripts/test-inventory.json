@@ -1,0 +1,125 @@
+{
+  "files": [
+    {
+      "path": "tests/actions.test.mjs",
+      "count": 14
+    },
+    {
+      "path": "tests/browser/release-smoke.test.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/browser/render-baseline.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/fingerprint.test.mjs",
+      "count": 4
+    },
+    {
+      "path": "tests/game.test.mjs",
+      "count": 13
+    },
+    {
+      "path": "tests/guardrail-gates.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/input.test.mjs",
+      "count": 9
+    },
+    {
+      "path": "tests/live-binding.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/parity-tool.test.mjs",
+      "count": 9
+    },
+    {
+      "path": "tests/plant-tiga.test.mjs",
+      "count": 8
+    },
+    {
+      "path": "tests/ports.test.mjs",
+      "count": 7
+    },
+    {
+      "path": "tests/quiz.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/random-streams.test.mjs",
+      "count": 8
+    },
+    {
+      "path": "tests/render-background-trace.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/render-background.test.mjs",
+      "count": 4
+    },
+    {
+      "path": "tests/render-boundaries.test.mjs",
+      "count": 9
+    },
+    {
+      "path": "tests/render-plant-table.test.mjs",
+      "count": 4
+    },
+    {
+      "path": "tests/render-readonly.test.mjs",
+      "count": 3
+    },
+    {
+      "path": "tests/render-target.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/scenario-flow.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/scenario-harness.test.mjs",
+      "count": 7
+    },
+    {
+      "path": "tests/scenario-mechanics.test.mjs",
+      "count": 7
+    },
+    {
+      "path": "tests/scenario-outcome.test.mjs",
+      "count": 4
+    },
+    {
+      "path": "tests/scenario-plant-input.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/scenario-progress.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/scenario-scenes.test.mjs",
+      "count": 7
+    },
+    {
+      "path": "tests/sim-invariants.test.mjs",
+      "count": 12
+    },
+    {
+      "path": "tests/test-inventory.test.mjs",
+      "count": 4
+    },
+    {
+      "path": "tests/waves.test.mjs",
+      "count": 6
+    },
+    {
+      "path": "tests/world-isolation.test.mjs",
+      "count": 8
+    }
+  ],
+  "total": 182
+}

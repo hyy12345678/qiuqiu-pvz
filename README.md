@@ -20,12 +20,14 @@
 | `npm run dev` | esbuild watch + 本地服务（默认 `http://localhost:8787/`）。**会把 `/* dev build */` 写进 `dist/` 同名文件**，验收或提交前必须重新 `npm run build`。 |
 | `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 171 KB）。 |
 | `npm run build:min` | 等价验证构建 → `dist/植物大战僵尸-网页版.min.html`（约 102 KB）。只用于验证，`.gitignore` 已排除，不提交。 |
-| `npm run verify` | 全链护栏，依次跑 `parity` → `fingerprint` → `test` → `build` → `parity:dist` → `test:smoke` → `test:browser`。 |
-| `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试。 |
+| `npm run verify` | 全链护栏，依次跑 `parity` → `fingerprint` → `test` → `test:inventory` → `parity:dist` → `build` → `test:smoke` → `test:browser`。注意 `parity:dist` 在 `build` **之前**：它检查的是仓库里已提交的那份 dist，不是刚构建出来的自己。 |
+| `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试 + 2 条背景绘制轨迹（布局/夜空那两张整幅背景的唯一防护）。 |
 | `npm run test:smoke` | `headless_test.js` 的 A–I 源码冒烟（打包后在 vm 里跑），保留为第二条独立验证路径。 |
 | `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面与触屏冒烟 + 5 条受控绘制轨迹基线。 |
-| `npm run parity` / `parity:dist` / `parity:legacy` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对 / 与重构前基线的行级**溯源对照**（预期非绿，见下）。 |
+| `npm run parity` / `parity:dist` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对。 |
+| `npm run parity:legacy` | **考古工具，不是绿灯护栏**：与重构前基线的行级溯源对照，按设计非绿、不在 `verify` 链里。见文末「考古附录」。 |
 | `npm run fingerprint` | 两份 SHA-256 清单：`src/**`（源码）与 `scripts/**`（护栏工具，排除 `*.txt` 基线）。任何未登记的变化都会变红——**包括改护栏工具本身**。 |
+| `npm run test:inventory` | 测试清单下限：每个测试文件里 `test(` 声明的条数只允许增、不允许减。防「删测试换绿」。下限写在 `scripts/test-inventory.json`，因此它自己被护栏工具指纹保护。 |
 | `npm run parity:rebase:dry` / `fingerprint:update:dry` | **先看**：只打印「这次会吸收哪些差异」，不写任何文件，退出码 1。 |
 | `npm run parity:rebase` / `fingerprint:update` / `test:browser:update` | 重新盖章工具。**会先跑 `npm test`，全绿才写基线**（E1 D4）；绘制轨迹基线尤其需要单独批准。 |
 | `npm run dist:fresh` | `git diff --exit-code -- dist/`：产物是否已随源码一并提交。**只进 CI**，不进 `verify`——提交前跑它必然红。 |
@@ -33,13 +35,20 @@
 改 Canvas 绘制时 `tests/helpers/scenario.mjs` 的 ctx 白名单会对外抛错，这是有意的：
 新增绘制 API 必须显式登记，避免测试默默吞掉画面。
 
-### 重构前的基线在哪里
+### 考古附录：重构前的基线与 `parity:legacy`
+
+> 这一节描述的工具**不属于日常开发流程**。把它们放在附录而不是命令表，
+> 是因为一个按设计就是红色的"护栏"如果被当成护栏，只会训练人对红灯麻木。
 
 工作区不再保存重构前的单文件版本。`npm run parity:legacy` 和 `node headless_test.js`（不带参数）
 需要它时，由 `scripts/legacy-source.js` 执行
 `git show pre-refactor-baseline:植物大战僵尸-网页版.html` 现取到系统临时目录并缓存。
 因此这两个入口要求带该 tag 的完整检出（浅克隆会明确报错），而**不是**绿灯护栏：
 `parity:legacy` 的授权清单停在 P3c，R1 之后的结构迁移差异都会在这里显形，`verify` 链不包含它。
+
+**它现在还值什么**：它是 R0–R6 十轮重构的最终取证能力——如果将来要回答"这次重构到底有没有改变行为"，
+它是唯一能回到起点逐行对照的入口。日常零成本（不在 `verify` 里、不参与任何绿灯判断），
+只在需要考古时花几秒钟。去留结论与理由见 [docs/护栏评估-E8](docs/护栏评估-E8-parity与legacy去留.md)。
 
 ## 两种交付形态
 

@@ -37,9 +37,25 @@ for(const c of CASES){
     const file = baselineFile(c.theme);
 
     if (UPDATE) {
+      // E8：重盖之前先把「这次会吸收什么」打印出来。
+      // 与 parity/fingerprint 的 dry-run 对齐——盖章是吸收差异，不等于验证通过，
+      // 至少要让操作者看见吸收了多少行、第一处不同在哪。
+      const prev = fs.existsSync(file) ? readBaseline(file) : [];
+      let firstDiff = -1;
+      const n = Math.min(prev.length, actual.length);
+      for(let i = 0; i < n; i++){
+        if (prev[i] !== actual[i]) { firstDiff = i; break; }
+      }
+      if (firstDiff < 0 && prev.length !== actual.length) firstDiff = n;
       fs.mkdirSync(BASELINE_DIR, { recursive: true });
       fs.writeFileSync(file, actual.join('\n') + '\n');
-      console.log('已重写 ' + path.relative(process.cwd(), file) + '：' + actual.length + ' 行');
+      console.log('已重写 ' + path.relative(process.cwd(), file) + '：' + actual.length + ' 行'
+        + '（原 ' + prev.length + ' 行，行数差 ' + (actual.length - prev.length) + '）');
+      if (firstDiff >= 0) {
+        console.log('  首个差异在第 ' + (firstDiff + 1) + ' 行');
+        console.log('    原: ' + (prev[firstDiff] === undefined ? '(无)' : prev[firstDiff]));
+        console.log('    新: ' + (actual[firstDiff] === undefined ? '(无)' : actual[firstDiff]));
+      }
       return;
     }
 

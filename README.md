@@ -78,6 +78,8 @@ min 的等价验证方式：`npm run parity:dist:min` 证明它对应同一份�
 `.github/workflows/verify.yml` 在 push / PR 上跑：Node 22、按 lock 安装依赖与 Chromium，
 然后**直接执行 `npm run verify`**，最后补一步 `dist:fresh`。
 
+**已在 GitHub 上实测通过**（2026-11-20，`verify` job 1m8s；5 条绘制轨迹在 ubuntu-latest 上与 macOS 逐行一致）。
+
 这里坚持「一条命令」而不是手抄一份步骤序列，原因是漂移已经真的发生过一次：
 E9 往 `verify` 里加了 `test:inventory`，而 CI 里手写的步骤列表不会自动跟着变，
 于是 CI 漏掉了那条检查。手写一份永不漂移的副本是不存在的，所以让 CI 复用同一条命令。
@@ -106,6 +108,7 @@ E1、E3–E12 这一系列工程轮次（共 11 轮）**只在 Node v22.23.2（m
 | `docs/项目分析-2026-11-20.md` | 接手时的项目分析：架构、领域模型、代码质量、护栏体系评估、风险与建议；§11 起是 E1–E12 的逐轮实施进展 |
 | `docs/工程执行计划-E*.md` | E1–E12 的执行计划与验收记录（护栏收口、三层拆分、背景轨迹、测试清单下限、CI、inline 测试） |
 | `docs/护栏评估-E8-parity与legacy去留.md` | `parity` / `parity:legacy` 去留的结论与理由（结论：保留，但重新定位） |
+| `docs/工程执行计划-E13-CI实跑验证.md` | CI 首次在 GitHub 上真跑的证据，含 Actions 升 v7 的前后对比 |
 | `docs/重构方案-v0.2.md` | 重构总方案与分轮定义（R0–R5） |
 | `docs/重构执行计划-R*.md` | 每轮的执行计划与验收记录（R0 … R5b） |
 | `docs/功能执行计划-F1-迪迦奥特曼.md` | R6 之后的功能轮（新增植物角色），格式与重构轮一致 |

@@ -18,10 +18,10 @@
 | 命令 | 作用 |
 |---|---|
 | `npm run dev` | esbuild watch + 本地服务（默认 `http://localhost:8787/`）。**会把 `/* dev build */` 写进 `dist/` 同名文件**，验收或提交前必须重新 `npm run build`。 |
-| `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 171 KB）。 |
-| `npm run build:min` | 等价验证构建 → `dist/植物大战僵尸-网页版.min.html`（约 102 KB）。只用于验证，`.gitignore` 已排除，不提交。 |
+| `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 172 KB）。 |
+| `npm run build:min` | 等价验证构建 → `dist/植物大战僵尸-网页版.min.html`（约 103 KB）。只用于验证，`.gitignore` 已排除，不提交。 |
 | `npm run verify` | 全链护栏，依次跑 `parity` → `fingerprint` → `test` → `test:inventory` → `parity:dist` → `build` → `test:smoke` → `test:browser`。注意 `parity:dist` 在 `build` **之前**：它检查的是仓库里已提交的那份 dist，不是刚构建出来的自己。 |
-| `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试 + 2 条背景绘制轨迹（布局/夜空那两张整幅背景的唯一防护）。 |
+| `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试 + 2 条背景绘制轨迹（白天/夜间两张整幅战斗背景的唯一防护）+ `scripts/inline.js` 的转义测试。 |
 | `npm run test:smoke` | `headless_test.js` 的 A–I 源码冒烟（打包后在 vm 里跑），保留为第二条独立验证路径。 |
 | `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面与触屏冒烟 + 5 条受控绘制轨迹基线。 |
 | `npm run parity` / `parity:dist` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对。 |
@@ -84,9 +84,12 @@ E9 往 `verify` 里加了 `test:inventory`，而 CI 里手写的步骤列表不�
 
 ## 环境与版本
 
-`package.json` 声明 `engines.node: ">=20"`。本轮（2026-10-29）实际实测过的版本是
+`package.json` 声明 `engines.node: ">=20"`。历史上（2026-10-29）实测过的版本是
 macOS arm64 上的 **Node 20.19.4 / 22.16.0 / 22.23.2**，各自跑通 `npm test`、`npm run test:smoke`、
 `npm run build` + `npm run parity:dist`；其余 20.x/22.x 小版本未逐一验证，不作背书。
+
+E1、E3–E12 这一系列工程轮次（共 11 轮）**只在 Node v22.23.2（macOS arm64）上实测过**，
+未重复覆盖 20.19.4 与 22.16.0。
 
 `src/**` 是 ESM（由 `src/package.json` 的 `"type": "module"` 声明），根包与 `scripts/*.js` 仍是 CommonJS，
 两种制式在 esbuild 打包点汇合，因此不给根包整体加 `type: module`。
@@ -97,9 +100,12 @@ macOS arm64 上的 **Node 20.19.4 / 22.16.0 / 22.23.2**，各自跑通 `npm test
 |---|---|
 | `src/` | 源码：`core/`（世界、战斗、动作、数据）、`render/`（绘制与场景）、`ui/`（界面状态与设备输入）、`audio/`、`platform/`、`shell.html`、`main.js`（只做装配） |
 | `dist/` | 发布产物（见上表） |
-| `tests/` | 规则单测、`scenario-*.test.mjs` 场景测试、`browser/` 真实产物冒烟与绘制轨迹基线 |
-| `scripts/` | 构建与护栏工具（CommonJS），含 `legacy-source.js`（从 tag 现取历史基线到临时目录） |
+| `tests/` | 规则单测、`scenario-*.test.mjs` 场景测试、`inline.test.mjs`（产物内联转义）、`baselines/`（背景绘制轨迹）、`browser/`（真实产物冒烟与 5 条绘制轨迹基线）、`helpers/`、`fixtures/` |
+| `scripts/` | 构建与护栏工具（CommonJS）：`build.js`/`dev.js`/`inline.js`/`esbuild-opts.js` 构建侧；`check-parity.js`/`check-fingerprint.js`/`check-test-inventory.js` 护栏侧；`legacy-source.js` 从 tag 现取历史基线。三份基线：`parity-baseline.txt`/`source-fingerprint.txt`/`tool-fingerprint.txt`，外加 `test-inventory.json` |
 | `headless_test.js` | 历史 A–I 冒烟驱动，仍留在 `verify` 链里（目标固定 `src/main.js`） |
+| `docs/项目分析-2026-11-20.md` | 接手时的项目分析：架构、领域模型、代码质量、护栏体系评估、风险与建议；§11 起是 E1–E12 的逐轮实施进展 |
+| `docs/工程执行计划-E*.md` | E1–E12 的执行计划与验收记录（护栏收口、三层拆分、背景轨迹、测试清单下限、CI、inline 测试） |
+| `docs/护栏评估-E8-parity与legacy去留.md` | `parity` / `parity:legacy` 去留的结论与理由（结论：保留，但重新定位） |
 | `docs/重构方案-v0.2.md` | 重构总方案与分轮定义（R0–R5） |
 | `docs/重构执行计划-R*.md` | 每轮的执行计划与验收记录（R0 … R5b） |
 | `docs/功能执行计划-F1-迪迦奥特曼.md` | R6 之后的功能轮（新增植物角色），格式与重构轮一致 |

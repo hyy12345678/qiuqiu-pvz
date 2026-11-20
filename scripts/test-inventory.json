@@ -25,6 +25,10 @@
       "count": 5
     },
     {
+      "path": "tests/inline.test.mjs",
+      "count": 9
+    },
+    {
       "path": "tests/input.test.mjs",
       "count": 9
     },
@@ -121,5 +125,5 @@
       "count": 8
     }
   ],
-  "total": 182
+  "total": 191
 }

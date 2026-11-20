@@ -25,7 +25,7 @@
 | `npm run test:smoke` | `headless_test.js` 的 A–I 源码冒烟（打包后在 vm 里跑），保留为第二条独立验证路径。 |
 | `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面与触屏冒烟 + 5 条受控绘制轨迹基线。 |
 | `npm run parity` / `parity:dist` / `parity:legacy` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对 / 与重构前基线的行级**溯源对照**（预期非绿，见下）。 |
-| `npm run fingerprint` | `src/**` 原始字节 SHA-256 清单，任何未登记的源码变化都会变红。 |
+| `npm run fingerprint` | 两份 SHA-256 清单：`src/**`（源码）与 `scripts/**`（护栏工具，排除 `*.txt` 基线）。任何未登记的变化都会变红——**包括改护栏工具本身**。 |
 | `npm run parity:rebase:dry` / `fingerprint:update:dry` | **先看**：只打印「这次会吸收哪些差异」，不写任何文件，退出码 1。 |
 | `npm run parity:rebase` / `fingerprint:update` / `test:browser:update` | 重新盖章工具。**会先跑 `npm test`，全绿才写基线**（E1 D4）；绘制轨迹基线尤其需要单独批准。 |
 | `npm run dist:fresh` | `git diff --exit-code -- dist/`：产物是否已随源码一并提交。**只进 CI**，不进 `verify`——提交前跑它必然红。 |

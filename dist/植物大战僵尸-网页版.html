@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src a597fbd8 */
+/* build: v0.1.0 pretty · src 407ed044 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -4751,10 +4751,20 @@
   // src/core/sim.js
   function updatePlay(world, dt) {
     world.t += dt;
+    if (world.visual.nightHint > 0) world.visual.nightHint -= dt;
+    stepSpawns(world, dt);
+    stepPlants(world, dt);
+    stepProjectiles(world, dt);
+    if (stepZombies(world, dt)) return;
+    stepMowers(world, dt);
+    stepSuns(world, dt);
+    stepVisual(world, dt);
+    stepProgress(world, dt);
+  }
+  function stepSpawns(world, dt) {
     const t = world.t;
     const lv = LEVELS[world.level];
     const v = world.visual;
-    if (v.nightHint > 0) v.nightHint -= dt;
     if (t > 0) {
       while (world.evIdx < world.events.length && world.events[world.evIdx].t <= t) {
         const e = world.events[world.evIdx++];
@@ -4771,6 +4781,10 @@
         }
       }
     }
+  }
+  function stepPlants(world, dt) {
+    const t = world.t;
+    const v = world.visual;
     for (let i = world.plants.length - 1; i >= 0; i--) {
       const p = world.plants[i];
       if (p.hp <= 0) {
@@ -4909,6 +4923,9 @@
         }
       }
     }
+  }
+  function stepProjectiles(world, dt) {
+    const v = world.visual;
     for (let i = world.peas.length - 1; i >= 0; i--) {
       const pea = world.peas[i];
       pea.prevX = pea.x;
@@ -4962,6 +4979,10 @@
       }
       if (hit || pea.x > W + 60) world.peas.splice(i, 1);
     }
+  }
+  function stepZombies(world, dt) {
+    const t = world.t;
+    const v = world.visual;
     let lost = false;
     for (let i = world.zombies.length - 1; i >= 0; i--) {
       const z = world.zombies[i];
@@ -5050,8 +5071,12 @@
     if (lost) {
       world.state = "lost";
       world.ports.sound("lose");
-      return;
+      return true;
     }
+    return false;
+  }
+  function stepMowers(world, dt) {
+    const v = world.visual;
     for (const m of world.mowers) {
       if (m.state === "run") {
         m.x += 330 * dt;
@@ -5066,6 +5091,8 @@
         if (m.x > W + 80) m.state = "gone";
       }
     }
+  }
+  function stepSuns(world, dt) {
     for (let i = world.suns.length - 1; i >= 0; i--) {
       const s = world.suns[i];
       s.t += dt;
@@ -5093,6 +5120,9 @@
       }
     }
     if (world.sunFlash > 0) world.sunFlash -= dt;
+  }
+  function stepVisual(world, dt) {
+    const v = world.visual;
     for (let i = v.parts.length - 1; i >= 0; i--) {
       const p = v.parts[i];
       p.life -= dt;
@@ -5119,7 +5149,10 @@
       v.waveText.t += dt;
       if (v.waveText.t > 2.6) v.waveText = null;
     }
-    if (world.evIdx >= world.events.length && world.zombies.length === 0 && t > 0) {
+  }
+  function stepProgress(world, dt) {
+    const v = world.visual;
+    if (world.evIdx >= world.events.length && world.zombies.length === 0 && world.t > 0) {
       world.winT += dt;
       if (world.winT > 1) {
         world.state = "won";

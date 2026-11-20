@@ -1,4 +1,6 @@
 // 关卡推进：一帧之内的全部模拟步骤。渲染字段（AT/hoverCell/mouse/hotspots）不在这里出现。
+// E3：按实体类型切成 step* 函数，updatePlay 只做编排。
+// 步骤顺序即规则顺序：调换任意两步都会改变随机数消耗次序，进而改变整局结果——不要重排。
 
 import { CH, COLS, CW, LX, LY, ROWS, W } from './constants.js';
 import { clamp, easeOut, lerp, rand } from './util.js';
@@ -7,13 +9,26 @@ import { LEVELS } from './data/levels.js';
 import { damageZombie, explode, explodeMissile, findEatTarget, removePlant, spawnSun, spawnZombie, triggerMower } from './entities.js';
 import { addDirtPuff, addFlamePuff, addLeafBurst, addPeaSplat } from './particles.js';
 
+// 出怪 → 植物 → 弹丸 → 僵尸（可能判负并中断本帧）→ 小推车 → 阳光 → 表现 → 结算。
 export function updatePlay(world, dt){
   world.t += dt;
+  if(world.visual.nightHint > 0) world.visual.nightHint -= dt;
+
+  stepSpawns(world, dt);
+  stepPlants(world, dt);
+  stepProjectiles(world, dt);
+  if(stepZombies(world, dt)) return;    // 已判负：小推车、阳光、结算都不再推进
+  stepMowers(world, dt);
+  stepSuns(world, dt);
+  stepVisual(world, dt);
+  stepProgress(world, dt);
+}
+
+// 出怪时刻表与天降阳光。两者都受 t > 0 门控（开场 3.2 秒的白给时间）。
+function stepSpawns(world, dt){
   const t = world.t;
   const lv = LEVELS[world.level];
   const v = world.visual;
-  if(v.nightHint > 0) v.nightHint -= dt;
-
   if(t > 0){
     while(world.evIdx < world.events.length && world.events[world.evIdx].t <= t){
       const e = world.events[world.evIdx++];
@@ -32,8 +47,12 @@ export function updatePlay(world, dt){
       }
     }
   }
+}
 
-  // 植物
+// 植物行为。每种植物一个 case：产阳光、开火、武装、引爆、限时退场。
+function stepPlants(world, dt){
+  const t = world.t;
+  const v = world.visual;
   for(let i=world.plants.length-1;i>=0;i--){
     const p = world.plants[i];
     if(p.hp <= 0){ removePlant(world, p); addLeafBurst(world, p.cx, p.fy-30); continue; }
@@ -139,8 +158,11 @@ export function updatePlay(world, dt){
       }
     }
   }
+}
 
-  // 豌豆
+// 弹丸。光束单独一条语义：每帧只结算「本帧扫过僵尸前沿」的那一刻，因此贯穿且不消失。
+function stepProjectiles(world, dt){
+  const v = world.visual;
   for(let i=world.peas.length-1;i>=0;i--){
     const pea = world.peas[i];
     pea.prevX = pea.x;
@@ -192,8 +214,12 @@ export function updatePlay(world, dt){
     }
     if(hit || pea.x > W+60) world.peas.splice(i,1);
   }
+}
 
-  // 僵尸
+// 僵尸。返回 true 表示本帧已判负——调用方必须中断后续步骤，与拆分前一致。
+function stepZombies(world, dt){
+  const t = world.t;
+  const v = world.visual;
   let lost = false;
   for(let i=world.zombies.length-1;i>=0;i--){
     const z = world.zombies[i];
@@ -270,10 +296,14 @@ export function updatePlay(world, dt){
   if(lost){
     world.state = 'lost';
     world.ports.sound('lose');
-    return;
+    return true;
   }
+  return false;
+}
 
-  // 小推车
+// 小推车：一次性保险，推完即 gone，不回收。
+function stepMowers(world, dt){
+  const v = world.visual;
   for(const m of world.mowers){
     if(m.state==='run'){
       m.x += 330 * dt;
@@ -288,8 +318,10 @@ export function updatePlay(world, dt){
       if(m.x > W+80) m.state = 'gone';
     }
   }
+}
 
-  // 阳光
+// 阳光：下落 → 停留 → 飞向资源栏。到账发生在飞行结束那一帧，不在点击那一帧。
+function stepSuns(world, dt){
   for(let i=world.suns.length-1;i>=0;i--){
     const s = world.suns[i];
     s.t += dt;
@@ -311,8 +343,11 @@ export function updatePlay(world, dt){
     }
   }
   if(world.sunFlash > 0) world.sunFlash -= dt;
+}
 
-  // 粒子 / 焦痕
+// 纯表现：粒子、焦痕、呻吟节奏、波次文字。全部只写 world.visual。
+function stepVisual(world, dt){
+  const v = world.visual;
   for(let i=v.parts.length-1;i>=0;i--){
     const p = v.parts[i];
     p.life -= dt;
@@ -334,8 +369,12 @@ export function updatePlay(world, dt){
     v.waveText.t += dt;
     if(v.waveText.t > 2.6) v.waveText = null;
   }
+}
 
-  if(world.evIdx >= world.events.length && world.zombies.length === 0 && t > 0){
+// 结算与计时器：通关判定、卡片冷却、震屏与白闪衰减。
+function stepProgress(world, dt){
+  const v = world.visual;
+  if(world.evIdx >= world.events.length && world.zombies.length === 0 && world.t > 0){
     world.winT += dt;
     if(world.winT > 1.0){
       world.state = 'won';

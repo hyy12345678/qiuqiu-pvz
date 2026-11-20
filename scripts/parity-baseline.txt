@@ -548,6 +548,8 @@ const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
 const t = e.changedTouches[0];
 const t = world.t;
 const t = world.t;
+const t = world.t;
+const t = world.t;
 const t = world.visual.waveText.t;
 const t0 = this.ctx.currentTime + (delay||0);
 const t0 = this.ctx.currentTime + (delay||0);
@@ -565,6 +567,12 @@ const title = '球球的植物大战僵尸';
 const type = PLANT_ORDER[i];
 const type = isMissile ? 'missile' : 'bullet';
 const type = spawned < 3 ? 'normal' : pickType(lv, Math.max(0, progress-0.2), rng);
+const v = world.visual;
+const v = world.visual;
+const v = world.visual;
+const v = world.visual;
+const v = world.visual;
+const v = world.visual;
 const v = world.visual;
 const vg = ctx.createRadialGradient(W/2, H/2, H*0.55, W/2, H/2, H*0.95);
 const vx = isMissile ? 300 : 520;
@@ -2097,6 +2105,14 @@ function spawnZombie(world, type){
 function start(){
 function startLevel(world, li){
 function startQuiz(world){
+function stepMowers(world, dt){
+function stepPlants(world, dt){
+function stepProgress(world, dt){
+function stepProjectiles(world, dt){
+function stepSpawns(world, dt){
+function stepSuns(world, dt){
+function stepVisual(world, dt){
+function stepZombies(world, dt){
 function toCanvas(canvas, e){
 function togglePause(world){
 function toggleShovel(world, ui){
@@ -2430,6 +2446,7 @@ if(selected) ctx.translate(0,-4);
 if(selected){
 if(slowed){
 if(state === 'play'){
+if(stepZombies(world, dt)) return;
 if(stroke){ ctx.lineWidth = sw||4; ctx.strokeStyle = stroke; ctx.lineJoin='round'; ctx.strokeText(text, x, y); }
 if(stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw||2.5; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.stroke(); }
 if(t < 0.35) scale = 0.4 + easeOut(t/0.35)*0.7;
@@ -2456,14 +2473,13 @@ if(ui.shovel){
 if(v.decals[i].ttl <= 0) v.decals.splice(i,1);
 if(v.flash > 0) v.flash = Math.max(0, v.flash - dt*1.4);
 if(v.groanTimer <= 0){ v.groanTimer = rand(world.fxRng,4,9); world.ports.sound('groan'); }
-if(v.nightHint > 0) v.nightHint -= dt;
 if(v.shake > 0) v.shake -= dt;
 if(v.waveText){
 if(v.waveText.t > 2.6) v.waveText = null;
 if(walk){
 if(won){
 if(won){ g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090'); }
-if(world.evIdx >= world.events.length && world.zombies.length === 0 && t > 0){
+if(world.evIdx >= world.events.length && world.zombies.length === 0 && world.t > 0){
 if(world.fxRng()<0.55){
 if(world.lastRows.length>3) world.lastRows.length = 3;
 if(world.lastRows.length>=2 && world.lastRows[0]===row && world.lastRows[1]===row){
@@ -2496,6 +2512,7 @@ if(world.sun < def.cost){
 if(world.sunFlash > 0) world.sunFlash -= dt;
 if(world.visual.flash > 0){
 if(world.visual.nightHint > 0 && isNight(world)){
+if(world.visual.nightHint > 0) world.visual.nightHint -= dt;
 if(world.visual.shake > 0 && world.state==='play'){
 if(world.winT > 1.0){
 if(world.zombies.length > 0){
@@ -2696,11 +2713,13 @@ return c;
 return check;
 return ctx;
 return false;
+return false;
 return hover;
 return null;
 return qs;
 return r;
 return row>=0 && row<ROWS && col>=0 && col<COLS;
+return true;
 return true;
 return true;
 return {
@@ -2729,7 +2748,6 @@ return { ok:true, kind:'coffee', def };
 return { ok:true, kind:'plant', def };
 return { ok:true, paused:world.paused };
 return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
-return;
 return;
 return;
 return;
@@ -2790,6 +2808,13 @@ startLevel(world, li);
 startSun = (startSun === undefined) ? 50 : startSun;
 state:'menu',
 state:'walk', animT: rand(world.fxRng,0,TAU), eatT:0, slowT:0,
+stepMowers(world, dt);
+stepPlants(world, dt);
+stepProgress(world, dt);
+stepProjectiles(world, dt);
+stepSpawns(world, dt);
+stepSuns(world, dt);
+stepVisual(world, dt);
 suit: slowed ? '#4a5a68' : '#544f46',
 suitD: slowed ? '#394854' : '#3d3931',
 sun(){ this.tone(1046, 1046, 0.08, 'sine', 0.09); this.tone(1568, 1568, 0.1, 'sine', 0.07, 0.06); },
@@ -2998,6 +3023,14 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
 { name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
 { type:'startQuiz' },
+}
+}
+}
+}
+}
+}
+}
+}
 }
 }
 }

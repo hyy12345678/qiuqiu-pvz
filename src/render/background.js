@@ -46,7 +46,7 @@ export function paintBattleBG(night){
   paintSky(R);
   paintLawn(R);
   paintEntryShade();
-  paintHouse();
+  paintHouse(R);
   paintDirtStrip(R);
   paintBottomGrass(R);
   if(night) paintNight(R);
@@ -81,13 +81,14 @@ function paintSky(R){
   ctx.strokeRect(200, LY-22, W-200, 5);
 }
 
-// 草坪：基底、棋盘格、草丛点缀与格线
+// 草坪：基底、棋盘格、斑驳纹理、条纹、草丛点缀、格线与多层光影
 function paintLawn(R){
   let g;
   // 草坪基底
   ctx.fillStyle = '#7dbb43';
   ctx.fillRect(0, LY-4, W, ROWS*CH+8);
-  // 棋盘格（带微渐变）
+
+  // 棋盘格（带微渐变）+ 每格有机斑驳：打破平涂感
   for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
     const x = LX+c*CW, y = LY+r*CH;
     const light = (r+c)%2===0;
@@ -96,23 +97,77 @@ function paintLawn(R){
     else { g.addColorStop(0,'#98cf54'); g.addColorStop(1,'#84bd44'); }
     ctx.fillStyle = g;
     ctx.fillRect(x, y, CW, CH);
+
+    // 每格 16 道横向拉长的草丝光泽：扁而细，读起来像草面反光，不像气泡
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x, y, CW, CH); ctx.clip();
+    for(let k=0;k<16;k++){
+      const bx = x + R()*CW, by = y + R()*CH;
+      const br = 5 + R()*13;
+      ctx.fillStyle = (R() < 0.5) ? 'rgba(88,146,44,0.085)' : 'rgba(210,242,158,0.095)';
+      ctx.beginPath();
+      ctx.ellipse(bx, by, br, br*(0.20 + R()*0.16), R()*0.5-0.25, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
   }
-  // 草丛点缀
-  ctx.strokeStyle = 'rgba(70,120,40,0.5)'; ctx.lineWidth = 1.6; ctx.lineCap='round';
-  for(let k=0;k<150;k++){
+
+  // 割草条纹：竖向浅带，压在棋盘格上形成第二层图案（很淡，只提供方向感）
+  for(let c=1;c<COLS;c+=2){
+    ctx.fillStyle = 'rgba(255,255,255,0.028)';
+    ctx.fillRect(LX+c*CW, LY, CW, ROWS*CH);
+  }
+
+  // 草丛：每丛 3~5 片扇形张开的草叶，带弧度与三档色调。
+  // 原来是三个直上直下的短划，放大后像排版符号；这里改成真正的草簇。
+  ctx.lineCap = 'round';
+  for(let k=0;k<190;k++){
     const x = LX + R()*COLS*CW, y = LY + R()*ROWS*CH;
-    ctx.beginPath();
-    ctx.moveTo(x, y); ctx.lineTo(x-2, y-5-R()*3);
-    ctx.moveTo(x, y); ctx.lineTo(x+1, y-6-R()*3);
-    ctx.moveTo(x, y); ctx.lineTo(x+3, y-4-R()*3);
-    ctx.stroke();
+    const blades = 3 + Math.floor(R()*3);
+    const spread = 0.5 + R()*0.55;              // 扇形张角
+    const tone = R();
+    ctx.strokeStyle = tone < 0.52 ? 'rgba(62,108,32,0.55)'
+      : (tone < 0.84 ? 'rgba(154,204,98,0.50)' : 'rgba(44,84,22,0.52)');
+    for(let b=0;b<blades;b++){
+      const a = (blades===1 ? 0 : (b/(blades-1) - 0.5)) * spread;
+      const len = 5.5 + R()*7.5;
+      ctx.lineWidth = 1.05 + R()*0.55;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.quadraticCurveTo(
+        x + Math.sin(a)*len*0.42,
+        y - len*0.72,
+        x + Math.sin(a)*len,
+        y - Math.cos(a)*len,
+      );
+      ctx.stroke();
+    }
   }
+
   // 棋盘格描边
   ctx.strokeStyle = 'rgba(60,95,30,0.25)'; ctx.lineWidth = 1.5;
   for(let c=0;c<=COLS;c++){ ctx.beginPath(); ctx.moveTo(LX+c*CW, LY); ctx.lineTo(LX+c*CW, LY+ROWS*CH); ctx.stroke(); }
   for(let r=0;r<=ROWS;r++){ ctx.beginPath(); ctx.moveTo(LX, LY+r*CH); ctx.lineTo(LX+COLS*CW, LY+r*CH); ctx.stroke(); }
   ctx.strokeStyle = 'rgba(45,80,22,0.5)'; ctx.lineWidth = 2.5;
   ctx.strokeRect(LX-1, LY-1, COLS*CW+2, ROWS*CH+2);
+
+  // ---- 光影层：方向统一为「光从左上来」 ----
+  // 左侧房屋投下的软阴影
+  g = ctx.createLinearGradient(LX, 0, LX+60, 0);
+  g.addColorStop(0,'rgba(28,54,14,0.30)'); g.addColorStop(1,'rgba(28,54,14,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(LX, LY, 60, ROWS*CH);
+  // 顶部栅栏投下的窄阴影
+  g = ctx.createLinearGradient(0, LY, 0, LY+26);
+  g.addColorStop(0,'rgba(28,54,14,0.24)'); g.addColorStop(1,'rgba(28,54,14,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(LX, LY, COLS*CW, 26);
+  // 四周轻微压暗，把视线收到中间
+  g = ctx.createRadialGradient(LX+COLS*CW*0.42, LY+ROWS*CH*0.44, ROWS*CH*0.30,
+                               LX+COLS*CW*0.42, LY+ROWS*CH*0.44, COLS*CW*0.72);
+  g.addColorStop(0,'rgba(20,44,10,0)'); g.addColorStop(1,'rgba(20,44,10,0.15)');
+  ctx.fillStyle = g;
+  ctx.fillRect(LX, LY, COLS*CW, ROWS*CH);
 }
 
 // 右侧入场暗区（僵尸从这边进来的视觉暗示）
@@ -124,7 +179,7 @@ function paintEntryShade(){
 }
 
 // 左侧房屋：墙面、木板缝、屋檐、砖基座、两扇窗、门廊立柱与壁灯
-function paintHouse(){
+function paintHouse(R){
   let g;
   const y0 = HOUSE_Y0, y1 = HOUSE_Y1;
   g = ctx.createLinearGradient(0,0,198,0);
@@ -136,6 +191,27 @@ function paintHouse(){
   for(let y=y0+20; y<y1; y+=22){
     ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(198,y); ctx.stroke();
   }
+  // 木板缝下沿的高光：让每道缝有一点厚度，而不是一条细线
+  ctx.strokeStyle = 'rgba(255,248,226,0.5)'; ctx.lineWidth = 1.2;
+  for(let y=y0+21.4; y<y1; y+=22){
+    ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(198,y); ctx.stroke();
+  }
+  // 木纹：极淡的竖向短划，打破整片平色
+  ctx.strokeStyle = 'rgba(150,118,74,0.13)'; ctx.lineWidth = 1;
+  for(let k=0;k<90;k++){
+    const gx = R()*196, gy = y0 + 8 + R()*(y1-y0-16);
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + 3 + R()*9); ctx.stroke();
+  }
+  // 檐口投影：屋顶下方的墙面进入阴影
+  g = ctx.createLinearGradient(0, y0+16, 0, y0+64);
+  g.addColorStop(0,'rgba(74,52,26,0.30)'); g.addColorStop(1,'rgba(74,52,26,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, y0+16, 198, 48);
+  // 墙脚投影：靠近地面更暗
+  g = ctx.createLinearGradient(0, y1-70, 0, y1-26);
+  g.addColorStop(0,'rgba(74,52,26,0)'); g.addColorStop(1,'rgba(74,52,26,0.16)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, y1-70, 198, 44);
   // 屋顶檐口
   ctx.fillStyle = '#8a5c34';
   ctx.fillRect(0, y0, 200, 12);
@@ -198,6 +274,25 @@ function paintDirtStrip(R){
       ctx.fill();
     }
   }
+  // 石子：上亮下暗的小椭圆，给这条泥带一点体积感
+  for(let k=0;k<70;k++){
+    const px = 202 + R()*58, py = LY - 2 + R()*(ROWS*CH + 6);
+    const pr = 1.2 + R()*2.2;
+    ctx.fillStyle = 'rgba(96,72,40,0.55)';
+    ctx.beginPath(); ctx.ellipse(px, py + pr*0.45, pr, pr*0.72, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = R() < 0.5 ? 'rgba(214,190,148,0.85)' : 'rgba(178,152,110,0.8)';
+    ctx.beginPath(); ctx.ellipse(px, py, pr, pr*0.72, 0, 0, TAU); ctx.fill();
+  }
+  // 靠草坪一侧的暗边：泥地陷在推车带里，不与草坪齐平
+  let edge = ctx.createLinearGradient(LX-16, 0, LX, 0);
+  edge.addColorStop(0,'rgba(66,46,22,0)'); edge.addColorStop(1,'rgba(66,46,22,0.35)');
+  ctx.fillStyle = edge;
+  ctx.fillRect(LX-16, LY-4, 16, ROWS*CH+8);
+  // 靠房屋一侧的投影
+  edge = ctx.createLinearGradient(198, 0, 214, 0);
+  edge.addColorStop(0,'rgba(66,46,22,0.34)'); edge.addColorStop(1,'rgba(66,46,22,0)');
+  ctx.fillStyle = edge;
+  ctx.fillRect(198, LY-4, 16, ROWS*CH+8);
 }
 
 // 草坪下方的草地与小花

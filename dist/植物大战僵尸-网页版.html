@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src fbaeaf5f */
+/* build: v0.1.0 pretty · src c929f45f */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -3860,7 +3860,7 @@
     paintSky(R);
     paintLawn(R);
     paintEntryShade();
-    paintHouse();
+    paintHouse(R);
     paintDirtStrip(R);
     paintBottomGrass(R);
     if (night) paintNight(R);
@@ -3921,20 +3921,45 @@
       }
       ctx.fillStyle = g;
       ctx.fillRect(x, y, CW, CH);
-    }
-    ctx.strokeStyle = "rgba(70,120,40,0.5)";
-    ctx.lineWidth = 1.6;
-    ctx.lineCap = "round";
-    for (let k = 0; k < 150; k++) {
-      const x = LX + R() * COLS * CW, y = LY + R() * ROWS * CH;
+      ctx.save();
       ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.lineTo(x - 2, y - 5 - R() * 3);
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + 1, y - 6 - R() * 3);
-      ctx.moveTo(x, y);
-      ctx.lineTo(x + 3, y - 4 - R() * 3);
-      ctx.stroke();
+      ctx.rect(x, y, CW, CH);
+      ctx.clip();
+      for (let k = 0; k < 16; k++) {
+        const bx = x + R() * CW, by = y + R() * CH;
+        const br = 5 + R() * 13;
+        ctx.fillStyle = R() < 0.5 ? "rgba(88,146,44,0.085)" : "rgba(210,242,158,0.095)";
+        ctx.beginPath();
+        ctx.ellipse(bx, by, br, br * (0.2 + R() * 0.16), R() * 0.5 - 0.25, 0, TAU);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    for (let c = 1; c < COLS; c += 2) {
+      ctx.fillStyle = "rgba(255,255,255,0.028)";
+      ctx.fillRect(LX + c * CW, LY, CW, ROWS * CH);
+    }
+    ctx.lineCap = "round";
+    for (let k = 0; k < 190; k++) {
+      const x = LX + R() * COLS * CW, y = LY + R() * ROWS * CH;
+      const blades = 3 + Math.floor(R() * 3);
+      const spread = 0.5 + R() * 0.55;
+      const tone = R();
+      ctx.strokeStyle = tone < 0.52 ? "rgba(62,108,32,0.55)" : tone < 0.84 ? "rgba(154,204,98,0.50)" : "rgba(44,84,22,0.52)";
+      for (let b = 0; b < blades; b++) {
+        const a = (blades === 1 ? 0 : b / (blades - 1) - 0.5) * spread;
+        const len = 5.5 + R() * 7.5;
+        ctx.lineWidth = 1.05 + R() * 0.55;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.quadraticCurveTo(
+          x + Math.sin(a) * len * 0.42,
+          y - len * 0.72,
+          x + Math.sin(a) * len,
+          y - Math.cos(a) * len
+        );
+        ctx.stroke();
+      }
     }
     ctx.strokeStyle = "rgba(60,95,30,0.25)";
     ctx.lineWidth = 1.5;
@@ -3953,6 +3978,28 @@
     ctx.strokeStyle = "rgba(45,80,22,0.5)";
     ctx.lineWidth = 2.5;
     ctx.strokeRect(LX - 1, LY - 1, COLS * CW + 2, ROWS * CH + 2);
+    g = ctx.createLinearGradient(LX, 0, LX + 60, 0);
+    g.addColorStop(0, "rgba(28,54,14,0.30)");
+    g.addColorStop(1, "rgba(28,54,14,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(LX, LY, 60, ROWS * CH);
+    g = ctx.createLinearGradient(0, LY, 0, LY + 26);
+    g.addColorStop(0, "rgba(28,54,14,0.24)");
+    g.addColorStop(1, "rgba(28,54,14,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(LX, LY, COLS * CW, 26);
+    g = ctx.createRadialGradient(
+      LX + COLS * CW * 0.42,
+      LY + ROWS * CH * 0.44,
+      ROWS * CH * 0.3,
+      LX + COLS * CW * 0.42,
+      LY + ROWS * CH * 0.44,
+      COLS * CW * 0.72
+    );
+    g.addColorStop(0, "rgba(20,44,10,0)");
+    g.addColorStop(1, "rgba(20,44,10,0.15)");
+    ctx.fillStyle = g;
+    ctx.fillRect(LX, LY, COLS * CW, ROWS * CH);
   }
   function paintEntryShade() {
     const g = ctx.createLinearGradient(LX + COLS * CW, 0, W, 0);
@@ -3961,7 +4008,7 @@
     ctx.fillStyle = g;
     ctx.fillRect(LX + COLS * CW, LY - 34, W - (LX + COLS * CW), ROWS * CH + 38);
   }
-  function paintHouse() {
+  function paintHouse(R) {
     let g;
     const y0 = HOUSE_Y0, y1 = HOUSE_Y1;
     g = ctx.createLinearGradient(0, 0, 198, 0);
@@ -3977,6 +4024,33 @@
       ctx.lineTo(198, y);
       ctx.stroke();
     }
+    ctx.strokeStyle = "rgba(255,248,226,0.5)";
+    ctx.lineWidth = 1.2;
+    for (let y = y0 + 21.4; y < y1; y += 22) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(198, y);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = "rgba(150,118,74,0.13)";
+    ctx.lineWidth = 1;
+    for (let k = 0; k < 90; k++) {
+      const gx = R() * 196, gy = y0 + 8 + R() * (y1 - y0 - 16);
+      ctx.beginPath();
+      ctx.moveTo(gx, gy);
+      ctx.lineTo(gx, gy + 3 + R() * 9);
+      ctx.stroke();
+    }
+    g = ctx.createLinearGradient(0, y0 + 16, 0, y0 + 64);
+    g.addColorStop(0, "rgba(74,52,26,0.30)");
+    g.addColorStop(1, "rgba(74,52,26,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, y0 + 16, 198, 48);
+    g = ctx.createLinearGradient(0, y1 - 70, 0, y1 - 26);
+    g.addColorStop(0, "rgba(74,52,26,0)");
+    g.addColorStop(1, "rgba(74,52,26,0.16)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, y1 - 70, 198, 44);
     ctx.fillStyle = "#8a5c34";
     ctx.fillRect(0, y0, 200, 12);
     ctx.fillStyle = "#6b4522";
@@ -4081,6 +4155,28 @@
         ctx.fill();
       }
     }
+    for (let k = 0; k < 70; k++) {
+      const px = 202 + R() * 58, py = LY - 2 + R() * (ROWS * CH + 6);
+      const pr = 1.2 + R() * 2.2;
+      ctx.fillStyle = "rgba(96,72,40,0.55)";
+      ctx.beginPath();
+      ctx.ellipse(px, py + pr * 0.45, pr, pr * 0.72, 0, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = R() < 0.5 ? "rgba(214,190,148,0.85)" : "rgba(178,152,110,0.8)";
+      ctx.beginPath();
+      ctx.ellipse(px, py, pr, pr * 0.72, 0, 0, TAU);
+      ctx.fill();
+    }
+    let edge = ctx.createLinearGradient(LX - 16, 0, LX, 0);
+    edge.addColorStop(0, "rgba(66,46,22,0)");
+    edge.addColorStop(1, "rgba(66,46,22,0.35)");
+    ctx.fillStyle = edge;
+    ctx.fillRect(LX - 16, LY - 4, 16, ROWS * CH + 8);
+    edge = ctx.createLinearGradient(198, 0, 214, 0);
+    edge.addColorStop(0, "rgba(66,46,22,0.34)");
+    edge.addColorStop(1, "rgba(66,46,22,0)");
+    ctx.fillStyle = edge;
+    ctx.fillRect(198, LY - 4, 16, ROWS * CH + 8);
   }
   function paintBottomGrass(R) {
     const g = ctx.createLinearGradient(0, LY + ROWS * CH, 0, H);
@@ -5257,15 +5353,18 @@
     }
     let last;
     function frame(timestamp) {
-      let dt = (timestamp - last) / 1e3;
-      last = timestamp;
-      dt = Math.min(dt, 0.05);
-      frameState2.t += dt;
-      frameState2.musicOn = audio.musicOn;
-      if (world.state === "play" && !world.paused) updatePlay(world, dt);
-      else if (world.state === "quiz") updateQuiz(world, dt);
-      render2(world, ui, frameState2);
-      requestFrame(frame);
+      try {
+        let dt = (timestamp - last) / 1e3;
+        last = timestamp;
+        dt = Math.min(dt, 0.05);
+        frameState2.t += dt;
+        frameState2.musicOn = audio.musicOn;
+        if (world.state === "play" && !world.paused) updatePlay(world, dt);
+        else if (world.state === "quiz") updateQuiz(world, dt);
+        render2(world, ui, frameState2);
+      } finally {
+        requestFrame(frame);
+      }
     }
     function start() {
       last = now();

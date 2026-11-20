@@ -52,14 +52,21 @@ export function createGame({ world, ui, frameState, audio, render, now, requestF
 
   let last;
   function frame(timestamp){
-    let dt = (timestamp-last)/1000; last = timestamp;
-    dt = Math.min(dt, 0.05);
-    frameState.t += dt;
-    frameState.musicOn = audio.musicOn;
-    if(world.state==='play' && !world.paused) updatePlay(world, dt);
-    else if(world.state==='quiz') updateQuiz(world, dt);
-    render(world, ui, frameState);
-    requestFrame(frame);
+    try {
+      let dt = (timestamp-last)/1000; last = timestamp;
+      dt = Math.min(dt, 0.05);
+      frameState.t += dt;
+      frameState.musicOn = audio.musicOn;
+      if(world.state==='play' && !world.paused) updatePlay(world, dt);
+      else if(world.state==='quiz') updateQuiz(world, dt);
+      render(world, ui, frameState);
+    } finally {
+      // 一帧抛错也必须继续排下一帧。原来 requestFrame 在最后一行，任何一次
+      // render/update 抛异常都会让 rAF 链永久断掉：玩家看到的是「画面冻住」，
+      // 而控制台里只有一行错误，极难定位。
+      // 代价是持续出错时会逐帧刷错误——但那至少是可见的，冻死不是。
+      requestFrame(frame);
+    }
   }
 
   function start(){

@@ -12,6 +12,9 @@ import { drawZombieHeadIcon } from './zombie.js';
 
 const BANK_Y = 8, BANK_H = 88;
 const CARD_X0 = 148, CARD_W = 60, CARD_H = 84, CARD_GAP = 6;
+// 卡槽按最宽的关卡（8 卡）预留宽度，铲子按钮固定在它右侧。
+// 这是布局常量而非"当前关卡卡数"：若改成读 world.slots.length，6/7 卡关卡里铲子会左右跳。
+const MAX_CARDS = 8;
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
 
 export function drawSeedBank(t, world, ui){
@@ -97,7 +100,7 @@ export function drawSeedBank(t, world, ui){
     ctx.restore();
   }
 
-  const sx = CARD_X0 + 8*(CARD_W+CARD_GAP) + 8, sy = BANK_Y+8;
+  const sx = CARD_X0 + MAX_CARDS*(CARD_W+CARD_GAP) + 8, sy = BANK_Y+8;
   const active = ui.shovel;
   const hoverS = ui.mouse.x>=sx && ui.mouse.x<=sx+64 && ui.mouse.y>=sy && ui.mouse.y<=sy+72;
   addHotspot(ui, sx, sy, 64, 72, 'shovel', { type:'shovel' });

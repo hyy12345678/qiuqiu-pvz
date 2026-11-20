@@ -12,7 +12,13 @@ function inBounds(row, col){
   return row>=0 && row<ROWS && col>=0 && col<COLS;
 }
 
-// 只读判断：悬停提示与提交动作共用。咖啡豆沿用旧规则——提交时不重复校验阳光。
+// 只读判断：悬停提示与提交动作共用。
+//
+// 咖啡豆分支不校验阳光，这是有意保留的旧规则，且当前**不可达**：
+// 选卡入口 pickSlot 已经要求 world.sun >= def.cost，而一次只能选中一张卡，
+// 从选中到点格子之间没有任何路径能让阳光减少。因此这里少一道检查不会把阳光扣成负数。
+// 若将来出现「同时选中多张卡」或「选卡后仍可消费阳光」的机制，必须在这里补上校验——
+// 否则 useCard 的 coffee 分支会绕过 pickSlot 的门直接扣费。
 export function inspectUseCard(world, slotIndex, row, col){
   if(!inBounds(row, col)) return { ok:false, reason:'out-of-bounds' };
   const s = world.slots[slotIndex];

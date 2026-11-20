@@ -268,6 +268,7 @@ const ICON_FIT = { tiga: 0.76 };
 const ICON_POSE = {
 const LEVELS = [
 const LX = 265, LY = 112;
+const MAX_CARDS = 8;
 const MELODY = [
 const MUSIC_BEAT = 0.4, MUSIC_LOOP = 24 * MUSIC_BEAT;
 const NOTE = { A2:110, C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196,
@@ -534,7 +535,7 @@ const sw = Math.sin(t*1.5 + ph)*1.4;
 const sw2 = sub.length * 21 + 56;
 const sway = Math.sin(t*1.9+ph)*3, bob = Math.sin(t*2.2+ph)*2.4;
 const swing = walk ? Math.sin(ph) : 0;
-const sx = CARD_X0 + 8*(CARD_W+CARD_GAP) + 8, sy = BANK_Y+8;
+const sx = CARD_X0 + MAX_CARDS*(CARD_W+CARD_GAP) + 8, sy = BANK_Y+8;
 const sx = R()*W, sy = 6 + R()*(LY-56), tw = 0.45 + R()*0.55;
 const sx0 = W/2 - (lv.slots*(slotW+10))/2 + 5;
 const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
@@ -604,8 +605,8 @@ const yy = -58 - ((t*46 + k*29) % 34);
 const yy = -9 + k*5.4;
 const z = world.zombies[i];
 const zc = Math.floor((z.x - LX)/CW);
+const zombiesByRow = Array.from({ length: ROWS }, () => []);
 const zs = lv.types.map(t=>t[0]).slice(0,5);
-const zs = world.zombies.filter(z=>z.row===r).sort((a,b)=>a.x-b.x);
 const zt = lv.types[k][0];
 const zx = 640, zy = 270;
 const zx0 = x+cardW/2 - (zs.length-1)*21;
@@ -1906,6 +1907,7 @@ for(const p of world.peas) drawPea(p);
 for(const p of world.plants) if(p.row===r) drawPlantEntity(t, p);
 for(const p of world.plants){
 for(const p of world.visual.parts){
+for(const row of zombiesByRow) row.sort((a, b) => a.x - b.x);
 for(const s of [[-6,-step],[6,step]]){
 for(const s of [[8,-36,2.6],[-11.5,-30,2.1],[2.5,-24.5,1.8]]){
 for(const s of world.slots) if(s.cool > 0) s.cool = Math.max(0, s.cool - dt);
@@ -1913,6 +1915,7 @@ for(const s of world.suns) drawSun(t, s);
 for(const sx of [22, 738]){
 for(const wy of [LY+34, LY+ROWS*CH-140]){
 for(const wy of [LY+34, LY+ROWS*CH-140]){
+for(const z of world.zombies) zombiesByRow[z.row].push(z);
 for(const z of world.zombies){
 for(const z of world.zombies){
 for(const z of world.zombies){
@@ -1920,7 +1923,7 @@ for(const z of world.zombies){
 for(const z of world.zombies){
 for(const z of world.zombies){
 for(const z of world.zombies){
-for(const z of zs) drawZombieEntity(t, z);
+for(const z of zombiesByRow[r]) drawZombieEntity(t, z);
 for(const z2 of world.zombies){
 for(let bar=0; bar<8; bar++){
 for(let c=0;c<13;c++){
@@ -2898,6 +2901,7 @@ tone(f0,f1,dur,type,vol,delay){
 torch: (t, p) => drawTorch(t, p.phase),
 torch: { name:'火炬树桩', cost:175, hp:300, cool:7.5, desc:'让穿过的豌豆变成火豌豆' },
 torch: { phase:8 },
+try {
 try { return fn(); }
 try{
 type, row,
@@ -3422,6 +3426,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 }
 }
 }
+}
 } else if(acc==='bucket'){
 } else if(acc==='flag'){
 } else if(acc==='newspaper'){
@@ -3460,6 +3465,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 } else {
 } else {
 } else {
+} finally {
 });
 });
 });

@@ -14,18 +14,24 @@ import { renderEndOverlay } from './end.js';
 export function render(world, ui, frame){
   clearHotspots(ui);
   ctx.save();
-  if(world.visual.shake > 0 && world.state==='play'){
-    ctx.translate(rand(frame.rng,-1,1)*world.visual.shake*14, rand(frame.rng,-1,1)*world.visual.shake*14);
+  // E10：restore 必须在 finally 里。绘制抛错时若不恢复，ctx 的 save 栈会永久错位，
+  // 之后每一帧都画在上一层变换上；后面的暗角也会再压一层。异常仍然向上抛，
+  // 但至少不会把故障扩散成"画面整体漂移"这种更难诊断的症状。
+  try {
+    if(world.visual.shake > 0 && world.state==='play'){
+      ctx.translate(rand(frame.rng,-1,1)*world.visual.shake*14, rand(frame.rng,-1,1)*world.visual.shake*14);
+    }
+    if(world.state==='menu') renderMenu(frame.t, world, ui, frame.musicOn);
+    else if(world.state==='help') renderHelp(frame.t, world, ui);
+    else if(world.state==='select') renderSelect(frame.t, world, ui);
+    else if(world.state==='quiz') renderQuiz(frame.t, world, ui);
+    else {
+      renderPlay(frame.t, world, ui, frame.musicOn);
+      if(world.state==='won' || world.state==='lost') renderEndOverlay(frame.t, world, ui);
+    }
+  } finally {
+    ctx.restore();
   }
-  if(world.state==='menu') renderMenu(frame.t, world, ui, frame.musicOn);
-  else if(world.state==='help') renderHelp(frame.t, world, ui);
-  else if(world.state==='select') renderSelect(frame.t, world, ui);
-  else if(world.state==='quiz') renderQuiz(frame.t, world, ui);
-  else {
-    renderPlay(frame.t, world, ui, frame.musicOn);
-    if(world.state==='won' || world.state==='lost') renderEndOverlay(frame.t, world, ui);
-  }
-  ctx.restore();
   // 轻微暗角
   const vg = ctx.createRadialGradient(W/2, H/2, H*0.55, W/2, H/2, H*0.95);
   vg.addColorStop(0,'rgba(0,0,0,0)');

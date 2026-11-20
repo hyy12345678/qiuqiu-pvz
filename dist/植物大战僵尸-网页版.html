@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 3a50125c */
+/* build: v0.1.0 pretty · src fbaeaf5f */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -2590,6 +2590,7 @@
   var CARD_W = 60;
   var CARD_H = 84;
   var CARD_GAP = 6;
+  var MAX_CARDS = 8;
   var SUN_BOX = { x: 14, y: BANK_Y, w: 120, h: BANK_H };
   function drawSeedBank(t, world, ui) {
     let g = ctx.createLinearGradient(0, BANK_Y, 0, BANK_Y + BANK_H);
@@ -2699,7 +2700,7 @@
       }
       ctx.restore();
     }
-    const sx = CARD_X0 + 8 * (CARD_W + CARD_GAP) + 8, sy = BANK_Y + 8;
+    const sx = CARD_X0 + MAX_CARDS * (CARD_W + CARD_GAP) + 8, sy = BANK_Y + 8;
     const active = ui.shovel;
     const hoverS = ui.mouse.x >= sx && ui.mouse.x <= sx + 64 && ui.mouse.y >= sy && ui.mouse.y <= sy + 72;
     addHotspot(ui, sx, sy, 64, 72, "shovel", { type: "shovel" });
@@ -4610,10 +4611,12 @@
         }
       }
     }
+    const zombiesByRow = Array.from({ length: ROWS }, () => []);
+    for (const z of world.zombies) zombiesByRow[z.row].push(z);
+    for (const row of zombiesByRow) row.sort((a, b) => a.x - b.x);
     for (let r = 0; r < ROWS; r++) {
       for (const p of world.plants) if (p.row === r) drawPlantEntity(t, p);
-      const zs = world.zombies.filter((z) => z.row === r).sort((a, b) => a.x - b.x);
-      for (const z of zs) drawZombieEntity(t, z);
+      for (const z of zombiesByRow[r]) drawZombieEntity(t, z);
     }
     for (const p of world.peas) drawPea(p);
     for (const p of world.visual.parts) {
@@ -4739,18 +4742,21 @@
   function render(world, ui, frame) {
     clearHotspots(ui);
     ctx.save();
-    if (world.visual.shake > 0 && world.state === "play") {
-      ctx.translate(rand(frame.rng, -1, 1) * world.visual.shake * 14, rand(frame.rng, -1, 1) * world.visual.shake * 14);
+    try {
+      if (world.visual.shake > 0 && world.state === "play") {
+        ctx.translate(rand(frame.rng, -1, 1) * world.visual.shake * 14, rand(frame.rng, -1, 1) * world.visual.shake * 14);
+      }
+      if (world.state === "menu") renderMenu(frame.t, world, ui, frame.musicOn);
+      else if (world.state === "help") renderHelp(frame.t, world, ui);
+      else if (world.state === "select") renderSelect(frame.t, world, ui);
+      else if (world.state === "quiz") renderQuiz(frame.t, world, ui);
+      else {
+        renderPlay(frame.t, world, ui, frame.musicOn);
+        if (world.state === "won" || world.state === "lost") renderEndOverlay(frame.t, world, ui);
+      }
+    } finally {
+      ctx.restore();
     }
-    if (world.state === "menu") renderMenu(frame.t, world, ui, frame.musicOn);
-    else if (world.state === "help") renderHelp(frame.t, world, ui);
-    else if (world.state === "select") renderSelect(frame.t, world, ui);
-    else if (world.state === "quiz") renderQuiz(frame.t, world, ui);
-    else {
-      renderPlay(frame.t, world, ui, frame.musicOn);
-      if (world.state === "won" || world.state === "lost") renderEndOverlay(frame.t, world, ui);
-    }
-    ctx.restore();
     const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.55, W / 2, H / 2, H * 0.95);
     vg.addColorStop(0, "rgba(0,0,0,0)");
     vg.addColorStop(1, "rgba(10,20,8,0.22)");

@@ -68,10 +68,15 @@ export function renderPlay(t, world, ui, musicOn){
     }
   }
 
+  // E10：僵尸按行分桶一次、每行排一次，替代原来的「每行各 filter 一遍整张表再 sort」。
+  // 绘制顺序与原实现完全一致（行内仍按 x 升序），只是少做了 5 次全表扫描与 5 次分配。
+  const zombiesByRow = Array.from({ length: ROWS }, () => []);
+  for(const z of world.zombies) zombiesByRow[z.row].push(z);
+  for(const row of zombiesByRow) row.sort((a, b) => a.x - b.x);
+
   for(let r=0;r<ROWS;r++){
     for(const p of world.plants) if(p.row===r) drawPlantEntity(t, p);
-    const zs = world.zombies.filter(z=>z.row===r).sort((a,b)=>a.x-b.x);
-    for(const z of zs) drawZombieEntity(t, z);
+    for(const z of zombiesByRow[r]) drawZombieEntity(t, z);
   }
 
   for(const p of world.peas) drawPea(p);

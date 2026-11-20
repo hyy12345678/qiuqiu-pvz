@@ -262,6 +262,8 @@ const CW = 80, CH = 96;
 const DRAW_SEED_XOR = 0x51ED270B;
 const FX_SEED_XOR = 0x9E3779B9;
 const G = createWorld({ seed: SEED, ports, unlocked: loadUnlocked(), unlockAll: loadUnlockAll() });
+const HOUSE_Y0 = LY-34;
+const HOUSE_Y1 = LY+ROWS*CH+4;
 const ICON_FIT = { tiga: 0.76 };
 const ICON_POSE = {
 const LEVELS = [
@@ -387,6 +389,8 @@ const fx = R()*W, fy = LY + 22 + R()*(ROWS*CH-26);
 const fx = inner.x + inner.w*(1-frac);
 const fy = fyBase + (z.vy || 0);
 const fyBase = (fyOverride !== undefined) ? fyOverride : LY + (z.row+1)*CH - 4;
+const g = ctx.createLinearGradient(0,LY+ROWS*CH,0,H);
+const g = ctx.createLinearGradient(LX+COLS*CW, 0, W, 0);
 const g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);
 const g = this.ctx.createGain(); g.gain.setValueAtTime(vol, t0);
 const game = createGame({
@@ -593,7 +597,8 @@ const y = BANK_Y + 12 + k*17;
 const y = BANK_Y + 2;
 const y = LY + 34 + ((k*101) % (ROWS*CH-56)) + Math.sin(t*0.85+k*2.1)*16;
 const y = LY + 46 + ((k*89) % (ROWS*CH-70)) + Math.sin(t*0.9+k*1.7)*13;
-const y0 = LY-34, y1 = LY+ROWS*CH+4;
+const y0 = HOUSE_Y0, y1 = HOUSE_Y1;
+const y0 = HOUSE_Y0;
 const yy = -30 - k*22;
 const yy = -58 - ((t*46 + k*29) % 34);
 const yy = -9 + k*5.4;
@@ -2087,6 +2092,13 @@ function loadUnlocked(){ try{ return clamp(parseInt(localStorage.getItem('pvzweb
 function makeQuiz(rng = Math.random){
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function paintBattleBG(night){
+function paintBottomGrass(R){
+function paintDirtStrip(R){
+function paintEntryShade(){
+function paintHouse(){
+function paintLawn(R){
+function paintNight(R){
+function paintSky(R){
 function pickSlot(world, ui, slotIndex){
 function pickTeamPlant(world, ui, type){
 function pickType(lv, prog, rng){
@@ -2149,13 +2161,11 @@ g = ctx.createLinearGradient(0,0,198,0);
 g = ctx.createLinearGradient(0,70,0,H-40);
 g = ctx.createLinearGradient(0,BANK_Y,0,BANK_Y+BANK_H);
 g = ctx.createLinearGradient(0,H-150,0,H);
-g = ctx.createLinearGradient(0,LY+ROWS*CH,0,H);
 g = ctx.createLinearGradient(0,y+4,0,y+h-4);
 g = ctx.createLinearGradient(0,y,0,y+CH);
 g = ctx.createLinearGradient(198,0,LX,0);
 g = ctx.createLinearGradient(54,wy,54,wy+94);
 g = ctx.createLinearGradient(62,wy,62,wy+92);
-g = ctx.createLinearGradient(LX+COLS*CW, 0, W, 0);
 g = ctx.createRadialGradient(-4,-4,2, 0,0,16);
 g = ctx.createRadialGradient(-6,-40,3, 0,-31,23);
 g = ctx.createRadialGradient(-6,-8,4, 0,0,25);
@@ -2394,7 +2404,7 @@ if(m.state==='run'){
 if(m.x > W+80) m.state = 'gone';
 if(m[0] > this.lastBeat && m[0] <= ahead){
 if(muzzle > 0){
-if(night){
+if(night) paintNight(R);
 if(night){
 if(ok && !isCoffee){
 if(on){
@@ -2605,6 +2615,10 @@ let g = ctx.createRadialGradient(hx-8,hy-9,4, hx,hy,26);
 let g = ctx.createRadialGradient(ox+36,oy,1, ox+36,oy,14);
 let g = ctx.createRadialGradient(x-r*0.35,y-r*0.42,r*0.12, x,y,r*1.15);
 let g2 = ctx.createLinearGradient(0,sy,0,sy+72);
+let g;
+let g;
+let g;
+let g;
 let gi = ctx.createLinearGradient(0,zy,0,zy+220);
 let guard = 0;
 let has = false;
@@ -2678,6 +2692,12 @@ p.recoil = Math.max(0, p.recoil - dt*(p.type==='qiuqiu' ? 4 : 1.4));
 p.sunT -= dt;
 p.sunT = rand(world.rng,8, 10);
 p.x += p.vx*dt; p.y += p.vy*dt;
+paintBottomGrass(R);
+paintDirtStrip(R);
+paintEntryShade();
+paintHouse();
+paintLawn(R);
+paintSky(R);
 pants: slowed ? '#42525e' : '#4d463c',
 paper: type==='newspaper' ? ZTYPES.newspaper.acc : 0, angry:false,
 paperTear(){ this.noise(0.18, 0.16, 5200); this.tone(1400, 420, 0.16, 'sawtooth', 0.05); },
@@ -3054,6 +3074,12 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
 { name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
 { type:'startQuiz' },
+}
+}
+}
+}
+}
+}
 }
 }
 }

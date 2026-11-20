@@ -30,9 +30,30 @@ export function createBackgroundCache({ createCanvas = () => document.createElem
 
 export const bgCache = createBackgroundCache();
 
+// 房屋的纵向范围：墙面、砖基座与夜间的窗光/壁灯光晕都要对齐这一组值。
+const HOUSE_Y0 = LY-34;
+const HOUSE_Y1 = LY+ROWS*CH+4;
+
+// ---------------- 绘制：战斗背景 ----------------
+// E7：原 paintBattleBG 是 221 行的单函数，昼夜两套背景硬编码在一起。按「天空 / 草坪 / 入场暗区 /
+// 房屋 / 泥土带 / 底部草地 / 夜色」切成七个片段。
+//
+// 关键约束：所有片段共用同一个 mulberry32 随机流 R，且**调用顺序就是 R 的消耗顺序**。
+// 背景里每一丛草、每一颗星的位置都由 R 的第 n 次取值决定，调换任意两个片段的顺序会让整张背景重排。
+// 因此 paintBattleBG 只负责建流与按序调用，片段之间不传 ctx、不传坐标。
 export function paintBattleBG(night){
   const R = mulberry32(20260814);
-  // 天空
+  paintSky(R);
+  paintLawn(R);
+  paintEntryShade();
+  paintHouse();
+  paintDirtStrip(R);
+  paintBottomGrass(R);
+  if(night) paintNight(R);
+}
+
+// 天空、远景树丛与白色栅栏
+function paintSky(R){
   let g = ctx.createLinearGradient(0,0,0,LY);
   g.addColorStop(0,'#7ec8ee'); g.addColorStop(1,'#b8e4f6');
   ctx.fillStyle = g;
@@ -58,7 +79,11 @@ export function paintBattleBG(night){
   ctx.fillRect(200, LY-12, W-200, 5);
   ctx.strokeStyle = 'rgba(120,105,70,0.4)';
   ctx.strokeRect(200, LY-22, W-200, 5);
+}
 
+// 草坪：基底、棋盘格、草丛点缀与格线
+function paintLawn(R){
+  let g;
   // 草坪基底
   ctx.fillStyle = '#7dbb43';
   ctx.fillRect(0, LY-4, W, ROWS*CH+8);
@@ -88,15 +113,20 @@ export function paintBattleBG(night){
   for(let r=0;r<=ROWS;r++){ ctx.beginPath(); ctx.moveTo(LX, LY+r*CH); ctx.lineTo(LX+COLS*CW, LY+r*CH); ctx.stroke(); }
   ctx.strokeStyle = 'rgba(45,80,22,0.5)'; ctx.lineWidth = 2.5;
   ctx.strokeRect(LX-1, LY-1, COLS*CW+2, ROWS*CH+2);
+}
 
-  // 右侧入场暗区
-  g = ctx.createLinearGradient(LX+COLS*CW, 0, W, 0);
+// 右侧入场暗区（僵尸从这边进来的视觉暗示）
+function paintEntryShade(){
+  const g = ctx.createLinearGradient(LX+COLS*CW, 0, W, 0);
   g.addColorStop(0,'rgba(40,70,25,0)'); g.addColorStop(1,'rgba(24,46,14,0.62)');
   ctx.fillStyle = g;
   ctx.fillRect(LX+COLS*CW, LY-34, W-(LX+COLS*CW), ROWS*CH+38);
+}
 
-  // ---- 左侧房屋 ----
-  const y0 = LY-34, y1 = LY+ROWS*CH+4;
+// 左侧房屋：墙面、木板缝、屋檐、砖基座、两扇窗、门廊立柱与壁灯
+function paintHouse(){
+  let g;
+  const y0 = HOUSE_Y0, y1 = HOUSE_Y1;
   g = ctx.createLinearGradient(0,0,198,0);
   g.addColorStop(0,'#f0e2c0'); g.addColorStop(1,'#dcc79c');
   ctx.fillStyle = g;
@@ -148,8 +178,11 @@ export function paintBattleBG(night){
   ctx.fillRect(170, y0+40, 10, 16);
   ctx.fillStyle = '#ffd83d';
   ctx.beginPath(); ctx.arc(175, y0+48, 4, 0, TAU); ctx.fill();
+}
 
-  // 小推车泥土带
+// 小推车所在的泥土带
+function paintDirtStrip(R){
+  let g;
   g = ctx.createLinearGradient(198,0,LX,0);
   g.addColorStop(0,'#c9a76e'); g.addColorStop(1,'#b28f58');
   ctx.fillStyle = g;
@@ -165,9 +198,11 @@ export function paintBattleBG(night){
       ctx.fill();
     }
   }
+}
 
-  // 底部草地
-  g = ctx.createLinearGradient(0,LY+ROWS*CH,0,H);
+// 草坪下方的草地与小花
+function paintBottomGrass(R){
+  const g = ctx.createLinearGradient(0,LY+ROWS*CH,0,H);
   g.addColorStop(0,'#74b240'); g.addColorStop(1,'#5d9633');
   ctx.fillStyle = g;
   ctx.fillRect(0, LY+ROWS*CH+4, W, H-(LY+ROWS*CH)-4);
@@ -182,73 +217,75 @@ export function paintBattleBG(night){
       ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-2,y-5); ctx.moveTo(x,y); ctx.lineTo(x+2,y-6); ctx.stroke();
     }
   }
+}
 
-  // ---- 夜色处理（仅夜间关卡） ----
-  if(night){
-    // 整体压成冷调夜色
-    ctx.save();
-    ctx.globalCompositeOperation = 'multiply';
-    g = ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#46588e'); g.addColorStop(0.28,'#3a4774'); g.addColorStop(1,'#243050');
-    ctx.fillStyle = g;
-    ctx.fillRect(0,0,W,H);
-    ctx.restore();
-    // 星空
-    for(let k=0;k<80;k++){
-      const sx = R()*W, sy = 6 + R()*(LY-56), tw = 0.45 + R()*0.55;
-      ctx.fillStyle = 'rgba(255,252,232,'+(0.3+tw*0.55).toFixed(3)+')';
-      ctx.beginPath(); ctx.arc(sx, sy, 0.8+tw*1.4, 0, TAU); ctx.fill();
-      if(tw > 0.9){
-        ctx.strokeStyle = 'rgba(255,252,232,0.5)'; ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(sx-3.2, sy); ctx.lineTo(sx+3.2, sy);
-        ctx.moveTo(sx, sy-3.2); ctx.lineTo(sx, sy+3.2);
-        ctx.stroke();
-      }
+// 夜色处理（仅夜间关卡）：冷调压色、星空、月亮与月晕、雾气、窗光、壁灯光晕、地面冷高光
+function paintNight(R){
+  let g;
+  const y0 = HOUSE_Y0;
+  // 整体压成冷调夜色
+  ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
+  g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#46588e'); g.addColorStop(0.28,'#3a4774'); g.addColorStop(1,'#243050');
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+  ctx.restore();
+  // 星空
+  for(let k=0;k<80;k++){
+    const sx = R()*W, sy = 6 + R()*(LY-56), tw = 0.45 + R()*0.55;
+    ctx.fillStyle = 'rgba(255,252,232,'+(0.3+tw*0.55).toFixed(3)+')';
+    ctx.beginPath(); ctx.arc(sx, sy, 0.8+tw*1.4, 0, TAU); ctx.fill();
+    if(tw > 0.9){
+      ctx.strokeStyle = 'rgba(255,252,232,0.5)'; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(sx-3.2, sy); ctx.lineTo(sx+3.2, sy);
+      ctx.moveTo(sx, sy-3.2); ctx.lineTo(sx, sy+3.2);
+      ctx.stroke();
     }
-    // 月亮与月晕
-    g = ctx.createRadialGradient(884,64,10, 884,64,130);
-    g.addColorStop(0,'rgba(214,230,255,0.5)'); g.addColorStop(1,'rgba(214,230,255,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(884,64,130,0,TAU); ctx.fill();
-    g = ctx.createRadialGradient(876,56,5, 884,64,28);
-    g.addColorStop(0,'#fffdf0'); g.addColorStop(1,'#cdd6ea');
-    ctx.beginPath(); ctx.arc(884,64,26,0,TAU);
-    O(g, '#9aa6c4', 1.6);
-    ctx.fillStyle = 'rgba(158,170,200,0.5)';
-    ctx.beginPath(); ctx.arc(875,55,5.2,0,TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(893,70,3.4,0,TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(879,74,2.6,0,TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(890,52,2.2,0,TAU); ctx.fill();
-    // 草地雾气
-    ctx.fillStyle = 'rgba(188,212,255,0.10)';
-    for(let k=0;k<11;k++){
-      const fx = R()*W, fy = LY + 22 + R()*(ROWS*CH-26);
-      ctx.beginPath(); ctx.ellipse(fx, fy, 58+R()*74, 6+R()*5, 0, 0, TAU); ctx.fill();
-    }
-    // 房屋窗户透出暖光
-    for(const wy of [LY+34, LY+ROWS*CH-140]){
-      g = ctx.createLinearGradient(62,wy,62,wy+92);
-      g.addColorStop(0,'#ffeab0'); g.addColorStop(1,'#f0b04a');
-      ctx.fillStyle = g;
-      ctx.fillRect(62, wy+2, 80, 90);
-      ctx.strokeStyle = '#4a3a24'; ctx.lineWidth = 5;
-      ctx.beginPath(); ctx.moveTo(102, wy+2); ctx.lineTo(102, wy+92);
-      ctx.moveTo(62, wy+47); ctx.lineTo(142, wy+47); ctx.stroke();
-      g = ctx.createRadialGradient(102, wy+47, 8, 102, wy+47, 104);
-      g.addColorStop(0,'rgba(255,214,124,0.42)'); g.addColorStop(1,'rgba(255,214,124,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(102, wy+47, 104, 0, TAU); ctx.fill();
-    }
-    // 门廊壁灯光晕
-    g = ctx.createRadialGradient(175, y0+48, 3, 175, y0+48, 70);
-    g.addColorStop(0,'rgba(255,226,146,0.7)'); g.addColorStop(1,'rgba(255,226,146,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(175, y0+48, 70, 0, TAU); ctx.fill();
-    ctx.fillStyle = '#ffe89a';
-    ctx.beginPath(); ctx.arc(175, y0+48, 5.2, 0, TAU); ctx.fill();
-    // 月光在地面的冷高光
-    g = ctx.createLinearGradient(0, LY+ROWS*CH, 0, H);
-    g.addColorStop(0,'rgba(170,200,255,0.10)'); g.addColorStop(1,'rgba(170,200,255,0)');
-    ctx.fillStyle = g; ctx.fillRect(0, LY+ROWS*CH+4, W, H-(LY+ROWS*CH)-4);
   }
+  // 月亮与月晕
+  g = ctx.createRadialGradient(884,64,10, 884,64,130);
+  g.addColorStop(0,'rgba(214,230,255,0.5)'); g.addColorStop(1,'rgba(214,230,255,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(884,64,130,0,TAU); ctx.fill();
+  g = ctx.createRadialGradient(876,56,5, 884,64,28);
+  g.addColorStop(0,'#fffdf0'); g.addColorStop(1,'#cdd6ea');
+  ctx.beginPath(); ctx.arc(884,64,26,0,TAU);
+  O(g, '#9aa6c4', 1.6);
+  ctx.fillStyle = 'rgba(158,170,200,0.5)';
+  ctx.beginPath(); ctx.arc(875,55,5.2,0,TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(893,70,3.4,0,TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(879,74,2.6,0,TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(890,52,2.2,0,TAU); ctx.fill();
+  // 草地雾气
+  ctx.fillStyle = 'rgba(188,212,255,0.10)';
+  for(let k=0;k<11;k++){
+    const fx = R()*W, fy = LY + 22 + R()*(ROWS*CH-26);
+    ctx.beginPath(); ctx.ellipse(fx, fy, 58+R()*74, 6+R()*5, 0, 0, TAU); ctx.fill();
+  }
+  // 房屋窗户透出暖光
+  for(const wy of [LY+34, LY+ROWS*CH-140]){
+    g = ctx.createLinearGradient(62,wy,62,wy+92);
+    g.addColorStop(0,'#ffeab0'); g.addColorStop(1,'#f0b04a');
+    ctx.fillStyle = g;
+    ctx.fillRect(62, wy+2, 80, 90);
+    ctx.strokeStyle = '#4a3a24'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(102, wy+2); ctx.lineTo(102, wy+92);
+    ctx.moveTo(62, wy+47); ctx.lineTo(142, wy+47); ctx.stroke();
+    g = ctx.createRadialGradient(102, wy+47, 8, 102, wy+47, 104);
+    g.addColorStop(0,'rgba(255,214,124,0.42)'); g.addColorStop(1,'rgba(255,214,124,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(102, wy+47, 104, 0, TAU); ctx.fill();
+  }
+  // 门廊壁灯光晕
+  g = ctx.createRadialGradient(175, y0+48, 3, 175, y0+48, 70);
+  g.addColorStop(0,'rgba(255,226,146,0.7)'); g.addColorStop(1,'rgba(255,226,146,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(175, y0+48, 70, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#ffe89a';
+  ctx.beginPath(); ctx.arc(175, y0+48, 5.2, 0, TAU); ctx.fill();
+  // 月光在地面的冷高光
+  g = ctx.createLinearGradient(0, LY+ROWS*CH, 0, H);
+  g.addColorStop(0,'rgba(170,200,255,0.10)'); g.addColorStop(1,'rgba(170,200,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, LY+ROWS*CH+4, W, H-(LY+ROWS*CH)-4);
 }
 
 export function drawBackground(world, t){

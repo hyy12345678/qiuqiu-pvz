@@ -249,6 +249,12 @@ cone: { name:'路障僵尸', hp:200, acc:370, speed:17 },
 const AC = window.AudioContext || window.webkitAudioContext;
 const BANK_Y = 8, BANK_H = 88;
 const BASS = ['A2','F3','C3','G3','A2','F3','D3','E3'];
+const C = p.C;
+const C = p.C;
+const C = p.C;
+const C = p.C;
+const C = p.C;
+const C = p.C;
 const C = {
 const CARD_X0 = 148, CARD_W = 60, CARD_H = 84, CARD_GAP = 6;
 const COLS = 9, ROWS = 5;
@@ -465,6 +471,7 @@ const pointer = !!hitHotspot(ui, p);
 const pool = lv.types.map(([t,w])=>{
 const ports = {
 const pos = ((now - this.loopStart) % MUSIC_LOOP + MUSIC_LOOP) % MUSIC_LOOP;
+const pose = { C, eat, walk, at, ph, swing, bob, armSway, mouth, lunge, angry, reading, slowed };
 const pre = n - finalCount;
 const prev = ctx;
 const progress = i/pre;
@@ -540,7 +547,7 @@ const tGap = 86 * tScale;
 const tScale = title.length > 6 ? 64/86 : 1;
 const tSize = Math.round(86 * tScale);
 const target = world.grid[row][col];
-const tieWave = Math.sin(at*3.1)*2;
+const tieWave = Math.sin(p.at*3.1)*2;
 const timer = ratio > 0.5 ? '#5fd6a8' : ratio > 0.25 ? '#ffd23e' : '#ff4b3a';
 const timerGlow = ratio > 0.5 ? 'rgba(120,236,198,0.55)'
 const timerOn = !low || Math.sin(t*9 + ph) > -0.1;
@@ -563,7 +570,7 @@ const w1 = Math.sin(t*9+ph)*3.4, w2 = Math.cos(t*11+ph)*3.2;
 const wa = run ? t*24 : 0;
 const wheel = (wx, r)=>{
 const when = Math.max(0, (m[0]-curBeat)*MUSIC_BEAT);
-const wob = Math.sin(at*2.6)*0.05 + (walk ? swing*0.03 : 0);
+const wob = Math.sin(p.at*2.6)*0.05 + (p.walk ? p.swing*0.03 : 0);
 const won = world.state==='won';
 const worried = dmg > 0.55;
 const x = ((t*(6+k*1.4) + k*163) % (W+80)) - 40;
@@ -663,12 +670,12 @@ ctx.beginPath(); ctx.arc(-13.5,-24,4,Math.PI+0.3,TAU-0.3); ctx.stroke();
 ctx.beginPath(); ctx.arc(-18,0,5,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-20, 0, 3.5, 0, TAU); ctx.fillStyle = '#ffd23e'; ctx.fill();
 ctx.beginPath(); ctx.arc(-20,1,3.4,0,TAU); ctx.fill();
-ctx.beginPath(); ctx.arc(-26,-52-armSway*0.5,4.2,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(-26,-52-p.armSway*0.5,4.2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-4,3,1,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-4.5,-11,1.2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-4.8,-4,0.9,0,TAU); ctx.fill();
-ctx.beginPath(); ctx.arc(-45,-65.5+armSway,2.2,0,TAU);
-ctx.beginPath(); ctx.arc(-47,-61+armSway,5,0,TAU);
+ctx.beginPath(); ctx.arc(-45,-65.5+p.armSway,2.2,0,TAU);
+ctx.beginPath(); ctx.arc(-47,-61+p.armSway,5,0,TAU);
 ctx.beginPath(); ctx.arc(-5,-11,2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-5,-11,2.6,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-5.3,-30.5,2,0,TAU); ctx.fill();
@@ -803,10 +810,10 @@ ctx.beginPath(); ctx.ellipse(-21,2,3.5,4.5,0,0,TAU); O(skinD,line,1.8);
 ctx.beginPath(); ctx.ellipse(-5, 10, 9, 6.2, -0.08, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(-5,-3,3.8,4.6,0,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(-5.5,-3,2.2,3.4,0,0,TAU); ctx.fill();
-ctx.beginPath(); ctx.ellipse(-6, 9, 8.5, mouth*0.62+1.6, -0.08, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.ellipse(-6, 9, 8.5, p.mouth*0.62+1.6, -0.08, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(-6,-38,7,3.4,-0.35,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(-6.5,-31,4,5,0,0,TAU);
-ctx.beginPath(); ctx.ellipse(-7, 10.5+mouth*0.5, 9.5, 5.6, -0.12, 0, TAU);
+ctx.beginPath(); ctx.ellipse(-7, 10.5+p.mouth*0.5, 9.5, 5.6, -0.12, 0, TAU);
 ctx.beginPath(); ctx.ellipse(-7,-25,3.4,4.6,0,0,TAU);
 ctx.beginPath(); ctx.ellipse(-8,-30,4.5,7,-0.4,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.ellipse(-8,-40,5,6.2,0,0,TAU);
@@ -873,7 +880,7 @@ ctx.beginPath(); ctx.moveTo(-10,-4); ctx.lineTo(-14,-8); ctx.lineTo(-8,-4); ctx.
 ctx.beginPath(); ctx.moveTo(-10,4); ctx.lineTo(-14,8); ctx.lineTo(-8,4); ctx.closePath();
 ctx.beginPath(); ctx.moveTo(-11,-38); ctx.lineTo(-4,-36); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-11,-42); ctx.quadraticCurveTo(-13,-24,-11,-6); ctx.stroke();
-ctx.beginPath(); ctx.moveTo(-11,-70); ctx.lineTo(-27,-66+armSway);
+ctx.beginPath(); ctx.moveTo(-11,-70); ctx.lineTo(-27,-66+p.armSway);
 ctx.beginPath(); ctx.moveTo(-12,-40); ctx.lineTo(-4,-40); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-12,-44); ctx.quadraticCurveTo(-4,-62, 0,-66);
 ctx.beginPath(); ctx.moveTo(-12,-8); ctx.lineTo(11,-9); ctx.lineTo(2,-33); ctx.closePath();
@@ -892,9 +899,9 @@ ctx.beginPath(); ctx.moveTo(-19,-54); ctx.lineTo(-13,-43); ctx.lineTo(-18,-33); 
 ctx.beginPath(); ctx.moveTo(-20,-10); ctx.quadraticCurveTo(-14,-4,-19,-1); ctx.quadraticCurveTo(-23,-5,-20,-10); ctx.fill();
 ctx.beginPath(); ctx.moveTo(-22,-40); ctx.lineTo(-15,-36.5); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-24,-19); ctx.lineTo(0,-16); ctx.lineTo(0,18); ctx.lineTo(-24,21); ctx.closePath();
-ctx.beginPath(); ctx.moveTo(-27,-66+armSway); ctx.lineTo(-44,-62+armSway);
+ctx.beginPath(); ctx.moveTo(-27,-66+p.armSway); ctx.lineTo(-44,-62+p.armSway);
 ctx.beginPath(); ctx.moveTo(-3,-77); ctx.lineTo(4,-77); ctx.lineTo(0.5,-72); ctx.closePath();
-ctx.beginPath(); ctx.moveTo(-30,-60+armSway); ctx.lineTo(-32,-132);
+ctx.beginPath(); ctx.moveTo(-30,-60+p.armSway); ctx.lineTo(-32,-132);
 ctx.beginPath(); ctx.moveTo(-4,-15); ctx.quadraticCurveTo(-3,-19,-1,-21); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-46,-6.5); ctx.lineTo(-26,-2.5); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-5,-40); ctx.lineTo(-12,-36.5); ctx.stroke();
@@ -955,7 +962,7 @@ ctx.beginPath(); ctx.moveTo(7,-9.5); ctx.lineTo(-1,-5.5); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(76,wy+100); ctx.lineTo(92,wy+100); ctx.lineTo(89,wy+112); ctx.lineTo(79,wy+112); ctx.closePath(); ctx.fill();
 ctx.beginPath(); ctx.moveTo(8,-13); ctx.quadraticCurveTo(10,-16,12,-17); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(8,-34); ctx.lineTo(8,-44); ctx.stroke();
-ctx.beginPath(); ctx.moveTo(9,-66); ctx.lineTo(-4,-59-armSway*0.5); ctx.lineTo(-24,-52-armSway*0.5);
+ctx.beginPath(); ctx.moveTo(9,-66); ctx.lineTo(-4,-59-p.armSway*0.5); ctx.lineTo(-24,-52-p.armSway*0.5);
 ctx.beginPath(); ctx.moveTo(LX-1, LY-4); ctx.lineTo(LX-1, LY+ROWS*CH+4); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+19,by);
 ctx.beginPath(); ctx.moveTo(fx, y+3); ctx.lineTo(fx, y-10);
@@ -1273,7 +1280,7 @@ ctx.fillStyle = hi;
 ctx.fillStyle = long ? '#ffd83d' : '#ffc32e';
 ctx.fillStyle = ok ? 'rgba(255,255,220,0.32)' : 'rgba(200,40,30,0.32)';
 ctx.fillStyle = p.color;
-ctx.fillStyle = slowed ? '#3f5a68' : '#5c6247';
+ctx.fillStyle = p.slowed ? '#3f5a68' : '#5c6247';
 ctx.fillStyle = spots;
 ctx.fillStyle = tg;
 ctx.fillStyle = vg;
@@ -1501,10 +1508,10 @@ ctx.rotate(TAU/10);
 ctx.rotate(TAU/14);
 ctx.rotate(d*1.5);
 ctx.rotate(ex < 0 ? -0.16 : 0.16);
+ctx.rotate(p.swing*0.06 + (p.eat ? Math.sin(z.eatT*9)*0.07 : Math.sin(p.at*1.7)*0.03));
 ctx.rotate(r*0.07);
 ctx.rotate(rot);
 ctx.rotate(swing*0.035);
-ctx.rotate(swing*0.06 + (eat ? Math.sin(z.eatT*9)*0.07 : Math.sin(at*1.7)*0.03));
 ctx.rotate(t*0.7);
 ctx.save();
 ctx.save();
@@ -1739,6 +1746,8 @@ damageZombie(world, z2, 20);
 dig(){ this.noise(0.12, 0.13, 1600); this.tone(320, 150, 0.09, 'triangle', 0.07); },
 document.addEventListener('gesturestart', e=> e.preventDefault());
 draw(-14,-30,17); draw(14,-38,20);
+drawAngryOverlay(t, pose);
+drawBackArm(pose);
 drawBackground(world, t);
 drawBallIcon(-11, 0, 6, p.x*0.11 - 0.5);
 drawBallIcon(-19, 0, 5, p.x*0.11 - 1);
@@ -1754,18 +1763,25 @@ drawButton(ui, W/2-215, py+ph-76, 200, 48, leftLabel, 'next', leftAction, {});
 drawButton(ui, W/2-290, 462, 180, 52, '操作说明', 'help', { type:'nav', state:'help' }, {});
 drawButton(ui, W/2-80, py+ph-58, 160, 44, '返 回', 'back', { type:'nav', state:'menu' }, {});
 drawButton(ui, W/2-90, 462, 180, 52, musicOn ? '音乐：开' : '音乐：关', 'music', { type:'music', ensure:true }, {});
+drawFlag(t, z, pose);
+drawFrontArm(pose);
+drawFrost(t, pose);
 drawGatling(16, -44, spin, muzzle);
+drawHead(t, z, pose);
 drawIntro(t, world);
 drawLeafShape(-2,-7,-1,0.9); drawLeafShape(4,-12,1,0.8);
 drawLeafShape(-3,-8,-1,0.95); drawLeafShape(4,-14,1,0.85);
 drawLeafShape(0,0,1,0.62, pal.main, pal.line);
+drawLegs(pose);
 drawMenuScene(t);
 drawMenuScene(t);
 drawMenuScene(t);
+drawNewspaper(t, pose);
 drawPlantEntity(t, ghost);
 drawPlantIcon(t, s.type, x+CARD_W/2, y+CARD_H-22, 0.5);
 drawPlantIcon(t, s.type, x+slotW/2, y+slotH-26, 0.6);
 drawPlantIcon(t, type, x+cw/2, y+ch-24, 0.42);
+drawPole(z);
 drawProgressBar(world);
 drawSeedBank(t, world, ui);
 drawShovelIcon(sx+32, sy+34, hoverS||active ? 1.08 : 1);
@@ -1824,6 +1840,7 @@ drawText(tips[i2], zx+22, zy+88+i2*20, 12.5, '#d8c090', null, 0, 'left', '600');
 drawText(txt, 0, 0, 64, inPhase ? '#ffe86e' : '#f5f0d8', '#3a2c10', 10);
 drawText(world.visual.waveText.text, 0, 0, 46, '#d02818', '#3a0a04', 9);
 drawTopRightButtons(world, ui, musicOn);
+drawTorso(pose);
 drawWaveText(t, world);
 drawZombieEntity(t, { type:'bucket', row:0, x:0, vy:0, state:'walk', animT:t+4, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
 drawZombieEntity(t, { type:'cone', row:0, x:0, vy:0, state:'walk', animT:t+2, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
@@ -2006,19 +2023,28 @@ function createUI(){
 function createWorld(init = {}){
 function damageZombie(world, z, d){
 function dispatch(action){
+function drawAngryOverlay(t, p){
+function drawBackArm(p){
 function drawBackground(world, t){
 function drawBallIcon(x,y,r,spin){
 function drawButton(ui, x, y, w, h, label, id, action, opts){
 function drawCherry(fuse, t, ph){
 function drawCoffee(t, ph){
+function drawFlag(t, z, p){
+function drawFrontArm(p){
+function drawFrost(t, p){
 function drawGatling(ox, oy, spin, muzzle){
+function drawHead(t, z, p){
 function drawIntro(at, world){
 function drawLeafShape(x,y,dir,s,col,outline){
+function drawLegs(p){
 function drawMenuScene(t){
 function drawMower(t, m){
+function drawNewspaper(t, p){
 function drawPea(p){
 function drawPlantEntity(t, p){
 function drawPlantIcon(t, type, x, y, s){
+function drawPole(z){
 function drawPotato(armed, t, ph){
 function drawProgressBar(world){
 function drawPuff(t, ph, asleep){
@@ -2037,6 +2063,7 @@ function drawText(text, x, y, size, fill, stroke, sw, align, weight){
 function drawTiga(t, ph, recoil, lifeRatio, flash){
 function drawTopRightButtons(world, ui, musicOn){
 function drawTorch(t, ph){
+function drawTorso(p){
 function drawWallnut(hpFrac, t, ph){
 function drawWaveText(at, world){
 function drawZombieEntity(t, z, fyOverride){
@@ -2131,7 +2158,6 @@ g = ctx.createLinearGradient(62,wy,62,wy+92);
 g = ctx.createLinearGradient(LX+COLS*CW, 0, W, 0);
 g = ctx.createRadialGradient(-4,-4,2, 0,0,16);
 g = ctx.createRadialGradient(-6,-40,3, 0,-31,23);
-g = ctx.createRadialGradient(-6,-7,3, 0,0,18);
 g = ctx.createRadialGradient(-6,-8,4, 0,0,25);
 g = ctx.createRadialGradient(0,-58,1, 0,-58,13);
 g = ctx.createRadialGradient(0,-60,1, 0,-60,15);
@@ -2153,7 +2179,7 @@ g.addColorStop(0, hover ? '#96c862' : '#7aa848'); g.addColorStop(1, hover ? '#64
 g.addColorStop(0, hover ? '#9a6b38' : '#7a4c22'); g.addColorStop(1, hover ? '#7a4c22' : '#5f3a18');
 g.addColorStop(0, hover ? '#d8554a' : '#c04438'); g.addColorStop(1, hover ? '#a83428' : '#8a281e');
 g.addColorStop(0, kind==='snow' ? 'rgba(220,245,255,0.95)' : 'rgba(255,250,200,0.95)');
-g.addColorStop(0, slowed?'#a8cad8':'#bcc7a0'); g.addColorStop(1, C.skin);
+g.addColorStop(0, p.slowed?'#a8cad8':'#bcc7a0'); g.addColorStop(1, C.skin);
 g.addColorStop(0,'#3c5a2a'); g.addColorStop(1,'#243818');
 g.addColorStop(0,'#46588e'); g.addColorStop(0.28,'#3a4774'); g.addColorStop(1,'#243050');
 g.addColorStop(0,'#4a82d4'); g.addColorStop(1,'#2f5ca8');
@@ -2278,7 +2304,10 @@ if(!p || !p.asleep) return false;
 if(!p || p.hp <= 0 || world.grid[z.row][p.col] !== p){
 if(!p) continue;
 if(!p) return { ok:false, reason:'empty' };
+if(!p.angry) return;
 if(!p.armed){
+if(!p.reading) return;
+if(!p.slowed) return;
 if(!s) return { ok:false, reason:'no-slot' };
 if(!s) return { ok:false, reason:'no-slot' };
 if(!this.ctx || !this.musicOn) return;
@@ -2299,7 +2328,6 @@ if(acc==='cone'){
 if(action.ensure) audio.ensure();
 if(ahead < this.lastBeat - 0.5) this.lastBeat = -1;
 if(angry && walk) ctx.rotate(-0.11);
-if(angry){
 if(asleep){
 if(b > this.lastBeat && b <= ahead){
 if(beam){
@@ -2393,6 +2421,7 @@ if(p.type==='qiuqiu'){
 if(p.type==='repeater'){
 if(p.type==='snow'){
 if(p.type==='torch' && p.row===pea.row && pea.prevX < p.cx && pea.x >= p.cx){
+if(p.walk){
 if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h) return h;
 if(pea.prevX < front && pea.x >= front){
 if(pea.type === 'pea' || pea.type === 'snow'){
@@ -2409,7 +2438,6 @@ if(q.feedback <= 0){
 if(q.feedback > 0){
 if(q.feedback > 0){
 if(r.ok) ui.sel = -1;
-if(reading){
 if(rng() < 0.5){
 if(run) ctx.translate(0, Math.sin(t*42)*1.4);
 if(run){
@@ -2428,7 +2456,6 @@ if(s.type === 'coffee'){
 if(s.y >= s.ty){ s.y = s.ty; s.state='idle'; s.t=0; }
 if(selected) ctx.translate(0,-4);
 if(selected){
-if(slowed){
 if(state === 'play'){
 if(stepZombies(world, dt)) return;
 if(stroke){ ctx.lineWidth = sw||4; ctx.strokeStyle = stroke; ctx.lineJoin='round'; ctx.strokeText(text, x, y); }
@@ -2460,7 +2487,6 @@ if(v.groanTimer <= 0){ v.groanTimer = rand(world.fxRng,4,9); world.ports.sound('
 if(v.shake > 0) v.shake -= dt;
 if(v.waveText){
 if(v.waveText.t > 2.6) v.waveText = null;
-if(walk){
 if(won){
 if(won){ g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090'); }
 if(world.evIdx >= world.events.length && world.zombies.length === 0 && world.t > 0){
@@ -2519,17 +2545,17 @@ if(z.state==='dying') continue;
 if(z.state==='dying'){
 if(z.state==='dying'){
 if(z.state==='walk'){
+if(z.type !== 'flag') return;
+if(z.type !== 'vault' || z.poleLost) return;
 if(z.type==='cone'){
-if(z.type==='flag'){
 if(z.type==='newspaper' && !z.angry && z.acc <= 0 && z.state !== 'dying'){
-if(z.type==='vault' && !z.poleLost){
 if(z.type==='vault' && !z.poleLost){
 if(z.vt >= 1){
 if(z2!==z && z2.row===pea.row && z2.state!=='dying' && Math.abs(z2.x-z.x)<45){
 last = now();
 leg(-5,-step); leg(6,step);
-legDraw(-4, -2 + swing*9, walk ? Math.max(0,-Math.sin(ph))*3 : 0);
-legDraw(5, 6 - swing*9, walk ? Math.max(0,Math.sin(ph))*3 : 0);
+legDraw(-4, -2 + p.swing*9, p.walk ? Math.max(0,-Math.sin(p.ph))*3 : 0);
+legDraw(5, 6 - p.swing*9, p.walk ? Math.max(0,Math.sin(p.ph))*3 : 0);
 let DPR = 1;
 let a, b, ans, text;
 let alpha = 1, scale = 1;
@@ -2566,6 +2592,7 @@ let g = ctx.createRadialGradient(-2,-2,1, 0,0,8.5);
 let g = ctx.createRadialGradient(-3,-3,2, 0,0,14);
 let g = ctx.createRadialGradient(-4,-5,2, 0,0,18);
 let g = ctx.createRadialGradient(-5,-6,2, 0,0,16);
+let g = ctx.createRadialGradient(-6,-7,3, 0,0,18);
 let g = ctx.createRadialGradient(-7,-32,4, 0,-24,28);
 let g = ctx.createRadialGradient(-9,-45,6, 0,-34,38);
 let g = ctx.createRadialGradient(0,-30,4, 0,-30,34);
@@ -3027,6 +3054,11 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
 { name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
 { type:'startQuiz' },
+}
+}
+}
+}
+}
 }
 }
 }

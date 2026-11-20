@@ -6,6 +6,9 @@ import { ctx } from './target.js';
 import { rr, O } from './paint.js';
 
 // ---------------- 绘制：僵尸 ----------------
+// E5：原 drawZombieEntity 是 309 行的单函数。按「后臂 / 腿 / 躯干 / 前臂 / 杆 / 旗 / 头 / 报纸 / 暴怒 / 冰霜」
+// 切成片段函数：它们共享调用方已经建好的 ctx 变换（已 translate 到脚下），所以只通过 pose 传派生量，
+// 不传 ctx、不传坐标。片段调用顺序即绘制顺序，与拆分前逐段对应，不得重排。
 export function drawZombieEntity(t, z, fyOverride){
   const fyBase = (fyOverride !== undefined) ? fyOverride : LY + (z.row+1)*CH - 4;
   const fy = fyBase + (z.vy || 0);
@@ -30,6 +33,7 @@ export function drawZombieEntity(t, z, fyOverride){
   const lunge = eat ? Math.abs(Math.sin(z.eatT*9))*5 : 0;
   const angry = z.type==='newspaper' && !!z.angry;   // 报纸被打掉后暴怒
   const reading = z.type==='newspaper' && !angry;    // 正在看报
+  const pose = { C, eat, walk, at, ph, swing, bob, armSway, mouth, lunge, angry, reading, slowed };
 
   ctx.save();
   ctx.translate(z.x, fy);
@@ -46,15 +50,34 @@ export function drawZombieEntity(t, z, fyOverride){
   if(angry && walk) ctx.rotate(-0.11);   // 暴怒前冲
   ctx.translate(-lunge*0.35, -bob);
 
-  // 后手臂（躯干后）
+  drawBackArm(pose);
+  drawLegs(pose);
+  drawTorso(pose);
+  drawFrontArm(pose);
+  drawPole(z);
+  drawFlag(t, z, pose);
+  drawHead(t, z, pose);
+  drawNewspaper(t, pose);
+  drawAngryOverlay(t, pose);
+  drawFrost(t, pose);
+
+  ctx.restore();
+}
+
+// 后手臂（躯干后）
+function drawBackArm(p){
+  const C = p.C;
   ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(9,-66); ctx.lineTo(-4,-59-armSway*0.5); ctx.lineTo(-24,-52-armSway*0.5);
+  ctx.beginPath(); ctx.moveTo(9,-66); ctx.lineTo(-4,-59-p.armSway*0.5); ctx.lineTo(-24,-52-p.armSway*0.5);
   ctx.strokeStyle = C.line; ctx.lineWidth = 9.5; ctx.stroke();
   ctx.strokeStyle = C.suitD; ctx.lineWidth = 6.5; ctx.stroke();
   ctx.fillStyle = C.skinD;
-  ctx.beginPath(); ctx.arc(-26,-52-armSway*0.5,4.2,0,TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(-26,-52-p.armSway*0.5,4.2,0,TAU); ctx.fill();
+}
 
-  // 腿
+// 腿：走路时两腿交替抬起
+function drawLegs(p){
+  const C = p.C;
   const legDraw = (hipX, footX, lift)=>{
     const kneeX = (hipX+footX)/2 + 2;
     ctx.beginPath(); ctx.moveTo(hipX,-38); ctx.quadraticCurveTo(kneeX,-22, footX,-4-lift);
@@ -63,13 +86,15 @@ export function drawZombieEntity(t, z, fyOverride){
     ctx.beginPath(); ctx.ellipse(footX-3,-3-lift,7.5,3.8,0,0,TAU);
     O('#2e2a24', '#17140f', 1.6);
   };
-  legDraw(5, 6 - swing*9, walk ? Math.max(0,Math.sin(ph))*3 : 0);
-  legDraw(-4, -2 + swing*9, walk ? Math.max(0,-Math.sin(ph))*3 : 0);
+  legDraw(5, 6 - p.swing*9, p.walk ? Math.max(0,Math.sin(p.ph))*3 : 0);
+  legDraw(-4, -2 + p.swing*9, p.walk ? Math.max(0,-Math.sin(p.ph))*3 : 0);
+}
 
-  // 躯干：衬衫
+// 躯干：衬衫 + 敞开的西装外套（破边）+ 飘动的领带
+function drawTorso(p){
+  const C = p.C;
   ctx.beginPath(); rr(-13,-76,26,42,6);
   O(C.shirt, C.line, 2.4);
-  // 西装外套（敞开，破边）
   let g = ctx.createLinearGradient(-17,-80,15,-36);
   g.addColorStop(0,C.suit); g.addColorStop(1,C.suitD);
   ctx.beginPath();
@@ -86,8 +111,7 @@ export function drawZombieEntity(t, z, fyOverride){
   ctx.lineTo(13,-43); ctx.lineTo(10,-37); ctx.lineTo(17,-39);
   ctx.closePath();
   O(g, C.line, 2.2);
-  // 领带（飘动）
-  const tieWave = Math.sin(at*3.1)*2;
+  const tieWave = Math.sin(p.at*3.1)*2;
   ctx.beginPath();
   ctx.moveTo(-1.5,-76); ctx.lineTo(2.5,-76);
   ctx.quadraticCurveTo(3+tieWave,-60, 1.5+tieWave,-48);
@@ -98,57 +122,66 @@ export function drawZombieEntity(t, z, fyOverride){
   O(C.tie, '#6e1c12', 1.8);
   ctx.beginPath(); ctx.moveTo(-3,-77); ctx.lineTo(4,-77); ctx.lineTo(0.5,-72); ctx.closePath();
   O(C.tie, '#6e1c12', 1.4);
+}
 
-  // 前手臂（平伸）
-  ctx.beginPath(); ctx.moveTo(-11,-70); ctx.lineTo(-27,-66+armSway);
+// 前手臂（平伸，伸向植物）
+function drawFrontArm(p){
+  const C = p.C;
+  ctx.beginPath(); ctx.moveTo(-11,-70); ctx.lineTo(-27,-66+p.armSway);
   ctx.strokeStyle = C.line; ctx.lineWidth = 10; ctx.stroke();
   ctx.strokeStyle = C.suit; ctx.lineWidth = 7; ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(-27,-66+armSway); ctx.lineTo(-44,-62+armSway);
+  ctx.beginPath(); ctx.moveTo(-27,-66+p.armSway); ctx.lineTo(-44,-62+p.armSway);
   ctx.strokeStyle = C.line; ctx.lineWidth = 9; ctx.stroke();
   ctx.strokeStyle = C.skin; ctx.lineWidth = 6; ctx.stroke();
-  ctx.beginPath(); ctx.arc(-47,-61+armSway,5,0,TAU);
+  ctx.beginPath(); ctx.arc(-47,-61+p.armSway,5,0,TAU);
   O(C.skin, C.line, 2);
-  ctx.beginPath(); ctx.arc(-45,-65.5+armSway,2.2,0,TAU);
+  ctx.beginPath(); ctx.arc(-45,-65.5+p.armSway,2.2,0,TAU);
   ctx.fillStyle = C.skin; ctx.fill();
+}
 
-  // 撑杆
-  if(z.type==='vault' && !z.poleLost){
-    const px = z.state==='vault' ? -18 : -54;
-    const py = z.state==='vault' ? -58 : 0;
-    ctx.beginPath(); ctx.moveTo(-18,-74); ctx.quadraticCurveTo((px-18)/2-6,(py-74)/2, px, py);
-    ctx.strokeStyle = '#5c564a'; ctx.lineWidth = 6; ctx.stroke();
-    ctx.strokeStyle = '#b8b2a2'; ctx.lineWidth = 3.6; ctx.stroke();
-  }
-  // 旗帜
-  if(z.type==='flag'){
-    ctx.beginPath(); ctx.moveTo(-30,-60+armSway); ctx.lineTo(-32,-132);
-    ctx.strokeStyle = '#4a3c22'; ctx.lineWidth = 5.5; ctx.stroke();
-    ctx.strokeStyle = '#8a744a'; ctx.lineWidth = 3; ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(-32,-132);
-    ctx.quadraticCurveTo(-54, -128 + Math.sin(t*4.2)*3.4, -76, -121 + Math.sin(t*4.2+1)*3.6);
-    ctx.lineTo(-73, -101 + Math.sin(t*4.2)*2.4);
-    ctx.quadraticCurveTo(-52, -108, -31, -104);
-    ctx.closePath();
-    O('#b02a20', '#5e120c', 2.2);
-    ctx.beginPath(); ctx.arc(-53,-115+Math.sin(t*4.2)*1.8,7,0,TAU);
-    O('#a3b187', '#4a5238', 1.8);
-    ctx.fillStyle = '#39412e';
-    ctx.beginPath(); ctx.arc(-55.5,-116,1.5,0,TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(-50.5,-116,1.5,0,TAU); ctx.fill();
-    ctx.strokeStyle = '#39412e'; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.arc(-53,-111.5,2,0.2,Math.PI-0.2); ctx.stroke();
-  }
+// 撑杆僵尸的杆：跳跃时收在身下
+function drawPole(z){
+  if(z.type !== 'vault' || z.poleLost) return;
+  const px = z.state==='vault' ? -18 : -54;
+  const py = z.state==='vault' ? -58 : 0;
+  ctx.beginPath(); ctx.moveTo(-18,-74); ctx.quadraticCurveTo((px-18)/2-6,(py-74)/2, px, py);
+  ctx.strokeStyle = '#5c564a'; ctx.lineWidth = 6; ctx.stroke();
+  ctx.strokeStyle = '#b8b2a2'; ctx.lineWidth = 3.6; ctx.stroke();
+}
 
-  // ---- 头 ----
+// 旗帜僵尸的旗
+function drawFlag(t, z, p){
+  if(z.type !== 'flag') return;
+  ctx.beginPath(); ctx.moveTo(-30,-60+p.armSway); ctx.lineTo(-32,-132);
+  ctx.strokeStyle = '#4a3c22'; ctx.lineWidth = 5.5; ctx.stroke();
+  ctx.strokeStyle = '#8a744a'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-32,-132);
+  ctx.quadraticCurveTo(-54, -128 + Math.sin(t*4.2)*3.4, -76, -121 + Math.sin(t*4.2+1)*3.6);
+  ctx.lineTo(-73, -101 + Math.sin(t*4.2)*2.4);
+  ctx.quadraticCurveTo(-52, -108, -31, -104);
+  ctx.closePath();
+  O('#b02a20', '#5e120c', 2.2);
+  ctx.beginPath(); ctx.arc(-53,-115+Math.sin(t*4.2)*1.8,7,0,TAU);
+  O('#a3b187', '#4a5238', 1.8);
+  ctx.fillStyle = '#39412e';
+  ctx.beginPath(); ctx.arc(-55.5,-116,1.5,0,TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(-50.5,-116,1.5,0,TAU); ctx.fill();
+  ctx.strokeStyle = '#39412e'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.arc(-53,-111.5,2,0.2,Math.PI-0.2); ctx.stroke();
+}
+
+// 头 + 脸 + 头饰（路障 / 铁桶 / 撑杆的护目镜）
+function drawHead(t, z, p){
+  const C = p.C;
   const hx = -7, hy = -96;
   ctx.save();
   ctx.translate(hx, hy);
-  ctx.rotate(swing*0.06 + (eat ? Math.sin(z.eatT*9)*0.07 : Math.sin(at*1.7)*0.03));
+  ctx.rotate(p.swing*0.06 + (p.eat ? Math.sin(z.eatT*9)*0.07 : Math.sin(p.at*1.7)*0.03));
   ctx.fillStyle = C.skinD;
   ctx.fillRect(-4, 10, 9, 8);
-  g = ctx.createRadialGradient(-6,-7,3, 0,0,18);
-  g.addColorStop(0, slowed?'#a8cad8':'#bcc7a0'); g.addColorStop(1, C.skin);
+  let g = ctx.createRadialGradient(-6,-7,3, 0,0,18);
+  g.addColorStop(0, p.slowed?'#a8cad8':'#bcc7a0'); g.addColorStop(1, C.skin);
   ctx.beginPath(); ctx.arc(0,0,16,0,TAU);
   O(g, C.line, 2.4);
   ctx.beginPath(); ctx.ellipse(13,-2,3.2,4.4,0.2,0,TAU);
@@ -156,7 +189,7 @@ export function drawZombieEntity(t, z, fyOverride){
   ctx.strokeStyle = C.line; ctx.lineWidth = 2; ctx.lineCap='round';
   ctx.beginPath(); ctx.moveTo(-13,-8); ctx.lineTo(-4,-9.5); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(0,-9.5); ctx.lineTo(7,-8.5); ctx.stroke();
-  ctx.fillStyle = slowed ? '#3f5a68' : '#5c6247';
+  ctx.fillStyle = p.slowed ? '#3f5a68' : '#5c6247';
   ctx.beginPath(); ctx.ellipse(-8.5,-3.5,4.6,5.4,0,0,TAU); ctx.fill();
   ctx.beginPath(); ctx.ellipse(2.5,-3.5,4,4.9,0,0,TAU); ctx.fill();
   ctx.fillStyle = '#e8e4d4';
@@ -169,8 +202,8 @@ export function drawZombieEntity(t, z, fyOverride){
   ctx.beginPath(); ctx.arc(-4,3,1,0,TAU); ctx.fill();
   ctx.beginPath(); ctx.arc(-1.5,3.2,1,0,TAU); ctx.fill();
   ctx.fillStyle = '#2e2018';
-  ctx.beginPath(); ctx.ellipse(-6, 9, 8.5, mouth*0.62+1.6, -0.08, 0, TAU); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(-7, 10.5+mouth*0.5, 9.5, 5.6, -0.12, 0, TAU);
+  ctx.beginPath(); ctx.ellipse(-6, 9, 8.5, p.mouth*0.62+1.6, -0.08, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(-7, 10.5+p.mouth*0.5, 9.5, 5.6, -0.12, 0, TAU);
   O(C.skin, C.line, 2.2);
   ctx.fillStyle = '#ddd8c6';
   ctx.strokeStyle = '#8a8470'; ctx.lineWidth = 0.8;
@@ -222,98 +255,101 @@ export function drawZombieEntity(t, z, fyOverride){
     O('#c03028', '#6e1810', 1.4);
   }
   ctx.restore();
+}
 
-  // 报纸（举在身前，遮住半张脸）
-  if(reading){
-    const wob = Math.sin(at*2.6)*0.05 + (walk ? swing*0.03 : 0);
-    ctx.save();
-    ctx.translate(-34, -78);
-    ctx.rotate(-0.22 + wob);
-    // 对开页：左页略折
-    ctx.beginPath(); ctx.moveTo(-24,-19); ctx.lineTo(0,-16); ctx.lineTo(0,18); ctx.lineTo(-24,21); ctx.closePath();
-    O('#e6e0d0', '#6e6858', 2);
-    ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(23,-19); ctx.lineTo(23,21); ctx.lineTo(0,18); ctx.closePath();
-    O('#f4efe2', '#6e6858', 2);
-    // 中缝
-    ctx.strokeStyle = '#8d8676'; ctx.lineWidth = 1.6;
-    ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(0,18); ctx.stroke();
-    // 报头色块
-    ctx.fillStyle = '#5a5245';
-    ctx.fillRect(3,-15, 17, 3.4);
-    ctx.fillStyle = 'rgba(90,82,69,0.75)';
-    // 正文线条
-    for(let k=0;k<5;k++){
-      const yy = -9 + k*5.4;
-      ctx.fillRect(3.5, yy, 16 - (k===4?6:0), 1.8);
-      ctx.fillRect(-21, yy+0.8, 16 - (k===3?5:0), 1.8);
-    }
-    // 图片框
-    ctx.fillStyle = 'rgba(120,112,96,0.55)';
-    ctx.fillRect(-21, 12, 8, 5);
-    ctx.restore();
-    // 握报的手
-    ctx.fillStyle = C.skin; ctx.strokeStyle = C.line; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(-13,-60,5,0,TAU); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.arc(-52,-70,4.6,0,TAU); ctx.fill(); ctx.stroke();
+// 报纸（举在身前，遮住半张脸）
+function drawNewspaper(t, p){
+  if(!p.reading) return;
+  const C = p.C;
+  const wob = Math.sin(p.at*2.6)*0.05 + (p.walk ? p.swing*0.03 : 0);
+  ctx.save();
+  ctx.translate(-34, -78);
+  ctx.rotate(-0.22 + wob);
+  // 对开页：左页略折
+  ctx.beginPath(); ctx.moveTo(-24,-19); ctx.lineTo(0,-16); ctx.lineTo(0,18); ctx.lineTo(-24,21); ctx.closePath();
+  O('#e6e0d0', '#6e6858', 2);
+  ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(23,-19); ctx.lineTo(23,21); ctx.lineTo(0,18); ctx.closePath();
+  O('#f4efe2', '#6e6858', 2);
+  // 中缝
+  ctx.strokeStyle = '#8d8676'; ctx.lineWidth = 1.6;
+  ctx.beginPath(); ctx.moveTo(0,-16); ctx.lineTo(0,18); ctx.stroke();
+  // 报头色块
+  ctx.fillStyle = '#5a5245';
+  ctx.fillRect(3,-15, 17, 3.4);
+  ctx.fillStyle = 'rgba(90,82,69,0.75)';
+  // 正文线条
+  for(let k=0;k<5;k++){
+    const yy = -9 + k*5.4;
+    ctx.fillRect(3.5, yy, 16 - (k===4?6:0), 1.8);
+    ctx.fillRect(-21, yy+0.8, 16 - (k===3?5:0), 1.8);
   }
-
-  // 暴怒：发红的眼与头顶青筋
-  if(angry){
-    ctx.save();
-    ctx.translate(-7, -96);
-    ctx.fillStyle = 'rgba(200,40,30,0.35)';
-    ctx.beginPath(); ctx.arc(0,0,16.5,0,TAU); ctx.fill();
-    ctx.fillStyle = '#c03028';
-    ctx.beginPath(); ctx.ellipse(-8.5,-3.5,3.6,4.2,0,0,TAU); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(2.5,-3.5,3.2,3.9,0,0,TAU); ctx.fill();
-    ctx.strokeStyle = '#6e1810'; ctx.lineWidth = 2.6; ctx.lineCap='round';
-    ctx.beginPath(); ctx.moveTo(-14,-9); ctx.lineTo(-4,-5); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(7,-9.5); ctx.lineTo(-1,-5.5); ctx.stroke();
-    // 青筋
-    ctx.strokeStyle = '#8e2018'; ctx.lineWidth = 1.8;
-    ctx.beginPath();
-    ctx.moveTo(4,-19); ctx.lineTo(4,-24); ctx.moveTo(1,-21.5); ctx.lineTo(7,-21.5);
-    ctx.stroke();
-    // 怒吼的血盆大口
-    ctx.fillStyle = '#3a0e0a';
-    ctx.beginPath(); ctx.ellipse(-5, 10, 9, 6.2, -0.08, 0, TAU); ctx.fill();
-    ctx.fillStyle = '#ddd8c6';
-    ctx.beginPath(); ctx.moveTo(-12,5.6); ctx.lineTo(-8.4,5.6); ctx.lineTo(-10.2,10.5); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(-5.5,5.8); ctx.lineTo(-1.8,5.8); ctx.lineTo(-3.6,10.5); ctx.closePath(); ctx.fill();
-    ctx.restore();
-    // 怒气符号
-    const ang = Math.sin(t*9)*2;
-    ctx.save();
-    ctx.translate(14, -118 + ang*0.4);
-    ctx.strokeStyle = '#e0382a'; ctx.lineWidth = 4.6; ctx.lineCap='round';
-    ctx.beginPath();
-    ctx.moveTo(-7,-7); ctx.lineTo(-2.4,-2.4); ctx.moveTo(0,-9); ctx.lineTo(0,-3);
-    ctx.moveTo(7,-7); ctx.lineTo(2.4,-2.4); ctx.moveTo(-5,0); ctx.lineTo(5,0);
-    ctx.stroke();
-    ctx.restore();
-    // 疾驰残影
-    if(walk){
-      ctx.strokeStyle = 'rgba(255,240,220,0.22)'; ctx.lineWidth = 3; ctx.lineCap='round';
-      for(let k=0;k<3;k++){
-        const yy = -30 - k*22;
-        ctx.beginPath(); ctx.moveTo(30+k*6, yy); ctx.lineTo(52+k*10, yy); ctx.stroke();
-      }
-    }
-  }
-
-  // 减速冰霜
-  if(slowed){
-    ctx.fillStyle = 'rgba(170,225,255,0.65)';
-    for(let k=0;k<4;k++){
-      const a = t*2 + k*TAU/4;
-      ctx.beginPath();
-      ctx.arc(Math.cos(a)*17, -62+Math.sin(a*1.3)*26, 1.9, 0, TAU);
-      ctx.fill();
-    }
-    ctx.strokeStyle = 'rgba(140,200,240,0.4)'; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.moveTo(-14,-70); ctx.lineTo(-9,-74); ctx.moveTo(-11.5,-76); ctx.lineTo(-11.5,-68); ctx.stroke();
-  }
+  // 图片框
+  ctx.fillStyle = 'rgba(120,112,96,0.55)';
+  ctx.fillRect(-21, 12, 8, 5);
   ctx.restore();
+  // 握报的手
+  ctx.fillStyle = C.skin; ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(-13,-60,5,0,TAU); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-52,-70,4.6,0,TAU); ctx.fill(); ctx.stroke();
+}
+
+// 暴怒：发红的眼、头顶青筋、怒气符号与疾驰残影
+function drawAngryOverlay(t, p){
+  if(!p.angry) return;
+  ctx.save();
+  ctx.translate(-7, -96);
+  ctx.fillStyle = 'rgba(200,40,30,0.35)';
+  ctx.beginPath(); ctx.arc(0,0,16.5,0,TAU); ctx.fill();
+  ctx.fillStyle = '#c03028';
+  ctx.beginPath(); ctx.ellipse(-8.5,-3.5,3.6,4.2,0,0,TAU); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(2.5,-3.5,3.2,3.9,0,0,TAU); ctx.fill();
+  ctx.strokeStyle = '#6e1810'; ctx.lineWidth = 2.6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(-14,-9); ctx.lineTo(-4,-5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(7,-9.5); ctx.lineTo(-1,-5.5); ctx.stroke();
+  // 青筋
+  ctx.strokeStyle = '#8e2018'; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(4,-19); ctx.lineTo(4,-24); ctx.moveTo(1,-21.5); ctx.lineTo(7,-21.5);
+  ctx.stroke();
+  // 怒吼的血盆大口
+  ctx.fillStyle = '#3a0e0a';
+  ctx.beginPath(); ctx.ellipse(-5, 10, 9, 6.2, -0.08, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#ddd8c6';
+  ctx.beginPath(); ctx.moveTo(-12,5.6); ctx.lineTo(-8.4,5.6); ctx.lineTo(-10.2,10.5); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-5.5,5.8); ctx.lineTo(-1.8,5.8); ctx.lineTo(-3.6,10.5); ctx.closePath(); ctx.fill();
+  ctx.restore();
+  // 怒气符号
+  const ang = Math.sin(t*9)*2;
+  ctx.save();
+  ctx.translate(14, -118 + ang*0.4);
+  ctx.strokeStyle = '#e0382a'; ctx.lineWidth = 4.6; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(-7,-7); ctx.lineTo(-2.4,-2.4); ctx.moveTo(0,-9); ctx.lineTo(0,-3);
+  ctx.moveTo(7,-7); ctx.lineTo(2.4,-2.4); ctx.moveTo(-5,0); ctx.lineTo(5,0);
+  ctx.stroke();
+  ctx.restore();
+  // 疾驰残影
+  if(p.walk){
+    ctx.strokeStyle = 'rgba(255,240,220,0.22)'; ctx.lineWidth = 3; ctx.lineCap='round';
+    for(let k=0;k<3;k++){
+      const yy = -30 - k*22;
+      ctx.beginPath(); ctx.moveTo(30+k*6, yy); ctx.lineTo(52+k*10, yy); ctx.stroke();
+    }
+  }
+}
+
+// 减速冰霜
+function drawFrost(t, p){
+  if(!p.slowed) return;
+  ctx.fillStyle = 'rgba(170,225,255,0.65)';
+  for(let k=0;k<4;k++){
+    const a = t*2 + k*TAU/4;
+    ctx.beginPath();
+    ctx.arc(Math.cos(a)*17, -62+Math.sin(a*1.3)*26, 1.9, 0, TAU);
+    ctx.fill();
+  }
+  ctx.strokeStyle = 'rgba(140,200,240,0.4)'; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.moveTo(-14,-70); ctx.lineTo(-9,-74); ctx.moveTo(-11.5,-76); ctx.lineTo(-11.5,-68); ctx.stroke();
 }
 
 export function drawZombieHeadIcon(x, y, s, acc){
@@ -367,4 +403,3 @@ export function drawZombieHeadIcon(x, y, s, acc){
   }
   ctx.restore();
 }
-

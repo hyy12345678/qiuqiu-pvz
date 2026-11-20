@@ -75,8 +75,12 @@ min 的等价验证方式：`npm run parity:dist:min` 证明它对应同一份�
 
 ## CI
 
-`.github/workflows/verify.yml` 在 push / PR 上跑完整链（Node 22 + 与 lock 绑定的 Chromium），
-顺序与 `npm run verify` 同构，额外包含上面的 `parity:dist`（build 前）与 `dist:fresh`（build 后）。
+`.github/workflows/verify.yml` 在 push / PR 上跑：Node 22、按 lock 安装依赖与 Chromium，
+然后**直接执行 `npm run verify`**，最后补一步 `dist:fresh`。
+
+这里坚持「一条命令」而不是手抄一份步骤序列，原因是漂移已经真的发生过一次：
+E9 往 `verify` 里加了 `test:inventory`，而 CI 里手写的步骤列表不会自动跟着变，
+于是 CI 漏掉了那条检查。手写一份永不漂移的副本是不存在的，所以让 CI 复用同一条命令。
 
 ## 环境与版本
 

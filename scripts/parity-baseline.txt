@@ -215,48 +215,24 @@ canvas.width = W * dpr; canvas.height = H * dpr;
 canvas: cv, document, window, world: G, ui: UI,
 case 'answer': answerQuiz(world, action.value); return;
 case 'cherry':
-case 'cherry': drawCherry(0.9, t, 7); break;
-case 'cherry': drawCherry(p.fuse, t, p.phase); break;
-case 'coffee': drawCoffee(t, 11); break;
-case 'coffee': drawCoffee(t, p.phase); break;
 case 'level': chooseLevel(world, ui, action.index); return;
 case 'music':
 case 'nav': world.state = action.state; audio.click(); return;
 case 'pause': togglePause(world); return;
-case 'peashooter': drawShooter(t, 2, 'pea', 0, 0); break;
-case 'peashooter': drawShooter(t, p.phase, 'pea', p.recoil, p.flash); break;
 case 'pickSlot': pickSlot(world, ui, action.index); return;
 case 'plantPick': pickTeamPlant(world, ui, action.plant); return;
 case 'potato':
-case 'potato': drawPotato(p.armed, t, p.phase); break;
-case 'potato': drawPotato(true, t, 6); break;
 case 'puff': case 'peashooter': case 'snowpea': case 'repeater': case 'qiuqiu': {
-case 'puff': drawPuff(t, 9, false); break;
-case 'puff': drawPuff(t, p.phase, p.asleep); break;
-case 'qiuqiu': drawQiuqiu(t, 1, 0); break;
-case 'qiuqiu': drawQiuqiu(t, p.phase, p.recoil); break;
-case 'repeater': drawShooter(t, 4, 'repeater', 0, 0); break;
-case 'repeater': drawShooter(t, p.phase, 'repeater', p.recoil, p.flash); break;
 case 'shovel': toggleShovel(world, ui); return;
 case 'slot': removeSlot(world, ui, action.index); return;
-case 'snowpea': drawShooter(t, 3, 'snow', 0, 0); break;
-case 'snowpea': drawShooter(t, p.phase, 'snow', p.recoil, p.flash); break;
 case 'startQuiz':
 case 'sunflower': case 'sunshroom':
-case 'sunflower': drawSunflower(t, 1); break;
-case 'sunflower': drawSunflower(t, p.phase); break;
-case 'sunshroom': drawSunshroom(t, 10, false); break;
-case 'sunshroom': drawSunshroom(t, p.phase, p.asleep); break;
-case 'tiga': drawTiga(t, 12, 0, 0.85, 0); break;
-case 'tiga': drawTiga(t, p.phase, p.recoil, p.maxLifeT ? p.lifeT/p.maxLifeT : 1, p.flash); break;
 case 'tiga': {
-case 'torch': drawTorch(t, 8); break;
-case 'torch': drawTorch(t, p.phase); break;
 case 'unlockAll': toggleUnlockAll(world); return;
-case 'wallnut': drawWallnut(1, t, 5); break;
-case 'wallnut': drawWallnut(p.hp/p.maxHp, t, p.phase); break;
 cctx.scale(scale, scale);
+cherry: (t, p) => drawCherry(p.fuse, t, p.phase),
 cherry: { name:'樱桃炸弹', cost:150, hp:300, cool:32, desc:'轰！炸飞一片区域的僵尸' },
+cherry: { phase:7, fuse:0.9 },
 chomp(){ this.noise(0.09, 0.15, 500); this.tone(150, 80, 0.08, 'square', 0.05); },
 clearHotspots(ui);
 clearSelection(ui);
@@ -264,7 +240,9 @@ click(){ this.tone(620, 620, 0.05, 'sine', 0.08); },
 cloud(((t*6+500)%(W+260))-130, 150, 0.85);
 cloud(((t*7.5+900)%(W+260))-130, 58, 1.35);
 cloud(((t*9)%(W+260))-130, 88, 1.1);
+coffee: (t, p) => drawCoffee(t, p.phase),
 coffee: { name:'咖啡豆', cost:25, hp:300, cool:20, desc:'点一株白天打盹的蘑菇，把它唤醒' },
+coffee: { phase:11 },
 color: ['#fff3b0','#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(world.fxRng,0,4)] });
 color:['#ffdf6e','#ff9a2e','#ff5a2e','#9a9a92'][randi(world.fxRng,0,3)] });
 cone: { name:'路障僵尸', hp:200, acc:370, speed:17 },
@@ -279,12 +257,14 @@ const DRAW_SEED_XOR = 0x51ED270B;
 const FX_SEED_XOR = 0x9E3779B9;
 const G = createWorld({ seed: SEED, ports, unlocked: loadUnlocked(), unlockAll: loadUnlockAll() });
 const ICON_FIT = { tiga: 0.76 };
+const ICON_POSE = {
 const LEVELS = [
 const LX = 265, LY = 112;
 const MELODY = [
 const MUSIC_BEAT = 0.4, MUSIC_LOOP = 24 * MUSIC_BEAT;
 const NOTE = { A2:110, C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196,
 const PLANTS = {
+const PLANT_DRAWERS = {
 const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee','tiga'];
 const R = mulberry32(20260814);
 const SEED = randomSeed();
@@ -372,6 +352,8 @@ const disabled = opts.disabled;
 const dmg = 1 - hpFrac;
 const dmg = isMissile ? 90 : 25;
 const draw = (x,y,r)=>{
+const draw = PLANT_DRAWERS[p.type];
+const draw = PLANT_DRAWERS[type];
 const drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
 const dx = x - s.x, dy = y - s.y;
 const dy = Math.sin(t*2 + i*0.9)*4;
@@ -2339,6 +2321,8 @@ if(disabled){
 if(dmg > 0.33){
 if(dmg > 0.4) ctx.rotate(Math.sin(t*9)*0.015);
 if(dmg > 0.66){
+if(draw) draw(t, ICON_POSE[type]);
+if(draw) draw(t, p);
 if(dx*dx + dy*dy < 36*36){
 if(e.announce){
 if(e.button === 2) return;
@@ -2675,20 +2659,28 @@ paused:false,
 pea.prevX = pea.x;
 pea.type = 'fire'; pea.dmg *= 2;
 pea.x += pea.vx * dt;
+peashooter: (t, p) => drawShooter(t, p.phase, 'pea', p.recoil, p.flash),
 peashooter: { name:'豌豆射手', cost:100, hp:300, cool:7.5, desc:'发射豌豆攻击前方僵尸' },
+peashooter: { phase:2, recoil:0, flash:0 },
 phase: rand(world.fxRng,0,TAU),
 placePlant(world, s.type, row, col);
 plant(){ this.tone(170, 95, 0.13, 'sine', 0.16); this.noise(0.06, 0.05, 600); },
 poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null, dustT:0,
 ports: createPorts(init.ports),
+potato: (t, p) => drawPotato(p.armed, t, p.phase),
 potato: { name:'土豆雷', cost:25, hp:300, cool:24, desc:'钻出地面后爆炸，需要时间准备' },
+potato: { phase:6, armed:true },
+puff: (t, p) => drawPuff(t, p.phase, p.asleep),
 puff: { name:'小喷菇', cost:0, hp:300, cool:7.5, mushroom:true, desc:'免费，但射程只有两格' },
+puff: { phase:9, asleep:false },
 q.correct = false;
 q.correct = true;
 q.energy *= 2;
 q.feedback -= dt;
 q.feedback = 0.9;
+qiuqiu: (t, p) => drawQiuqiu(t, p.phase, p.recoil),
 qiuqiu: { name:'球球', cost:150, hp:900, cool:20, desc:'5岁的小男孩，加特林火力全开' },
+qiuqiu: { phase:1, recoil:0 },
 qs.push({ text, answer: ans, options: opts });
 quiz:null,
 r = Math.min(r, w/2, h/2);
@@ -2699,7 +2691,9 @@ removePlant(world, p);
 removePlant(world, p);
 render(world, ui, frameState);
 renderPlay(frame.t, world, ui, frame.musicOn);
+repeater: (t, p) => drawShooter(t, p.phase, 'repeater', p.recoil, p.flash),
 repeater: { name:'双发射手', cost:200, hp:300, cool:7.5, desc:'一次发射两颗豌豆' },
+repeater: { phase:4, recoil:0, flash:0 },
 requestFrame(frame);
 requestFrame(frame);
 requestFrame: cb => requestAnimationFrame(cb),
@@ -2794,7 +2788,9 @@ skinD: slowed ? '#6a92a4' : '#7f8b66',
 skyTimer:5, lastRows:[],
 slots:[],
 snowShoot(){ this.tone(980, 420, 0.1, 'sine', 0.09); this.noise(0.06, 0.03, 4000); },
+snowpea: (t, p) => drawShooter(t, p.phase, 'snow', p.recoil, p.flash),
 snowpea: { name:'寒冰射手', cost:175, hp:300, cool:7.5, desc:'冰豌豆可减速僵尸' },
+snowpea: { phase:3, recoil:0, flash:0 },
 sound(){},
 sound: name => SFX[name](),
 spawnSun(world, p.cx + rand(world.rng,-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
@@ -2819,12 +2815,14 @@ suit: slowed ? '#4a5a68' : '#544f46',
 suitD: slowed ? '#394854' : '#3d3931',
 sun(){ this.tone(1046, 1046, 0.08, 'sine', 0.09); this.tone(1568, 1568, 0.1, 'sine', 0.07, 0.06); },
 sun:50, sunFlash:0,
+sunflower: (t, p) => drawSunflower(t, p.phase),
 sunflower: { name:'向日葵', cost:50, hp:300, cool:7.5, desc:'生产阳光，经济的基石' },
+sunflower: { phase:1 },
+sunshroom: (t, p) => drawSunshroom(t, p.phase, p.asleep),
 sunshroom: { name:'阳光菇', cost:25, hp:300, cool:7.5, mushroom:true, desc:'比向日葵便宜，产阳光也只有一半' },
+sunshroom: { phase:10, asleep:false },
 switch(action.type){
 switch(p.type){
-switch(p.type){
-switch(type){
 t += rand(12,21) * (1 - 0.38*progress);
 t:0,
 text = a + ' + ' + b + ' = ?';
@@ -2846,9 +2844,13 @@ this.tone(f, f*0.72, rand(Math.random, 0.6,0.95), 'sawtooth', 0.05);
 throwBall(){ this.tone(480, 940, 0.08, 'triangle', 0.1); this.noise(0.04, 0.03, 3500); },
 tickMusic(){
 tie: '#b8382c',
+tiga: (t, p) => drawTiga(t, p.phase, p.recoil, p.maxLifeT ? p.lifeT/p.maxLifeT : 1, p.flash),
 tiga: { name:'迪迦奥特曼', cost:275, hp:1200, cool:30, life:25, desc:'光之巨人限时登场，蓄力后发射哉佩利敖光线贯穿整行' },
+tiga: { phase:12, recoil:0, lifeT:0.85, maxLifeT:1, flash:0 },
 tone(f0,f1,dur,type,vol,delay){
+torch: (t, p) => drawTorch(t, p.phase),
 torch: { name:'火炬树桩', cost:175, hp:300, cool:7.5, desc:'让穿过的豌豆变成火豌豆' },
+torch: { phase:8 },
 try { return fn(); }
 try{
 type, row,
@@ -2880,7 +2882,9 @@ vg.addColorStop(0,'rgba(0,0,0,0)');
 vg.addColorStop(1,'rgba(10,20,8,0.22)');
 visual:{
 vx:rand(world.fxRng,-28,28), vy:rand(world.fxRng,-200,-90), g:-30,
+wallnut: (t, p) => drawWallnut(p.hp/p.maxHp, t, p.phase),
 wallnut: { name:'坚果墙', cost:50, hp:4000, cool:24, desc:'坚固的屏障，阻挡僵尸' },
+wallnut: { phase:5, hp:1, maxHp:1 },
 waveText:null, nightHint:0, groanTimer:4,
 wheel(3, 8.4); wheel(27, 7);
 while(i < pre){
@@ -3360,8 +3364,6 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 }
 }
 }
-}
-}
 } else if(acc==='bucket'){
 } else if(acc==='flag'){
 } else if(acc==='newspaper'){
@@ -3416,6 +3418,8 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 },
 }, {passive:false});
 }, {passive:false});
+};
+};
 };
 };
 };

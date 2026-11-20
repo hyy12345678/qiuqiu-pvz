@@ -805,6 +805,45 @@ export function drawQiuqiu(t, ph, throwT){
   ctx.restore();
 }
 
+// 实体与图鉴图标共用同一张绘制表（E4）。
+// 拆分前这里是两个必须手工同步的 switch：漏掉一个 case 时实体「种下去不画」、
+// 图标「图鉴/卡槽空白」，而且不会有任何报错。合成一张表之后，新增角色只改一处，
+// 漏登记则由 tests/render-plant-table.test.mjs 直接判红。
+// 每个抽屉都接收 (t, pose)：实体传实体本身，图标传 ICON_POSE 里的固定姿态。
+export const PLANT_DRAWERS = {
+  qiuqiu:     (t, p) => drawQiuqiu(t, p.phase, p.recoil),
+  sunflower:  (t, p) => drawSunflower(t, p.phase),
+  peashooter: (t, p) => drawShooter(t, p.phase, 'pea', p.recoil, p.flash),
+  snowpea:    (t, p) => drawShooter(t, p.phase, 'snow', p.recoil, p.flash),
+  repeater:   (t, p) => drawShooter(t, p.phase, 'repeater', p.recoil, p.flash),
+  wallnut:    (t, p) => drawWallnut(p.hp/p.maxHp, t, p.phase),
+  potato:     (t, p) => drawPotato(p.armed, t, p.phase),
+  cherry:     (t, p) => drawCherry(p.fuse, t, p.phase),
+  torch:      (t, p) => drawTorch(t, p.phase),
+  puff:       (t, p) => drawPuff(t, p.phase, p.asleep),
+  sunshroom:  (t, p) => drawSunshroom(t, p.phase, p.asleep),
+  coffee:     (t, p) => drawCoffee(t, p.phase),
+  tiga:       (t, p) => drawTiga(t, p.phase, p.recoil, p.maxLifeT ? p.lifeT/p.maxLifeT : 1, p.flash),
+};
+
+// 图鉴 / 卡槽 / 种子栏用的固定姿势：每个角色挑一个最有代表性的相位。
+// 这些取值与原 switch 逐项一致，改动会被 5 条绘制轨迹基线抓住。
+export const ICON_POSE = {
+  qiuqiu:     { phase:1,  recoil:0 },
+  sunflower:  { phase:1 },
+  peashooter: { phase:2,  recoil:0, flash:0 },
+  snowpea:    { phase:3,  recoil:0, flash:0 },
+  repeater:   { phase:4,  recoil:0, flash:0 },
+  wallnut:    { phase:5,  hp:1, maxHp:1 },
+  potato:     { phase:6,  armed:true },
+  cherry:     { phase:7,  fuse:0.9 },
+  torch:      { phase:8 },
+  puff:       { phase:9,  asleep:false },
+  sunshroom:  { phase:10, asleep:false },
+  coffee:     { phase:11 },
+  tiga:       { phase:12, recoil:0, lifeT:0.85, maxLifeT:1, flash:0 },
+};
+
 export function drawPlantEntity(t, p){
   ctx.save();
   ctx.translate(p.cx, p.fy);
@@ -812,21 +851,8 @@ export function drawPlantEntity(t, p){
   ctx.beginPath(); ctx.ellipse(0,3,25,7.5,0,0,TAU); ctx.fill();
   ctx.fillStyle = 'rgba(35,65,20,0.18)';
   ctx.beginPath(); ctx.ellipse(0,3,32,10,0,0,TAU); ctx.fill();
-  switch(p.type){
-    case 'qiuqiu': drawQiuqiu(t, p.phase, p.recoil); break;
-    case 'sunflower': drawSunflower(t, p.phase); break;
-    case 'peashooter': drawShooter(t, p.phase, 'pea', p.recoil, p.flash); break;
-    case 'snowpea': drawShooter(t, p.phase, 'snow', p.recoil, p.flash); break;
-    case 'repeater': drawShooter(t, p.phase, 'repeater', p.recoil, p.flash); break;
-    case 'wallnut': drawWallnut(p.hp/p.maxHp, t, p.phase); break;
-    case 'potato': drawPotato(p.armed, t, p.phase); break;
-    case 'cherry': drawCherry(p.fuse, t, p.phase); break;
-    case 'torch': drawTorch(t, p.phase); break;
-    case 'puff': drawPuff(t, p.phase, p.asleep); break;
-    case 'sunshroom': drawSunshroom(t, p.phase, p.asleep); break;
-    case 'coffee': drawCoffee(t, p.phase); break;
-    case 'tiga': drawTiga(t, p.phase, p.recoil, p.maxLifeT ? p.lifeT/p.maxLifeT : 1, p.flash); break;
-  }
+  const draw = PLANT_DRAWERS[p.type];
+  if(draw) draw(t, p);
   if(p.asleep) drawSleepZzz(t, p.phase);
   ctx.restore();
 }
@@ -840,21 +866,8 @@ export function drawPlantIcon(t, type, x, y, s){
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(s*fit, s*fit);
-  switch(type){
-    case 'qiuqiu': drawQiuqiu(t, 1, 0); break;
-    case 'sunflower': drawSunflower(t, 1); break;
-    case 'peashooter': drawShooter(t, 2, 'pea', 0, 0); break;
-    case 'snowpea': drawShooter(t, 3, 'snow', 0, 0); break;
-    case 'repeater': drawShooter(t, 4, 'repeater', 0, 0); break;
-    case 'wallnut': drawWallnut(1, t, 5); break;
-    case 'potato': drawPotato(true, t, 6); break;
-    case 'cherry': drawCherry(0.9, t, 7); break;
-    case 'torch': drawTorch(t, 8); break;
-    case 'puff': drawPuff(t, 9, false); break;
-    case 'sunshroom': drawSunshroom(t, 10, false); break;
-    case 'coffee': drawCoffee(t, 11); break;
-    case 'tiga': drawTiga(t, 12, 0, 0.85, 0); break;
-  }
+  const draw = PLANT_DRAWERS[type];
+  if(draw) draw(t, ICON_POSE[type]);
   ctx.restore();
 }
 

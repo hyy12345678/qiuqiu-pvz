@@ -18,6 +18,14 @@ const MAX_CARDS = 8;
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
 
 export function drawSeedBank(t, world, ui){
+  // 顶栏投到场地上的影：让它"浮"在草坪上方，而不是贴在上面。
+  // 每帧一条渐变，代价可忽略；换来的是整个画面上沿有了层次。
+  const drop = ctx.createLinearGradient(0, BANK_Y+BANK_H, 0, BANK_Y+BANK_H+20);
+  drop.addColorStop(0,'rgba(22,14,4,0.34)');
+  drop.addColorStop(1,'rgba(22,14,4,0)');
+  ctx.fillStyle = drop;
+  ctx.fillRect(6, BANK_Y+BANK_H, 748, 20);
+
   let g = ctx.createLinearGradient(0,BANK_Y,0,BANK_Y+BANK_H);
   g.addColorStop(0,'#96652f'); g.addColorStop(0.5,'#7d5124'); g.addColorStop(1,'#5f3a16');
   ctx.beginPath(); rr(8, BANK_Y, 744, BANK_H, 12);
@@ -31,8 +39,22 @@ export function drawSeedBank(t, world, ui){
     ctx.bezierCurveTo(200, y+4, 500, y-4, 750, y+3);
     ctx.stroke();
   }
+  // 木纹：竖直短纹，位置由确定的算术式给出（不能用随机源，否则绘制轨迹每次都不一样）
+  for(let k=0;k<54;k++){
+    const gx = 12 + (k * 13.7) % 736;
+    const gy = BANK_Y + 6 + ((k * 37) % (BANK_H - 14));
+    const len = 6 + ((k * 7) % 14);
+    ctx.strokeStyle = 'rgba(46,26,8,' + (0.10 + (k % 3) * 0.05).toFixed(2) + ')';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + 0.6, gy + len); ctx.stroke();
+  }
+  // 上沿高光 + 下沿内阴影：让木条像一块有厚度的板
   ctx.fillStyle = 'rgba(255,230,180,0.14)';
   ctx.fillRect(10, BANK_Y+2, 740, 6);
+  let bankShade = ctx.createLinearGradient(0, BANK_Y+BANK_H-14, 0, BANK_Y+BANK_H);
+  bankShade.addColorStop(0,'rgba(30,16,4,0)'); bankShade.addColorStop(1,'rgba(30,16,4,0.45)');
+  ctx.fillStyle = bankShade;
+  ctx.fillRect(8, BANK_Y+BANK_H-14, 744, 14);
   ctx.restore();
   for(const sx of [22, 738]){
     ctx.fillStyle = '#3a220c';
@@ -77,8 +99,16 @@ export function drawSeedBank(t, world, ui){
       ctx.strokeStyle = '#fff0b8'; ctx.lineWidth = 2.4;
       rr(x+1, y+1, CARD_W-2, CARD_H-2, 7); ctx.stroke();
     }
+    // 内侧倒角：贴着边框再压一圈，上亮下暗，卡片才有厚度而不是一张纸片
+    ctx.save();
+    rr(x, y, CARD_W, CARD_H, 8); ctx.clip();
+    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+    ctx.fillRect(x, y, CARD_W, 3.5);
+    ctx.fillStyle = 'rgba(96,64,26,0.16)';
+    ctx.fillRect(x, y+CARD_H-5, CARD_W, 5);
     ctx.fillStyle = 'rgba(255,255,255,0.28)';
     ctx.fillRect(x+3, y+2.5, CARD_W-6, 5);
+    ctx.restore();
     ctx.save();
     if(!afford) ctx.globalAlpha = 0.55;
     ctx.fillStyle = 'rgba(60,40,15,0.25)';

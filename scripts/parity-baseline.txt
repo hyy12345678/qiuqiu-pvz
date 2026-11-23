@@ -189,6 +189,7 @@ audio.ensure(); audio.resume();
 audio.musicOn = !audio.musicOn;
 b = randi(10, a - 1);
 b = randi(11, 99 - a);
+bankShade.addColorStop(0,'rgba(30,16,4,0)'); bankShade.addColorStop(1,'rgba(30,16,4,0.45)');
 bg.addColorStop(0, hover ? '#96c862' : '#7aa848'); bg.addColorStop(1, hover ? '#649838' : '#4e7a2a');
 bg.addColorStop(0,'#4a3418'); bg.addColorStop(1,'#33220e');
 bindCanvas(cv);
@@ -371,6 +372,7 @@ const draw = (x,y,r)=>{
 const draw = PLANT_DRAWERS[p.type];
 const draw = PLANT_DRAWERS[type];
 const drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
+const drop = ctx.createLinearGradient(0, BANK_Y+BANK_H, 0, BANK_Y+BANK_H+20);
 const dx = x - s.x, dy = y - s.y;
 const dy = Math.sin(t*2 + i*0.9)*4;
 const dy = Math.sin(t*2 + i*0.9)*4;
@@ -404,7 +406,9 @@ const g = this.ctx.createGain(); g.gain.setValueAtTime(vol, t0);
 const game = createGame({
 const ge = ctx.createLinearGradient(0,-4, 0,4);
 const ghost = { type:selType, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0,
+const gx = 12 + (k * 13.7) % 736;
 const gx = R()*196, gy = y0 + 8 + R()*(y1-y0-16);
+const gy = BANK_Y + 6 + ((k * 37) % (BANK_H - 14));
 const h = hitHotspot(ui, p);
 const h = ui.hotspots[i];
 const hc = ui.hoverCell;
@@ -441,6 +445,7 @@ const leftLabel = lastLv ? '再玩一次' : '下一关';
 const leg=(x,dy)=>{
 const legDraw = (hipX, footX, lift)=>{
 const len = 5.5 + R()*7.5;
+const len = 6 + ((k * 7) % 14);
 const light = (r+c)%2===0;
 const limb = (x1,y1,x2,y2,cx1,cy1)=>{
 const lines = [
@@ -673,6 +678,8 @@ ctx.beginPath();
 ctx.beginPath();
 ctx.beginPath();
 ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
 ctx.beginPath(); ctx.arc(-1, -14, 3.4, 0.3, Math.PI-0.3); ctx.stroke();
 ctx.beginPath(); ctx.arc(-1.5,3.2,1,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-1.6,-58.6,1.5,0,TAU); ctx.fill();
@@ -769,11 +776,11 @@ ctx.beginPath(); ctx.arc(7.4,-3.4,2.4,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(7.7,-30.5,2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(8,-33,2.2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(8.2,-4.4,0.9,0,TAU); ctx.fill();
-ctx.beginPath(); ctx.arc(80,wy+97,4,0,TAU); ctx.fill();
-ctx.beginPath(); ctx.arc(84,wy+99,3,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(80,wy+92,4,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(84,wy+94,3,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(875,55,5.2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(879,74,2.6,0,TAU); ctx.fill();
-ctx.beginPath(); ctx.arc(88,wy+95,4.5,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(88,wy+90,4.5,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(880,70,150,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(884,64,26,0,TAU);
 ctx.beginPath(); ctx.arc(890,52,2.2,0,TAU); ctx.fill();
@@ -982,14 +989,16 @@ ctx.beginPath(); ctx.moveTo(44,y); ctx.bezierCurveTo(300,y+5,700,y-5,W-44,y+4); 
 ctx.beginPath(); ctx.moveTo(5,-15); ctx.lineTo(8,-17); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(62,wy+2); ctx.lineTo(80,wy+2); ctx.quadraticCurveTo(70,wy+40,62,wy+58); ctx.closePath(); ctx.fill();
 ctx.beginPath(); ctx.moveTo(7,-9.5); ctx.lineTo(-1,-5.5); ctx.stroke();
-ctx.beginPath(); ctx.moveTo(76,wy+100); ctx.lineTo(92,wy+100); ctx.lineTo(89,wy+112); ctx.lineTo(79,wy+112); ctx.closePath(); ctx.fill();
+ctx.beginPath(); ctx.moveTo(76,wy+95); ctx.lineTo(92,wy+95); ctx.lineTo(89,wy+107); ctx.lineTo(79,wy+107); ctx.closePath(); ctx.fill();
 ctx.beginPath(); ctx.moveTo(8,-13); ctx.quadraticCurveTo(10,-16,12,-17); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(8,-34); ctx.lineTo(8,-44); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(89,wy+95); ctx.lineTo(92,wy+95); ctx.lineTo(89,wy+107); ctx.lineTo(86.5,wy+107); ctx.closePath(); ctx.fill();
 ctx.beginPath(); ctx.moveTo(9,-66); ctx.lineTo(-4,-59-p.armSway*0.5); ctx.lineTo(-24,-52-p.armSway*0.5);
 ctx.beginPath(); ctx.moveTo(LX-1, LY-4); ctx.lineTo(LX-1, LY+ROWS*CH+4); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+19,by);
 ctx.beginPath(); ctx.moveTo(fx, y+3); ctx.lineTo(fx, y-10);
 ctx.beginPath(); ctx.moveTo(fx, y-10); ctx.lineTo(fx+13, y-6); ctx.lineTo(fx, y-2); ctx.closePath();
+ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + 0.6, gy + len); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + 3 + R()*9); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(hipX,-38); ctx.quadraticCurveTo(kneeX,-22, footX,-4-lift);
 ctx.beginPath(); ctx.moveTo(hx-7,hy-7); ctx.lineTo(hx-1,hy-7); ctx.stroke();
@@ -1009,6 +1018,7 @@ ctx.beginPath(); ctx.moveTo(x1,y1); ctx.quadraticCurveTo(cx1,cy1,x2,y2);
 ctx.beginPath(); ctx.rect(-12, 5.6, 2.8, 3.2); ctx.fill(); ctx.stroke();
 ctx.beginPath(); ctx.rect(-14,-14,27,5.5);
 ctx.beginPath(); ctx.rect(-8.2, 6.2, 2.8, 3); ctx.fill(); ctx.stroke();
+ctx.beginPath(); ctx.rect(62, wy+2, 80, 90); ctx.clip();
 ctx.beginPath(); ctx.rect(x, y, CW, CH); ctx.clip();
 ctx.beginPath(); rr(-10,-4, 20, 8, 3);
 ctx.beginPath(); rr(-11,-9,22,17,1.5);
@@ -1075,6 +1085,8 @@ ctx.closePath();
 ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill();
+ctx.closePath(); ctx.fill();
+ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill(); ctx.stroke();
 ctx.drawImage(c, 0, 0, W, H);
 ctx.ellipse(208+R()*50, LY+r*CH+14+R()*70, 4+R()*4, 2.5+R()*2, R(), 0, TAU);
@@ -1119,9 +1131,14 @@ ctx.fillRect(200, LY-22, W-200, 5);
 ctx.fillRect(3,-15, 17, 3.4);
 ctx.fillRect(3.5, yy, 16 - (k===4?6:0), 1.8);
 ctx.fillRect(46, 74, W-92, 8);
+ctx.fillRect(50, wy+105, 104, 12);
+ctx.fillRect(50, wy+117, 104, 6);
+ctx.fillRect(52, wy+106, 100, 2);
+ctx.fillRect(6, BANK_Y+BANK_H, 748, 20);
 ctx.fillRect(6.5,4.6,3,2.2);
 ctx.fillRect(62, wy+2, 80, 90);
 ctx.fillRect(62, wy+2, 80, 90);
+ctx.fillRect(8, BANK_Y+BANK_H-14, 744, 14);
 ctx.fillRect(LX+COLS*CW, LY-34, W-(LX+COLS*CW), ROWS*CH+38);
 ctx.fillRect(LX+c*CW, LY, CW, ROWS*CH);
 ctx.fillRect(LX, LY, 60, ROWS*CH);
@@ -1138,6 +1155,8 @@ ctx.fillRect(x+4, y+3, cw-8, 6);
 ctx.fillRect(x+5, y+3, w-10, 6);
 ctx.fillRect(x+5, y+h-7, w-10, 4);
 ctx.fillRect(x+6, y+4, cardW-12, 7);
+ctx.fillRect(x, y+CARD_H-5, CARD_W, 5);
+ctx.fillRect(x, y, CARD_W, 3.5);
 ctx.fillRect(x, y, CARD_W, CARD_H*frac);
 ctx.fillRect(x, y, CW, CH);
 ctx.fillRect(x, y, CW, CH);
@@ -1212,6 +1231,7 @@ ctx.fillStyle = 'rgba(10,16,10,0.6)';
 ctx.fillStyle = 'rgba(10,16,10,0.62)';
 ctx.fillStyle = 'rgba(120,112,96,0.55)';
 ctx.fillStyle = 'rgba(120,120,120,'+(0.3+Math.sin(t*30)*0.15)+')';
+ctx.fillStyle = 'rgba(120,60,28,0.55)';
 ctx.fillStyle = 'rgba(120,80,28,0.35)';
 ctx.fillStyle = 'rgba(120,90,50,'+(0.18+R()*0.15)+')';
 ctx.fillStyle = 'rgba(15,15,25,0.6)';
@@ -1244,13 +1264,17 @@ ctx.fillStyle = 'rgba(255,230,190,0.22)';
 ctx.fillStyle = 'rgba(255,240,200,0.35)';
 ctx.fillStyle = 'rgba(255,250,230,' + clamp(world.visual.flash,0,0.35) + ')';
 ctx.fillStyle = 'rgba(255,252,232,'+(0.3+tw*0.55).toFixed(3)+')';
+ctx.fillStyle = 'rgba(255,252,240,0.5)';
 ctx.fillStyle = 'rgba(255,255,255,0.028)';
+ctx.fillStyle = 'rgba(255,255,255,0.16)';
 ctx.fillStyle = 'rgba(255,255,255,0.2)';
 ctx.fillStyle = 'rgba(255,255,255,0.25)';
 ctx.fillStyle = 'rgba(255,255,255,0.28)';
 ctx.fillStyle = 'rgba(255,255,255,0.28)';
 ctx.fillStyle = 'rgba(255,255,255,0.3)';
 ctx.fillStyle = 'rgba(255,255,255,0.3)';
+ctx.fillStyle = 'rgba(255,255,255,0.30)';
+ctx.fillStyle = 'rgba(255,255,255,0.30)';
 ctx.fillStyle = 'rgba(255,255,255,0.35)';
 ctx.fillStyle = 'rgba(255,255,255,0.55)';
 ctx.fillStyle = 'rgba(255,255,255,0.6)';
@@ -1262,6 +1286,7 @@ ctx.fillStyle = 'rgba(30,18,6,0.35)';
 ctx.fillStyle = 'rgba(30,50,15,0.35)';
 ctx.fillStyle = 'rgba(35,65,20,0.18)';
 ctx.fillStyle = 'rgba(35,65,20,0.32)';
+ctx.fillStyle = 'rgba(52,38,20,0.26)';
 ctx.fillStyle = 'rgba(60,40,15,0.25)';
 ctx.fillStyle = 'rgba(60,40,15,0.25)';
 ctx.fillStyle = 'rgba(60,40,15,0.3)';
@@ -1269,6 +1294,7 @@ ctx.fillStyle = 'rgba(90,82,69,0.7)';
 ctx.fillStyle = 'rgba(90,82,69,0.75)';
 ctx.fillStyle = 'rgba(95,58,18,0.55)';
 ctx.fillStyle = 'rgba(95,60,22,0.5)';
+ctx.fillStyle = 'rgba(96,64,26,0.16)';
 ctx.fillStyle = 'rgba(96,72,40,0.55)';
 ctx.fillStyle = (R() < 0.5) ? 'rgba(88,146,44,0.085)' : 'rgba(210,242,158,0.095)';
 ctx.fillStyle = C.line;
@@ -1279,7 +1305,9 @@ ctx.fillStyle = C.skinD;
 ctx.fillStyle = R() < 0.5 ? 'rgba(214,190,148,0.85)' : 'rgba(178,152,110,0.8)';
 ctx.fillStyle = ['#ffd23e','#8fd44a','#ff8ab0','#7cc4ec'][k%4];
 ctx.fillStyle = ['#ffd23e','#ff8ab0','#fff'][k%3];
+ctx.fillStyle = bankShade;
 ctx.fillStyle = col; ctx.fill();
+ctx.fillStyle = drop;
 ctx.fillStyle = edge;
 ctx.fillStyle = edge;
 ctx.fillStyle = fill;
@@ -1327,9 +1355,12 @@ ctx.fillStyle = long ? '#ffd83d' : '#ffc32e';
 ctx.fillStyle = ok ? 'rgba(255,255,220,0.32)' : 'rgba(200,40,30,0.32)';
 ctx.fillStyle = p.color;
 ctx.fillStyle = p.slowed ? '#3f5a68' : '#5c6247';
+ctx.fillStyle = sill;
 ctx.fillStyle = spots;
 ctx.fillStyle = tg;
 ctx.fillStyle = vg;
+ctx.fillStyle = wi; ctx.fillRect(62, wy+2, 16, 90);
+ctx.fillStyle = wi; ctx.fillRect(62, wy+2, 80, 22);
 ctx.fillStyle='#1a1c1f'; ctx.fill();
 ctx.fillStyle='#2a1a08';
 ctx.fillStyle='#4a2c14';
@@ -1406,6 +1437,7 @@ ctx.lineTo(wx-Math.cos(wa)*(r-2.5), 10-Math.sin(wa)*(r-2.5)); ctx.stroke();
 ctx.lineTo(wx-Math.cos(wa+1.57)*(r-2.5), 10-Math.sin(wa+1.57)*(r-2.5)); ctx.stroke();
 ctx.lineWidth = 1.05 + R()*0.55;
 ctx.lineWidth = 13*tScale; ctx.lineJoin = 'round';
+ctx.lineWidth = 1;
 ctx.lineWidth = 2.5;
 ctx.moveTo(-1,2);
 ctx.moveTo(-1,2);
@@ -1431,8 +1463,10 @@ ctx.moveTo(0,-14); ctx.lineTo(long?4.6:3.4, long?-27:-22); ctx.lineTo(long?-4.6:
 ctx.moveTo(0,470);
 ctx.moveTo(1,2);
 ctx.moveTo(1,2);
+ctx.moveTo(112, wy+2); ctx.lineTo(128, wy+2); ctx.lineTo(100, wy+92); ctx.lineTo(90, wy+92);
 ctx.moveTo(17,-74);
 ctx.moveTo(4,-19); ctx.lineTo(4,-24); ctx.moveTo(1,-21.5); ctx.lineTo(7,-21.5);
+ctx.moveTo(62, wy+2); ctx.lineTo(104, wy+2); ctx.lineTo(74, wy+92); ctx.lineTo(62, wy+92);
 ctx.moveTo(62, wy+47); ctx.lineTo(142, wy+47); ctx.stroke();
 ctx.moveTo(62, wy+47); ctx.lineTo(142, wy+47); ctx.stroke();
 ctx.moveTo(7,-7); ctx.lineTo(2.4,-2.4); ctx.moveTo(-5,0); ctx.lineTo(5,0);
@@ -1477,6 +1511,8 @@ ctx.quadraticCurveTo(7,-22, hx, hy+16);
 ctx.quadraticCurveTo(900, 430, 1024, 468);
 ctx.quadraticCurveTo(x+dir*15*s, y+8*s, x, y);
 ctx.quadraticCurveTo(x+dir*15*s, y-9*s, x+dir*27*s, y-2*s);
+ctx.restore();
+ctx.restore();
 ctx.restore();
 ctx.restore();
 ctx.restore();
@@ -1610,6 +1646,8 @@ ctx.save();
 ctx.save();
 ctx.save();
 ctx.save();
+ctx.save();
+ctx.save();
 ctx.save(); ctx.rotate(Math.sin(t+ph)*0.05 + TAU/24);
 ctx.save(); ctx.rotate(Math.sin(t+ph)*0.05);
 ctx.save(); ctx.rotate(k*TAU/12);
@@ -1647,6 +1685,7 @@ ctx.stroke();
 ctx.stroke();
 ctx.stroke();
 ctx.strokeRect(200, LY-22, W-200, 5);
+ctx.strokeRect(50, wy+105, 104, 12);
 ctx.strokeRect(LX-1, LY-1, COLS*CW+2, ROWS*CH+2);
 ctx.strokeRect(x+2, y+2, CW-4, CH-4);
 ctx.strokeStyle = '#241204'; ctx.lineWidth = 1.8;
@@ -1695,6 +1734,7 @@ ctx.strokeStyle = '#ffd23e'; ctx.lineWidth = 2.2; ctx.lineCap='round';
 ctx.strokeStyle = '#fff0b8'; ctx.lineWidth = 2.4;
 ctx.strokeStyle = 'rgba(107,76,32,0.25)'; ctx.lineWidth = 1.5;
 ctx.strokeStyle = 'rgba(120,105,70,0.4)';
+ctx.strokeStyle = 'rgba(120,92,52,0.5)'; ctx.lineWidth = 1.2;
 ctx.strokeStyle = 'rgba(120,95,60,0.3)'; ctx.lineWidth = 2;
 ctx.strokeStyle = 'rgba(140,200,240,0.4)'; ctx.lineWidth = 1.4;
 ctx.strokeStyle = 'rgba(150,118,74,0.13)'; ctx.lineWidth = 1;
@@ -1711,6 +1751,7 @@ ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 2.4; ctx.lineCap='rou
 ctx.strokeStyle = 'rgba(30,16,6,0.8)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
 ctx.strokeStyle = 'rgba(35,90,20,0.5)'; ctx.lineWidth = 1.2;
 ctx.strokeStyle = 'rgba(45,80,22,0.5)'; ctx.lineWidth = 2.5;
+ctx.strokeStyle = 'rgba(46,26,8,' + (0.10 + (k % 3) * 0.05).toFixed(2) + ')';
 ctx.strokeStyle = 'rgba(50,32,14,0.55)'; ctx.lineWidth = 2; ctx.lineCap='round';
 ctx.strokeStyle = 'rgba(50,95,28,0.6)'; ctx.lineWidth = 1.5;
 ctx.strokeStyle = 'rgba(58,34,12,0.25)'; ctx.lineWidth = 1.6;
@@ -1900,6 +1941,8 @@ drawZombieEntity(t, { type:'normal', row:0, x:0, vy:0, state:'walk', animT:t, ea
 drawZombieHeadIcon(hx, y+h/2, 0.64, null);
 drawZombieHeadIcon(izx0+k*62, zy+44, 1.1, acc);
 drawZombieHeadIcon(zx0+k*42, y+80, 0.86, acc);
+drop.addColorStop(0,'rgba(22,14,4,0.34)');
+drop.addColorStop(1,'rgba(22,14,4,0)');
 dt = Math.min(dt, 0.05);
 e.preventDefault();
 e.preventDefault();
@@ -2024,6 +2067,7 @@ for(let k=0;k<40;k++){
 for(let k=0;k<4;k++) world.visual.parts.push({ x:x+rand(world.fxRng,-8,8), y:y+rand(world.fxRng,-6,6), vx:rand(world.fxRng,-40,40), vy:rand(world.fxRng,-60,-20), g:200,
 for(let k=0;k<4;k++){
 for(let k=0;k<4;k++){
+for(let k=0;k<54;k++){
 for(let k=0;k<5;k++){
 for(let k=0;k<5;k++){
 for(let k=0;k<5;k++){
@@ -2637,6 +2681,7 @@ let DPR = 1;
 let a, b, ans, text;
 let alpha = 1, scale = 1;
 let alpha = 1, scale = 1;
+let bankShade = ctx.createLinearGradient(0, BANK_Y+BANK_H-14, 0, BANK_Y+BANK_H);
 let best = null;
 let bg = ctx.createLinearGradient(0,by,0,by+bh);
 let bg = ctx.createLinearGradient(0,y,0,y+cardH);
@@ -2697,12 +2742,14 @@ let lost = false;
 let ng = ctx.createLinearGradient(0,by,0,by+bh);
 let row = randi(world.rng,0,ROWS-1);
 let s = 1;
+let sill = ctx.createLinearGradient(0, wy+105, 0, wy+117);
 let size = 1;
 let sum = pool.reduce((a,p)=>a+p[1],0), r = rng()*sum;
 let t = 26, i = 0, spawned = 0;
 let target = null;
 let tg = ctx.createLinearGradient(0,-48*tScale,0,38*tScale);
 let txt = null;
+let wi = ctx.createLinearGradient(0, wy, 0, wy+22);
 let ww = w;
 let x = W - 12;
 let x = s.x, y = s.y;
@@ -2876,6 +2923,7 @@ rr(x+2, y+2, w-4, h-4, 8); ctx.stroke();
 rr(x+6, 452, 16, 34, 3); ctx.fill(); ctx.stroke();
 rr(x, LY-30, 14, 30, 3); ctx.fill(); ctx.stroke();
 rr(x, y, CARD_W, CARD_H, 8); ctx.clip();
+rr(x, y, CARD_W, CARD_H, 8); ctx.clip();
 rr(x-2, y-2, CARD_W+4, CARD_H+4, 10); ctx.stroke();
 s.cool = def.cool;
 s.cool = def.cool;
@@ -2897,6 +2945,7 @@ setPointer(ui, p, world.state);
 shirt: slowed ? '#9db4c2' : '#b3ac98',
 shoot(){ this.tone(760, 320, 0.09, 'square', 0.08); },
 shuffle(opts, rng);
+sill.addColorStop(0,'#f3e6c6'); sill.addColorStop(1,'#c2a97c');
 size = Math.min(size, pre-i);
 skin: slowed ? '#8fb4c4' : '#a3b187',
 skinD: slowed ? '#6a92a4' : '#7f8b66',
@@ -3008,6 +3057,9 @@ while(i < pre){
 while(opts.length < 4 && guard++ < 200){
 while(opts.length < 4) opts.push(ans + opts.length + 1);
 while(world.evIdx < world.events.length && world.events[world.evIdx].t <= t){
+wi = ctx.createLinearGradient(62, 0, 78, 0);
+wi.addColorStop(0,'rgba(52,38,20,0.38)'); wi.addColorStop(1,'rgba(52,38,20,0)');
+wi.addColorStop(0,'rgba(52,38,20,0.45)'); wi.addColorStop(1,'rgba(52,38,20,0)');
 win(){ const seq=[523.25,659.25,783.99,1046.5]; seq.forEach((f,i)=>this.tone(f,f,0.22,'triangle',0.11,i*0.14)); },
 winT:0, loseZombie:null,
 window.addEventListener('keydown', e=> onKey(e.key));
@@ -3148,6 +3200,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
 { name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
 { type:'startQuiz' },
+}
 }
 }
 }

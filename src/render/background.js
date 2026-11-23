@@ -231,6 +231,25 @@ function paintHouse(R){
     g.addColorStop(0,'#cdeaf5'); g.addColorStop(1,'#8fc4da');
     ctx.fillStyle = g;
     ctx.fillRect(62, wy+2, 80, 90);
+    // 玻璃内的斜向反光：一片从上左斜切下来的高光
+    ctx.save();
+    ctx.beginPath(); ctx.rect(62, wy+2, 80, 90); ctx.clip();
+    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+    ctx.beginPath();
+    ctx.moveTo(62, wy+2); ctx.lineTo(104, wy+2); ctx.lineTo(74, wy+92); ctx.lineTo(62, wy+92);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.beginPath();
+    ctx.moveTo(112, wy+2); ctx.lineTo(128, wy+2); ctx.lineTo(100, wy+92); ctx.lineTo(90, wy+92);
+    ctx.closePath(); ctx.fill();
+    // 框内投影：玻璃比木框低，四边压暗一圈
+    let wi = ctx.createLinearGradient(0, wy, 0, wy+22);
+    wi.addColorStop(0,'rgba(52,38,20,0.45)'); wi.addColorStop(1,'rgba(52,38,20,0)');
+    ctx.fillStyle = wi; ctx.fillRect(62, wy+2, 80, 22);
+    wi = ctx.createLinearGradient(62, 0, 78, 0);
+    wi.addColorStop(0,'rgba(52,38,20,0.38)'); wi.addColorStop(1,'rgba(52,38,20,0)');
+    ctx.fillStyle = wi; ctx.fillRect(62, wy+2, 16, 90);
+    ctx.restore();
     // 窗帘
     ctx.fillStyle = 'rgba(232,120,90,0.85)';
     ctx.beginPath(); ctx.moveTo(62,wy+2); ctx.lineTo(80,wy+2); ctx.quadraticCurveTo(70,wy+40,62,wy+58); ctx.closePath(); ctx.fill();
@@ -238,14 +257,27 @@ function paintHouse(R){
     ctx.strokeStyle = '#7a5c38'; ctx.lineWidth = 5;
     ctx.beginPath(); ctx.moveTo(102, wy+2); ctx.lineTo(102, wy+92);
     ctx.moveTo(62, wy+47); ctx.lineTo(142, wy+47); ctx.stroke();
-    // 窗台花盆
+    // 窗台先画：花盆要坐在它上面，不能让它压住花盆
+    ctx.fillStyle = 'rgba(52,38,20,0.26)';
+    ctx.fillRect(50, wy+117, 104, 6);
+    let sill = ctx.createLinearGradient(0, wy+105, 0, wy+117);
+    sill.addColorStop(0,'#f3e6c6'); sill.addColorStop(1,'#c2a97c');
+    ctx.fillStyle = sill;
+    ctx.fillRect(50, wy+105, 104, 12);
+    ctx.strokeStyle = 'rgba(120,92,52,0.5)'; ctx.lineWidth = 1.2;
+    ctx.strokeRect(50, wy+105, 104, 12);
+    ctx.fillStyle = 'rgba(255,252,240,0.5)';
+    ctx.fillRect(52, wy+106, 100, 2);
+    // 窗台花盆（盆底落在窗台上沿）
     ctx.fillStyle = '#a86238';
-    ctx.beginPath(); ctx.moveTo(76,wy+100); ctx.lineTo(92,wy+100); ctx.lineTo(89,wy+112); ctx.lineTo(79,wy+112); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(76,wy+95); ctx.lineTo(92,wy+95); ctx.lineTo(89,wy+107); ctx.lineTo(79,wy+107); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(120,60,28,0.55)';
+    ctx.beginPath(); ctx.moveTo(89,wy+95); ctx.lineTo(92,wy+95); ctx.lineTo(89,wy+107); ctx.lineTo(86.5,wy+107); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#e86a8a';
-    ctx.beginPath(); ctx.arc(80,wy+97,4,0,TAU); ctx.fill();
-    ctx.beginPath(); ctx.arc(88,wy+95,4.5,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(80,wy+92,4,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(88,wy+90,4.5,0,TAU); ctx.fill();
     ctx.fillStyle = '#ffd23e';
-    ctx.beginPath(); ctx.arc(84,wy+99,3,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(84,wy+94,3,0,TAU); ctx.fill();
   }
   // 门廊立柱与壁灯
   ctx.fillStyle = '#8a6b44';

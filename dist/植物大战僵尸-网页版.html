@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src c929f45f */
+/* build: v0.1.0 pretty · src 94eb58f7 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -2593,6 +2593,11 @@
   var MAX_CARDS = 8;
   var SUN_BOX = { x: 14, y: BANK_Y, w: 120, h: BANK_H };
   function drawSeedBank(t, world, ui) {
+    const drop = ctx.createLinearGradient(0, BANK_Y + BANK_H, 0, BANK_Y + BANK_H + 20);
+    drop.addColorStop(0, "rgba(22,14,4,0.34)");
+    drop.addColorStop(1, "rgba(22,14,4,0)");
+    ctx.fillStyle = drop;
+    ctx.fillRect(6, BANK_Y + BANK_H, 748, 20);
     let g = ctx.createLinearGradient(0, BANK_Y, 0, BANK_Y + BANK_H);
     g.addColorStop(0, "#96652f");
     g.addColorStop(0.5, "#7d5124");
@@ -2612,8 +2617,24 @@
       ctx.bezierCurveTo(200, y + 4, 500, y - 4, 750, y + 3);
       ctx.stroke();
     }
+    for (let k = 0; k < 54; k++) {
+      const gx = 12 + k * 13.7 % 736;
+      const gy = BANK_Y + 6 + k * 37 % (BANK_H - 14);
+      const len = 6 + k * 7 % 14;
+      ctx.strokeStyle = "rgba(46,26,8," + (0.1 + k % 3 * 0.05).toFixed(2) + ")";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(gx, gy);
+      ctx.lineTo(gx + 0.6, gy + len);
+      ctx.stroke();
+    }
     ctx.fillStyle = "rgba(255,230,180,0.14)";
     ctx.fillRect(10, BANK_Y + 2, 740, 6);
+    let bankShade = ctx.createLinearGradient(0, BANK_Y + BANK_H - 14, 0, BANK_Y + BANK_H);
+    bankShade.addColorStop(0, "rgba(30,16,4,0)");
+    bankShade.addColorStop(1, "rgba(30,16,4,0.45)");
+    ctx.fillStyle = bankShade;
+    ctx.fillRect(8, BANK_Y + BANK_H - 14, 744, 14);
     ctx.restore();
     for (const sx2 of [22, 738]) {
       ctx.fillStyle = "#3a220c";
@@ -2675,8 +2696,16 @@
         rr(x + 1, y + 1, CARD_W - 2, CARD_H - 2, 7);
         ctx.stroke();
       }
+      ctx.save();
+      rr(x, y, CARD_W, CARD_H, 8);
+      ctx.clip();
+      ctx.fillStyle = "rgba(255,255,255,0.30)";
+      ctx.fillRect(x, y, CARD_W, 3.5);
+      ctx.fillStyle = "rgba(96,64,26,0.16)";
+      ctx.fillRect(x, y + CARD_H - 5, CARD_W, 5);
       ctx.fillStyle = "rgba(255,255,255,0.28)";
       ctx.fillRect(x + 3, y + 2.5, CARD_W - 6, 5);
+      ctx.restore();
       ctx.save();
       if (!afford) ctx.globalAlpha = 0.55;
       ctx.fillStyle = "rgba(60,40,15,0.25)";
@@ -4080,6 +4109,37 @@
       g.addColorStop(1, "#8fc4da");
       ctx.fillStyle = g;
       ctx.fillRect(62, wy + 2, 80, 90);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(62, wy + 2, 80, 90);
+      ctx.clip();
+      ctx.fillStyle = "rgba(255,255,255,0.30)";
+      ctx.beginPath();
+      ctx.moveTo(62, wy + 2);
+      ctx.lineTo(104, wy + 2);
+      ctx.lineTo(74, wy + 92);
+      ctx.lineTo(62, wy + 92);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.16)";
+      ctx.beginPath();
+      ctx.moveTo(112, wy + 2);
+      ctx.lineTo(128, wy + 2);
+      ctx.lineTo(100, wy + 92);
+      ctx.lineTo(90, wy + 92);
+      ctx.closePath();
+      ctx.fill();
+      let wi = ctx.createLinearGradient(0, wy, 0, wy + 22);
+      wi.addColorStop(0, "rgba(52,38,20,0.45)");
+      wi.addColorStop(1, "rgba(52,38,20,0)");
+      ctx.fillStyle = wi;
+      ctx.fillRect(62, wy + 2, 80, 22);
+      wi = ctx.createLinearGradient(62, 0, 78, 0);
+      wi.addColorStop(0, "rgba(52,38,20,0.38)");
+      wi.addColorStop(1, "rgba(52,38,20,0)");
+      ctx.fillStyle = wi;
+      ctx.fillRect(62, wy + 2, 16, 90);
+      ctx.restore();
       ctx.fillStyle = "rgba(232,120,90,0.85)";
       ctx.beginPath();
       ctx.moveTo(62, wy + 2);
@@ -4101,24 +4161,44 @@
       ctx.moveTo(62, wy + 47);
       ctx.lineTo(142, wy + 47);
       ctx.stroke();
+      ctx.fillStyle = "rgba(52,38,20,0.26)";
+      ctx.fillRect(50, wy + 117, 104, 6);
+      let sill = ctx.createLinearGradient(0, wy + 105, 0, wy + 117);
+      sill.addColorStop(0, "#f3e6c6");
+      sill.addColorStop(1, "#c2a97c");
+      ctx.fillStyle = sill;
+      ctx.fillRect(50, wy + 105, 104, 12);
+      ctx.strokeStyle = "rgba(120,92,52,0.5)";
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(50, wy + 105, 104, 12);
+      ctx.fillStyle = "rgba(255,252,240,0.5)";
+      ctx.fillRect(52, wy + 106, 100, 2);
       ctx.fillStyle = "#a86238";
       ctx.beginPath();
-      ctx.moveTo(76, wy + 100);
-      ctx.lineTo(92, wy + 100);
-      ctx.lineTo(89, wy + 112);
-      ctx.lineTo(79, wy + 112);
+      ctx.moveTo(76, wy + 95);
+      ctx.lineTo(92, wy + 95);
+      ctx.lineTo(89, wy + 107);
+      ctx.lineTo(79, wy + 107);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "rgba(120,60,28,0.55)";
+      ctx.beginPath();
+      ctx.moveTo(89, wy + 95);
+      ctx.lineTo(92, wy + 95);
+      ctx.lineTo(89, wy + 107);
+      ctx.lineTo(86.5, wy + 107);
       ctx.closePath();
       ctx.fill();
       ctx.fillStyle = "#e86a8a";
       ctx.beginPath();
-      ctx.arc(80, wy + 97, 4, 0, TAU);
+      ctx.arc(80, wy + 92, 4, 0, TAU);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(88, wy + 95, 4.5, 0, TAU);
+      ctx.arc(88, wy + 90, 4.5, 0, TAU);
       ctx.fill();
       ctx.fillStyle = "#ffd23e";
       ctx.beginPath();
-      ctx.arc(84, wy + 99, 3, 0, TAU);
+      ctx.arc(84, wy + 94, 3, 0, TAU);
       ctx.fill();
     }
     ctx.fillStyle = "#8a6b44";

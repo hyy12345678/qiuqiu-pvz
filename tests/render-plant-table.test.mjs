@@ -9,6 +9,20 @@ import { PLANTS, PLANT_ORDER } from '../src/core/data/plants.js';
 import { PLANT_DRAWERS, ICON_POSE, drawPlantIcon } from '../src/render/plant.js';
 import { bindCanvas } from '../src/render/target.js';
 
+// E18：图标改成离屏精灵后，需要 document 来创建缓存画布。
+if (!globalThis.document) {
+  globalThis.document = {
+    createElement: () => ({ width: 0, height: 0, style: {}, getContext: () => makeCanvasCtx() }),
+  };
+}
+function makeCanvasCtx(){
+  const t = {};
+  return new Proxy(t, {
+    get(o, k){ if (typeof k !== 'string') return undefined; if (k in o) return o[k]; const f = () => (k === 'createLinearGradient' || k === 'createRadialGradient' ? { addColorStop(){} } : undefined); o[k] = f; return f; },
+    set(o, k, v){ o[k] = v; return true; },
+  });
+}
+
 function countingCanvas(){
   const counts = new Map();
   const target = {};
@@ -55,7 +69,8 @@ test('E4：每个植物图标都真的落了笔', () => {
     const { canvas, counts } = countingCanvas();
     bindCanvas(canvas, 1);
     drawPlantIcon(1.7, type, 100, 100, 1);
-    const ink = (counts.get('fill') || 0) + (counts.get('stroke') || 0);
-    assert.ok(ink > 0, type + ' 的图鉴图标一次填充或描边都没有');
+    // E18 起图标走 drawImage 贴精灵；"有没有落笔"的语义改为"有没有贴出精灵"。
+    const ink = counts.get('drawImage') || 0;
+    assert.ok(ink > 0, type + ' 的图鉴图标没有贴出任何精灵');
   }
 });

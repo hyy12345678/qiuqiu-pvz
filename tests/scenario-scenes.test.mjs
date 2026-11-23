@@ -9,6 +9,7 @@ import { LEVELS } from '../src/core/data/levels.js';
 import { beginPlay, startLevel, startQuiz } from '../src/core/world.js';
 import { drawPea } from '../src/render/projectile.js';
 import { drawZombieEntity, drawZombieHeadIcon } from '../src/render/zombie.js';
+import { bgCache } from '../src/render/background.js';
 import { makeContext, scenario, withTarget } from './helpers/scenario.mjs';
 
 const SPORE_COLOR = '#b478e0';
@@ -43,16 +44,21 @@ const MOON_GLOW = 'rgba(255,246,200,0.6)';
 const moonGradients = entries => entries.filter(e =>
   e.op === 'createRadialGradient' && e.stops.some(([, color]) => color === MOON_GLOW));
 
+// E18：图标改成贴精灵（drawImage），选关页的绘制量因此大幅转移到 drawImage。
+// "画出来了"的语义本来就是"有足够的绘制动作"，所以把 drawImage 一并计入。
 function filled(delta){
-  return delta.fill + delta.stroke;
+  return delta.fill + delta.stroke + delta.drawImage;
 }
 
 describe('场景 D：各界面用真实 render 各画一帧', () => {
   test('D1：菜单 / 说明 / 选关 / 算术 / 战斗 / 结算都能画，热点表随界面切换', () => {
     const sc = scenario({ seed: 7 });
+    const themeBeforeMenu = bgCache.theme;
     const menu = oneFrame(sc);
     assert.ok(filled(menu) > 300, `菜单绘制过少：${JSON.stringify(menu)}`);
-    assert.equal(menu.drawImage, 0, '菜单自绘天空，不该走背景缓存');
+    // E18 起图标走 drawImage，不能用 drawImage 计数判断背景缓存；
+    // 改成直接看缓存主题有没有被菜单帧写脏——这才是这条断言的本意。
+    assert.equal(bgCache.theme, themeBeforeMenu, '菜单自绘天空，不该触发生成背景缓存');
     assert.equal(sc.ui.hotspots.length, 7, '菜单热点数变化');
 
     sc.world.state = 'help';
@@ -65,7 +71,11 @@ describe('场景 D：各界面用真实 render 各画一帧', () => {
     startLevel(sc.world, 0);
     assert.equal(sc.world.state, 'select');
     const select = oneFrame(sc);
-    assert.ok(filled(select) > 300, '选关界面没画出来');
+    // E18：13 张图鉴卡的图标从「每张近 250 次填充/描边」变成「每张 1 次 drawImage」，
+    // 总绘制量掉了一个数量级。阈值下调，同时把「13 张卡都贴出图标」直接断言出来——
+    // 这比原来的总数阈值更能说明问题。
+    assert.ok(filled(select) > 100, '选关界面绘制过少：' + JSON.stringify(select));
+    assert.ok(select.drawImage >= 13, '图鉴 13 张卡都应贴出图标，实际 ' + select.drawImage);
     assert.ok(sc.ui.hotspots.length >= 10, `选关热点过少：${sc.ui.hotspots.length}`);
 
     startQuiz(sc.world);

@@ -2,7 +2,7 @@
 
 import { TAU } from '../core/constants.js';
 import { clamp, isBlinking } from '../core/util.js';
-import { ctx } from './target.js';
+import { ctx, withTarget } from './target.js';
 import { rr, O, drawText } from './paint.js';
 
 // ---------------- 绘制：植物 ----------------
@@ -865,13 +865,45 @@ export function drawPlantEntity(t, p){
 // 导出给绘制投影（脚下阴影）用，保证人和影子一起缩。
 export const ICON_FIT = { tiga: 0.76 };
 
+// E18：图标精灵缓存。
+//
+// 原来 drawPlantIcon 每次调用都把整株植物重画一遍，而卡槽每帧、每张卡都要调一次：
+// 实测 drawSeedBank 每帧 2218 次 Canvas 调用，几乎全花在这里。
+// 现在首次用到某个种类时渲染一次到离屏画布（2 倍超采样，downscale 才不发虚），之后只 drawImage。
+//
+// 代价：图标不再随时间轻微摆动（原来每帧带着 t 重画，向日葵会小幅摇晃）。
+// 换来的是一帧少约 2000 次调用。判断：卡片只有 60x84，那点摆动本来就看不太出来。
+const ICON_BOX = { w: 96, h: 112 };
+const ICON_BASE_Y = 104;          // 锚点：底部中心，下方留 8px 给落在地上的影子
+const ICON_SPRITE_SCALE = 2;
+const ICON_SPRITES = new Map();
+
+function iconSprite(type){
+  const cached = ICON_SPRITES.get(type);
+  if (cached) return cached;
+  const k = ICON_SPRITE_SCALE;
+  const c = document.createElement('canvas');
+  c.width = Math.round(ICON_BOX.w * k);
+  c.height = Math.round(ICON_BOX.h * k);
+  const cctx = c.getContext('2d');
+  cctx.scale(k, k);
+  withTarget(cctx, () => {
+    cctx.translate(ICON_BOX.w / 2, ICON_BASE_Y);
+    const draw = PLANT_DRAWERS[type];
+    if (draw) draw(0, ICON_POSE[type]);
+  });
+  ICON_SPRITES.set(type, c);
+  return c;
+}
+
+// t 保留在签名里只是为了不动三处调用点；图标已经静态化，不再使用它。
 export function drawPlantIcon(t, type, x, y, s){
   const fit = ICON_FIT[type] || 1;
+  const sprite = iconSprite(type);
   ctx.save();
   ctx.translate(x, y);
-  ctx.scale(s*fit, s*fit);
-  const draw = PLANT_DRAWERS[type];
-  if(draw) draw(t, ICON_POSE[type]);
+  ctx.scale(s * fit, s * fit);
+  ctx.drawImage(sprite, -ICON_BOX.w / 2, -ICON_BASE_Y, ICON_BOX.w, ICON_BOX.h);
   ctx.restore();
 }
 

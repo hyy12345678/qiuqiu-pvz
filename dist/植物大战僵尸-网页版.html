@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 8c965ad0 */
+/* build: v0.1.0 pretty · src a1e23052 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -1932,13 +1932,34 @@
     ctx.restore();
   }
   var ICON_FIT = { tiga: 0.76 };
+  var ICON_BOX = { w: 96, h: 112 };
+  var ICON_BASE_Y = 104;
+  var ICON_SPRITE_SCALE = 2;
+  var ICON_SPRITES = /* @__PURE__ */ new Map();
+  function iconSprite(type) {
+    const cached = ICON_SPRITES.get(type);
+    if (cached) return cached;
+    const k = ICON_SPRITE_SCALE;
+    const c = document.createElement("canvas");
+    c.width = Math.round(ICON_BOX.w * k);
+    c.height = Math.round(ICON_BOX.h * k);
+    const cctx = c.getContext("2d");
+    cctx.scale(k, k);
+    withTarget(cctx, () => {
+      cctx.translate(ICON_BOX.w / 2, ICON_BASE_Y);
+      const draw = PLANT_DRAWERS[type];
+      if (draw) draw(0, ICON_POSE[type]);
+    });
+    ICON_SPRITES.set(type, c);
+    return c;
+  }
   function drawPlantIcon(t, type, x, y, s) {
     const fit = ICON_FIT[type] || 1;
+    const sprite = iconSprite(type);
     ctx.save();
     ctx.translate(x, y);
     ctx.scale(s * fit, s * fit);
-    const draw = PLANT_DRAWERS[type];
-    if (draw) draw(t, ICON_POSE[type]);
+    ctx.drawImage(sprite, -ICON_BOX.w / 2, -ICON_BASE_Y, ICON_BOX.w, ICON_BOX.h);
     ctx.restore();
   }
 

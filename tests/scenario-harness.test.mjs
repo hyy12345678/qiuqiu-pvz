@@ -55,7 +55,8 @@ test('夹具3 scenario 绑定主画布并启动帧链，菜单帧真实绘制天
 test('夹具3b 战斗帧经背景缓存走 drawImage，主题切换后缓存重新生成', () => {
   const h = scenario({ seed: 7 });
   startLevel(h.world, 0);
-  h.world.slots = [{ type: 'sunflower', cool: 0 }];
+  // 不带卡片：E18 起卡槽图标也走 drawImage，会干扰"每帧贴一次背景"的计数。
+  h.world.slots = [];
   beginPlay(h.world);
   h.frame();
   assert.equal(h.paint.counts.get('drawImage'), 1, '首个战斗帧应生成并贴出背景缓存');

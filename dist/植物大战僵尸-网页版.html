@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src b007d1b7 */
+/* build: v0.1.0 pretty · src 8c965ad0 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -3215,7 +3215,17 @@
     drawButton(ui, W / 2 - 290, 462, 180, 52, "操作说明", "help", { type: "nav", state: "help" }, {});
     drawButton(ui, W / 2 - 90, 462, 180, 52, musicOn ? "音乐：开" : "音乐：关", "music", { type: "music", ensure: true }, {});
     drawButton(ui, W / 2 + 110, 462, 180, 52, world.unlockAll ? "全部关卡：开" : "全部关卡：关", "unlockall", { type: "unlockAll" }, { size: 18 });
-    drawText("同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐", W / 2, H - 20, 12.5, "rgba(30,50,18,0.75)", null, 0, "center", "600");
+    drawText(
+      "同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐",
+      W / 2,
+      H - 20,
+      12.5,
+      "rgba(252,248,236,0.95)",
+      "rgba(24,34,14,0.85)",
+      3,
+      "center",
+      "700"
+    );
   }
 
   // src/render/scenes/help.js
@@ -3323,11 +3333,16 @@
       }
     }
     drawText("植物图鉴（点击加入队伍）", 200, 244, 15, "#e8d2a0", null, 0, "left", "700");
-    const cw = 108, ch = 78;
+    const cw = 104, ch = 78, GAP_X = 8, COLS2 = 5, GRID_X = 60;
+    const gridW = COLS2 * cw + (COLS2 - 1) * GAP_X;
     for (let i = 0; i < PLANT_ORDER.length; i++) {
       const type = PLANT_ORDER[i];
       const def = PLANTS[type];
-      const x = 76 + i % 4 * (cw + 12), y = 254 + Math.floor(i / 4) * (ch + 6);
+      const row = Math.floor(i / COLS2);
+      const inRow = Math.min(COLS2, PLANT_ORDER.length - row * COLS2);
+      const rowIdx = i % COLS2;
+      const rowW = inRow * cw + (inRow - 1) * GAP_X;
+      const x = GRID_X + (gridW - rowW) / 2 + rowIdx * (cw + GAP_X), y = 254 + row * (ch + 6);
       const inTeam = world.slots.some((s) => s.type === type);
       const hover = ui.mouse.x >= x && ui.mouse.x <= x + cw && ui.mouse.y >= y && ui.mouse.y <= y + ch;
       addHotspot(ui, x, y, cw, ch, "pick" + type, { type: "plantPick", plant: type });

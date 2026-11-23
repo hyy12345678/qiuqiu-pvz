@@ -59,12 +59,20 @@ export function renderSelect(t, world, ui){
   }
 
   drawText('植物图鉴（点击加入队伍）', 200, 244, 15, '#e8d2a0', null, 0, 'left', '700');
-  // 13 格要摆成 4 列 4 行且底部不越过木板（590），所以卡片压到 78 高、行距 84
-  const cw = 108, ch = 78;
+  // 13 张卡。原来排 4 列 → 4+4+4+1，最后一张孤零零挂在最左边，
+  // 右边还空出一大片。改成 5 列（5+5+3）并把每一行居中，剩余量看起来才像有意为之。
+  // 列宽 104 / 间距 8：5 列共 552px，从 x=60 起排到 612，右侧还留 23px 给僵尸信息面板。
+  // （用 108/12 时 5 列会顶到 664，把面板盖住。）
+  const cw = 104, ch = 78, GAP_X = 8, COLS = 5, GRID_X = 60;
+  const gridW = COLS*cw + (COLS-1)*GAP_X;
   for(let i=0;i<PLANT_ORDER.length;i++){
     const type = PLANT_ORDER[i];
     const def = PLANTS[type];
-    const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+6);
+    const row = Math.floor(i/COLS);
+    const inRow = Math.min(COLS, PLANT_ORDER.length - row*COLS);
+    const rowIdx = i % COLS;
+    const rowW = inRow*cw + (inRow-1)*GAP_X;
+    const x = GRID_X + (gridW - rowW)/2 + rowIdx*(cw+GAP_X), y = 254 + row*(ch+6);
     const inTeam = world.slots.some(s=>s.type===type);
     const hover = ui.mouse.x>=x && ui.mouse.x<=x+cw && ui.mouse.y>=y && ui.mouse.y<=y+ch;
     addHotspot(ui, x, y, cw, ch, 'pick'+type, { type:'plantPick', plant:type });

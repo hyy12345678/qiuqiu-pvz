@@ -197,5 +197,8 @@ export function renderMenu(t, world, ui, musicOn){
   drawButton(ui, W/2-290, 462, 180, 52, '操作说明', 'help', { type:'nav', state:'help' }, {});
   drawButton(ui, W/2-90, 462, 180, 52, musicOn ? '音乐：开' : '音乐：关', 'music', { type:'music', ensure:true }, {});
   drawButton(ui, W/2+110, 462, 180, 52, world.unlockAll ? '全部关卡：开' : '全部关卡：关', 'unlockall', { type:'unlockAll' }, { size: 18 });
-  drawText('同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐', W/2, H-20, 12.5, 'rgba(30,50,18,0.75)', null, 0, 'center', '600');
+  // 这行小字原来用半透明深绿、无描边，正好被僵尸的脚和腿压住，中段完全看不清。
+  // 改成浅色 + 深色描边：无论底下是草地、僵尸还是按钮都读得出来。
+  drawText('同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐', W/2, H-20, 12.5,
+    'rgba(252,248,236,0.95)', 'rgba(24,34,14,0.85)', 3, 'center', '700');
 }

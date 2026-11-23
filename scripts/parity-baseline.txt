@@ -1,4 +1,5 @@
 "use strict";
+'rgba(252,248,236,0.95)', 'rgba(24,34,14,0.85)', 3, 'center', '700');
 '· 夜间关卡：天上不会掉太阳，只能靠向日葵（开局多给 100 阳光）',
 '· 小喷菇免费但射程只有两格；阳光菇只要 25 阳光，产量是向日葵的一半',
 '· 报纸僵尸：报纸是它的护盾，打掉报纸它会暴怒加速冲过来！',
@@ -353,7 +354,7 @@ const correct = a === q.questions[q.idx].answer;
 const cur = q.questions[q.idx];
 const curBeat = pos / MUSIC_BEAT;
 const cv = document.getElementById('game');
-const cw = 108, ch = 78;
+const cw = 104, ch = 78, GAP_X = 8, COLS = 5, GRID_X = 60;
 const cx = (i - (title.length-1)/2) * tGap;
 const cx = (i - (title.length-1)/2) * tGap;
 const cx = px + ((k*97 + t*70) % pw);
@@ -410,6 +411,7 @@ const g = this.ctx.createGain(); g.gain.setValueAtTime(vol, t0);
 const game = createGame({
 const ge = ctx.createLinearGradient(0,-4, 0,4);
 const ghost = { type:selType, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0,
+const gridW = COLS*cw + (COLS-1)*GAP_X;
 const gx = 12 + (k * 13.7) % 736;
 const gx = R()*196, gy = y0 + 8 + R()*(y1-y0-16);
 const gy = BANK_Y + 6 + ((k * 37) % (BANK_H - 14));
@@ -433,6 +435,7 @@ const i = parseInt(key)-1;
 const i = world.plants.indexOf(p);
 const idx = world.slots.findIndex(s=>s.type === type);
 const inPhase = t >= -1.4;
+const inRow = Math.min(COLS, PLANT_ORDER.length - row*COLS);
 const inTeam = world.slots.some(s=>s.type===type);
 const inner = { x:x0+4, w:(x1-x0)-8 };
 const isCoffee = selType === 'coffee';
@@ -527,6 +530,9 @@ const reading = z.type==='newspaper' && !angry;
 const rec = (recoil||0)*7;
 const red = '#d6413a', redDk = '#8f201c';
 const rot = Math.sin(t*1.5 + i)*0.04;
+const row = Math.floor(i/COLS);
+const rowIdx = i % COLS;
+const rowW = inRow*cw + (inRow-1)*GAP_X;
 const run = m.state==='run';
 const s = world.slots[i];
 const s = world.slots[i];
@@ -603,8 +609,8 @@ const won = world.state==='won';
 const worried = dmg > 0.55;
 const x = ((t*(6+k*1.4) + k*163) % (W+80)) - 40;
 const x = ((t*14 + k*197) % (W+60)) - 30;
-const x = 76 + (i%4)*(cw+12), y = 254 + Math.floor(i/4)*(ch+6);
 const x = CARD_X0 + i*(CARD_W+CARD_GAP);
+const x = GRID_X + (gridW - rowW)/2 + rowIdx*(cw+GAP_X), y = 254 + row*(ch+6);
 const x = LX + R()*COLS*CW, y = LY + R()*ROWS*CH;
 const x = LX + hc.col*CW, y = LY + hc.row*CH;
 const x = LX+c*CW, y = LY+r*CH;
@@ -1902,7 +1908,7 @@ drawText('僵尸吃掉了你的脑子！', W/2, py+66, 37, '#e8554a', '#3a0a04',
 drawText('关 卡 完 成 ！', W/2, py+62, 44, '#3c7a18', '#1e3c0a', 8, 'center', '900');
 drawText('关卡进度', x0-52, y+h/2+1, 12, '#f0e2c0', '#3a2410', 3, 'center', '700');
 drawText('初始能量：' + q.energy, px+150, py+120, 22, '#3a6b18', null, 0, 'left', '800');
-drawText('同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐', W/2, H-20, 12.5, 'rgba(30,50,18,0.75)', null, 0, 'center', '600');
+drawText('同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐', W/2, H-20, 12.5,
 drawText('夜战 · 天上不会掉太阳，快种向日葵！', bx+bw/2+14, by+bh/2+1, 17, '#eaf0ff', '#1b2440', 4, 'center', '800');
 drawText('已暂停', W/2, H/2-20, 54, '#f5e6b8', '#3a2410', 9);
 drawText('战 前 热 身', W/2, py+42, 30, '#42280f', null, 0, 'center', '900');

@@ -4784,10 +4784,14 @@ c1 lineJoin=round
 c1 strokeText(全部关卡：关,712,489)
 c1 fillStyle=#fffbe8
 c1 fillText(全部关卡：关,712,489)
-c1 font=600 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
+c1 font=700 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=center
 c1 textBaseline=middle
-c1 fillStyle=rgba(30,50,18,0.75)
+c1 lineWidth=3
+c1 strokeStyle=rgba(24,34,14,0.85)
+c1 lineJoin=round
+c1 strokeText(同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐,512,620)
+c1 fillStyle=rgba(252,248,236,0.95)
 c1 fillText(同人复刻 · 图形与音乐均为程序生成 · 仅供个人学习娱乐,512,620)
 c1 restore()
 c1 createRadialGradient g688(512,320,352,512,320,608)

@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 94eb58f7 */
+/* build: v0.1.0 pretty · src b007d1b7 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -752,6 +752,10 @@
       ctx.restore();
     }
     ctx.restore();
+    ctx.fillStyle = "rgba(150,98,18,0.38)";
+    ctx.beginPath();
+    ctx.arc(0, 2.5, 19.5, 0, TAU);
+    ctx.fill();
     let g = ctx.createRadialGradient(-4, -5, 2, 0, 0, 18);
     g.addColorStop(0, "#c9903f");
     g.addColorStop(1, "#8a5220");
@@ -1914,13 +1918,13 @@
   function drawPlantEntity(t, p) {
     ctx.save();
     ctx.translate(p.cx, p.fy);
-    ctx.fillStyle = "rgba(35,65,20,0.32)";
+    ctx.fillStyle = "rgba(32,60,18,0.15)";
     ctx.beginPath();
-    ctx.ellipse(0, 3, 25, 7.5, 0, 0, TAU);
+    ctx.ellipse(6, 4.5, 31, 10, 0, 0, TAU);
     ctx.fill();
-    ctx.fillStyle = "rgba(35,65,20,0.18)";
+    ctx.fillStyle = "rgba(32,60,18,0.26)";
     ctx.beginPath();
-    ctx.ellipse(0, 3, 32, 10, 0, 0, TAU);
+    ctx.ellipse(2, 3, 23, 7, 0, 0, TAU);
     ctx.fill();
     const draw = PLANT_DRAWERS[p.type];
     if (draw) draw(t, p);
@@ -1943,6 +1947,12 @@
     const fyBase = fyOverride !== void 0 ? fyOverride : LY + (z.row + 1) * CH - 4;
     const fy = fyBase + (z.vy || 0);
     const slowed = z.slowT > 0;
+    const vgrad = (a, b, x0, y0, x1, y1) => {
+      const g = ctx.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, a);
+      g.addColorStop(1, b);
+      return g;
+    };
     const C = {
       skin: slowed ? "#8fb4c4" : "#a3b187",
       skinD: slowed ? "#6a92a4" : "#7f8b66",
@@ -1953,6 +1963,9 @@
       pants: slowed ? "#42525e" : "#4d463c",
       tie: "#b8382c"
     };
+    C.suitFill = vgrad(slowed ? "#5a6c7c" : "#6a6154", slowed ? "#33414d" : "#332f28", -18, -84, 18, -34);
+    C.shirtFill = vgrad(slowed ? "#b4c9d5" : "#c8c2ad", slowed ? "#8498a4" : "#8e8875", -13, -78, 13, -34);
+    C.pantsFill = vgrad(slowed ? "#4d5f6d" : "#5a5145", slowed ? "#35434e" : "#3c352c", -8, -40, 8, -4);
     const eat = z.state === "eat", walk = z.state === "walk";
     const at = z.animT || 0;
     const ph = at * 5.2;
@@ -1972,9 +1985,13 @@
       ctx.rotate(d * 1.5);
       ctx.translate(0, d * 10);
     }
-    ctx.fillStyle = "rgba(25,45,15,0.3)";
+    ctx.fillStyle = "rgba(26,48,14,0.15)";
     ctx.beginPath();
-    ctx.ellipse(0, 2, 23, 6.5, 0, 0, TAU);
+    ctx.ellipse(7, 4.5, 26, 8, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "rgba(26,48,14,0.24)";
+    ctx.beginPath();
+    ctx.ellipse(3, 3, 19, 5.8, 0, 0, TAU);
     ctx.fill();
     ctx.rotate(swing * 0.035);
     if (angry && walk) ctx.rotate(-0.11);
@@ -2019,7 +2036,7 @@
       ctx.strokeStyle = C.line;
       ctx.lineWidth = 10;
       ctx.stroke();
-      ctx.strokeStyle = C.pants;
+      ctx.strokeStyle = C.pantsFill;
       ctx.lineWidth = 7;
       ctx.stroke();
       ctx.beginPath();
@@ -2033,10 +2050,7 @@
     const C = p.C;
     ctx.beginPath();
     rr(-13, -76, 26, 42, 6);
-    O(C.shirt, C.line, 2.4);
-    let g = ctx.createLinearGradient(-17, -80, 15, -36);
-    g.addColorStop(0, C.suit);
-    g.addColorStop(1, C.suitD);
+    O(C.shirtFill, C.line, 2.4);
     ctx.beginPath();
     ctx.moveTo(-17, -74);
     ctx.quadraticCurveTo(-18, -79, -12, -79);
@@ -2046,7 +2060,7 @@
     ctx.lineTo(-10, -37);
     ctx.lineTo(-17, -39);
     ctx.closePath();
-    O(g, C.line, 2.2);
+    O(C.suitFill, C.line, 2.2);
     ctx.beginPath();
     ctx.moveTo(17, -74);
     ctx.quadraticCurveTo(18, -79, 12, -79);
@@ -2056,7 +2070,7 @@
     ctx.lineTo(10, -37);
     ctx.lineTo(17, -39);
     ctx.closePath();
-    O(g, C.line, 2.2);
+    O(C.suitFill, C.line, 2.2);
     const tieWave = Math.sin(p.at * 3.1) * 2;
     ctx.beginPath();
     ctx.moveTo(-1.5, -76);

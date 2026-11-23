@@ -48,6 +48,9 @@ export function drawSunflower(t, ph){
     ctx.restore();
   }
   ctx.restore();
+  // 花瓣根的影：花盘是从花瓣里"长出来"的，不是浮在它们上面
+  ctx.fillStyle = 'rgba(150,98,18,0.38)';
+  ctx.beginPath(); ctx.arc(0, 2.5, 19.5, 0, TAU); ctx.fill();
   // 花盘
   let g = ctx.createRadialGradient(-4,-5,2, 0,0,18);
   g.addColorStop(0,'#c9903f'); g.addColorStop(1,'#8a5220');
@@ -847,10 +850,11 @@ export const ICON_POSE = {
 export function drawPlantEntity(t, p){
   ctx.save();
   ctx.translate(p.cx, p.fy);
-  ctx.fillStyle = 'rgba(35,65,20,0.32)';
-  ctx.beginPath(); ctx.ellipse(0,3,25,7.5,0,0,TAU); ctx.fill();
-  ctx.fillStyle = 'rgba(35,65,20,0.18)';
-  ctx.beginPath(); ctx.ellipse(0,3,32,10,0,0,TAU); ctx.fill();
+  // 接触阴影：与僵尸同一套光照（光从左上，影子落右下），两层叠加成软影。
+  ctx.fillStyle = 'rgba(32,60,18,0.15)';
+  ctx.beginPath(); ctx.ellipse(6,4.5,31,10,0,0,TAU); ctx.fill();
+  ctx.fillStyle = 'rgba(32,60,18,0.26)';
+  ctx.beginPath(); ctx.ellipse(2,3,23,7,0,0,TAU); ctx.fill();
   const draw = PLANT_DRAWERS[p.type];
   if(draw) draw(t, p);
   if(p.asleep) drawSleepZzz(t, p.phase);

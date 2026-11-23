@@ -13,6 +13,15 @@ export function drawZombieEntity(t, z, fyOverride){
   const fyBase = (fyOverride !== undefined) ? fyOverride : LY + (z.row+1)*CH - 4;
   const fy = fyBase + (z.vy || 0);
   const slowed = z.slowT > 0;
+  // 大色块用渐变铺出体积感：西装、衬衫、裤子占了大半身体面积，平涂时整只僵尸像纸片。
+  //
+  // 注意：C 里的纯色**不能**直接换成渐变——drawTorso 会把 C.suit 当作 addColorStop 的停靠色，
+  // 渐变当颜色用会抛 "could not be parsed as a color"。所以纯色保留、另开 fill 字段给填充用。
+  const vgrad = (a, b, x0, y0, x1, y1) => {
+    const g = ctx.createLinearGradient(x0, y0, x1, y1);
+    g.addColorStop(0, a); g.addColorStop(1, b);
+    return g;
+  };
   const C = {
     skin:  slowed ? '#8fb4c4' : '#a3b187',
     skinD: slowed ? '#6a92a4' : '#7f8b66',
@@ -23,6 +32,9 @@ export function drawZombieEntity(t, z, fyOverride){
     pants: slowed ? '#42525e' : '#4d463c',
     tie:   '#b8382c',
   };
+  C.suitFill  = vgrad(slowed ? '#5a6c7c' : '#6a6154', slowed ? '#33414d' : '#332f28', -18, -84, 18, -34);
+  C.shirtFill = vgrad(slowed ? '#b4c9d5' : '#c8c2ad', slowed ? '#8498a4' : '#8e8875', -13, -78, 13, -34);
+  C.pantsFill = vgrad(slowed ? '#4d5f6d' : '#5a5145', slowed ? '#35434e' : '#3c352c', -8, -40, 8, -4);
   const eat = z.state==='eat', walk = z.state==='walk';
   const at = z.animT || 0;
   const ph = at*5.2;
@@ -43,8 +55,12 @@ export function drawZombieEntity(t, z, fyOverride){
     ctx.rotate(d*1.5);
     ctx.translate(0, d*10);
   }
-  ctx.fillStyle = 'rgba(25,45,15,0.3)';
-  ctx.beginPath(); ctx.ellipse(0, 2, 23, 6.5, 0, 0, TAU); ctx.fill();
+  // 接触阴影：光从左上来，影子落在右下。两层叠加——外层大而淡，内层小而深，
+  // 比单层平涂更接近真实的软阴影。
+  ctx.fillStyle = 'rgba(26,48,14,0.15)';
+  ctx.beginPath(); ctx.ellipse(7, 4.5, 26, 8, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = 'rgba(26,48,14,0.24)';
+  ctx.beginPath(); ctx.ellipse(3, 3, 19, 5.8, 0, 0, TAU); ctx.fill();
 
   ctx.rotate(swing*0.035);
   if(angry && walk) ctx.rotate(-0.11);   // 暴怒前冲
@@ -82,7 +98,7 @@ function drawLegs(p){
     const kneeX = (hipX+footX)/2 + 2;
     ctx.beginPath(); ctx.moveTo(hipX,-38); ctx.quadraticCurveTo(kneeX,-22, footX,-4-lift);
     ctx.strokeStyle = C.line; ctx.lineWidth = 10; ctx.stroke();
-    ctx.strokeStyle = C.pants; ctx.lineWidth = 7; ctx.stroke();
+    ctx.strokeStyle = C.pantsFill; ctx.lineWidth = 7; ctx.stroke();
     ctx.beginPath(); ctx.ellipse(footX-3,-3-lift,7.5,3.8,0,0,TAU);
     O('#2e2a24', '#17140f', 1.6);
   };
@@ -94,23 +110,22 @@ function drawLegs(p){
 function drawTorso(p){
   const C = p.C;
   ctx.beginPath(); rr(-13,-76,26,42,6);
-  O(C.shirt, C.line, 2.4);
-  let g = ctx.createLinearGradient(-17,-80,15,-36);
-  g.addColorStop(0,C.suit); g.addColorStop(1,C.suitD);
+  O(C.shirtFill, C.line, 2.4);
+  // 西装两片直接复用 C.suitFill：省掉每只僵尸每帧一条渐变
   ctx.beginPath();
   ctx.moveTo(-17,-74);
   ctx.quadraticCurveTo(-18,-79,-12,-79);
   ctx.lineTo(-6,-79); ctx.lineTo(-9,-40);
   ctx.lineTo(-13,-43); ctx.lineTo(-10,-37); ctx.lineTo(-17,-39);
   ctx.closePath();
-  O(g, C.line, 2.2);
+  O(C.suitFill, C.line, 2.2);
   ctx.beginPath();
   ctx.moveTo(17,-74);
   ctx.quadraticCurveTo(18,-79,12,-79);
   ctx.lineTo(6,-79); ctx.lineTo(9,-40);
   ctx.lineTo(13,-43); ctx.lineTo(10,-37); ctx.lineTo(17,-39);
   ctx.closePath();
-  O(g, C.line, 2.2);
+  O(C.suitFill, C.line, 2.2);
   const tieWave = Math.sin(p.at*3.1)*2;
   ctx.beginPath();
   ctx.moveTo(-1.5,-76); ctx.lineTo(2.5,-76);

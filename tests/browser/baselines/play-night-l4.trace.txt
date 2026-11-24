@@ -930,7 +930,6 @@ c1 fillStyle=rgba(255,255,255,0.28)
 c1 fillRect(283,12.500,54,5)
 c1 restore()
 c1 save()
-c1 globalAlpha=0.550
 c1 fillStyle=rgba(60,40,15,0.25)
 c1 beginPath()
 c1 ellipse(310,70,16,4,0,0,6.283)
@@ -957,9 +956,9 @@ c1 textBaseline=middle
 c1 lineWidth=2
 c1 strokeStyle=rgba(255,246,220,0.5)
 c1 lineJoin=round
-c1 strokeText(175,320,83)
-c1 fillStyle=#a02818
-c1 fillText(175,320,83)
+c1 strokeText(125,320,83)
+c1 fillStyle=#3a2c10
+c1 fillText(125,320,83)
 c1 restore()
 c1 save()
 c1 fillStyle=rgba(30,18,6,0.35)

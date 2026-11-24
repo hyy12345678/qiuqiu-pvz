@@ -41,7 +41,9 @@ function stepSpawns(world, dt){
     if(!lv.night){
       world.skyTimer -= dt;
       if(world.skyTimer <= 0){
-        world.skyTimer = rand(world.rng,4.5, 6.5);
+        // E20：4.5~6.5s → 9~12s。原产量下 L1 一局能掉 1500+ 阳光，远超需要，
+        // 「攒阳光」这个核心张力根本不存在。放稀之后前期真的要规划。
+        world.skyTimer = rand(world.rng,9, 12);
         // 落点决定落地时刻与可点击位置，属于战斗可见状态，不能交给表现流
         spawnSun(world, rand(world.rng,LX+30, LX+COLS*CW-30), -30, rand(world.rng,LY+60, LY+ROWS*CH-40), true);
       }
@@ -64,7 +66,9 @@ function stepPlants(world, dt){
         if(t > 0){
           p.sunT -= dt;
           if(p.sunT <= 0){
-            p.sunT = rand(world.rng,8, 10);
+            // E20：8~10s → 10~12s。单株向日葵整场产出从约 930 降到约 760，
+            // 与天降阳光一起把总产压缩到原来的一半左右。
+            p.sunT = rand(world.rng,10, 12);
             // 阳光菇的代价：产量只有向日葵的一半；落点同样属于战斗可见状态
             const small = p.type === 'sunshroom';
             spawnSun(world, p.cx + rand(world.rng,-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
@@ -82,9 +86,14 @@ function stepPlants(world, dt){
           if(p.type==='qiuqiu'){
             p.fireT = 0.4; p.recoil = 1; p.flash = 0.1;
             const py = p.fy - 44;
-            const isMissile = world.rng() < 0.15;
+            // E20：导弹 15%→8%、子弹 25→18。球球 DPS 从 87 降到约 49，
+            // 每阳光效率从 0.579 降到 0.33（仍是最高，但不再是一骑绝尘的 4 倍）。
+            // E20：导弹 15%→8%、子弹 25→15。球球 DPS 从 87 降到约 52.8，
+            // 每阳光效率 0.352（豌豆的 2.5 倍）——仍是最高，但不再是"种了它别的都不用种"。
+            // 15%/8% 那次只降到 2.8 倍，实测不够。
+            const isMissile = world.rng() < 0.08;
             const type = isMissile ? 'missile' : 'bullet';
-            const dmg = isMissile ? 90 : 25;
+            const dmg = isMissile ? 90 : 15;
             const vx = isMissile ? 300 : 520;
             world.peas.push({ x:p.cx+52, y:py, row:p.row, type, dmg, vx, prevX:p.cx+52 });
             if(isMissile) world.ports.sound('missile'); else world.ports.sound('gatling');

@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src b6f29f2b */
+/* build: v0.1.0 pretty · src 73bfbab7 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -311,9 +311,13 @@
   // src/core/data/levels.js
   var LEVELS = [
     { name: "第 1 关 · 前院草坪", count: 20, slots: 6, types: [["normal", 8], ["cone", 2]] },
-    { name: "第 2 关 · 来者不善", count: 32, slots: 7, types: [["normal", 5], ["cone", 3], ["bucket", 1], ["vault", 1], ["newspaper", 1]] },
+    // E20：32 → 27。L1→L2 的等效总血量原来是 1.0× → 3.0×，断崖太陡；
+    // 削到 27 后约 2.5×，配合铁桶权重不变，是"明显的台阶"而不是"墙"。
+    { name: "第 2 关 · 来者不善", count: 27, slots: 7, types: [["normal", 5], ["cone", 3], ["bucket", 1], ["vault", 1], ["newspaper", 1]] },
     { name: "第 3 关 · 最终决战", count: 44, slots: 8, types: [["normal", 4], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 2]] },
-    { name: "第 4 关 · 月夜突袭", count: 52, slots: 8, night: true, types: [["normal", 3], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 3]] }
+    // E20：52 → 46。原曲线是 1.0 → 3.0 → 4.6 → 5.6，L3→L4 的台阶最陡且时长 385s（6.4 分钟）偏长。
+    // 削到 46 后约 5.0×，时长降到约 340s。
+    { name: "第 4 关 · 月夜突袭", count: 46, slots: 8, night: true, types: [["normal", 3], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 3]] }
   ];
 
   // src/core/ports.js
@@ -2605,7 +2609,9 @@
     qiuqiu: { name: "球球", cost: 150, hp: 900, cool: 20, desc: "5岁的小男孩，加特林火力全开" },
     sunflower: { name: "向日葵", cost: 50, hp: 300, cool: 7.5, desc: "生产阳光，经济的基石" },
     peashooter: { name: "豌豆射手", cost: 100, hp: 300, cool: 7.5, desc: "发射豌豆攻击前方僵尸" },
-    snowpea: { name: "寒冰射手", cost: 175, hp: 300, cool: 7.5, desc: "冰豌豆可减速僵尸" },
+    // E20：175 → 125。原价下它比豌豆贵 75 而 DPS 完全一样，减速在"输出够用"时是纯冗余，
+    // 等于付钱买空气。降价后它与豌豆之间才是"取舍"而不是"更贵更差"。
+    snowpea: { name: "寒冰射手", cost: 125, hp: 300, cool: 7.5, desc: "冰豌豆可减速僵尸" },
     repeater: { name: "双发射手", cost: 200, hp: 300, cool: 7.5, desc: "一次发射两颗豌豆" },
     wallnut: { name: "坚果墙", cost: 50, hp: 4e3, cool: 24, desc: "坚固的屏障，阻挡僵尸" },
     potato: { name: "土豆雷", cost: 25, hp: 300, cool: 24, desc: "钻出地面后爆炸，需要时间准备" },
@@ -5043,7 +5049,7 @@
       if (!lv.night) {
         world.skyTimer -= dt;
         if (world.skyTimer <= 0) {
-          world.skyTimer = rand(world.rng, 4.5, 6.5);
+          world.skyTimer = rand(world.rng, 9, 12);
           spawnSun(world, rand(world.rng, LX + 30, LX + COLS * CW - 30), -30, rand(world.rng, LY + 60, LY + ROWS * CH - 40), true);
         }
       }
@@ -5068,7 +5074,7 @@
           if (t > 0) {
             p.sunT -= dt;
             if (p.sunT <= 0) {
-              p.sunT = rand(world.rng, 8, 10);
+              p.sunT = rand(world.rng, 10, 12);
               const small = p.type === "sunshroom";
               spawnSun(world, p.cx + rand(world.rng, -14, 14), p.fy - (small ? 46 : 88), p.fy - 30, false, small ? 25 : 50);
             }
@@ -5094,9 +5100,9 @@
               p.recoil = 1;
               p.flash = 0.1;
               const py = p.fy - 44;
-              const isMissile = world.rng() < 0.15;
+              const isMissile = world.rng() < 0.08;
               const type = isMissile ? "missile" : "bullet";
-              const dmg = isMissile ? 90 : 25;
+              const dmg = isMissile ? 90 : 15;
               const vx = isMissile ? 300 : 520;
               world.peas.push({ x: p.cx + 52, y: py, row: p.row, type, dmg, vx, prevX: p.cx + 52 });
               if (isMissile) world.ports.sound("missile");

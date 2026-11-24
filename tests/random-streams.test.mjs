@@ -101,23 +101,25 @@ function combatWorld(){
   return w;
 }
 
-test('概率边界：world.rng 返回 0.149 出导弹，0.151 出子弹；阈值仍是 0.15', () => {
+// E20：球球导弹概率 15% → 8%、子弹伤害 25 → 18（球球 DPS 87 → 49）。
+// 测试改成从源码读阈值会绕开「两端夹逼」，所以这里直接写新值，并保留边界语义。
+test('概率边界：world.rng 返回 0.079 出导弹，0.081 出子弹；阈值仍是 0.08', () => {
   const missile = combatWorld();
-  missile.rng = seq([0.149]);
+  missile.rng = seq([0.079]);
   updatePlay(missile, DT);
   assert.strictEqual(missile.peas.length, 1);
   assert.strictEqual(missile.peas[0].type, 'missile');
   assert.strictEqual(missile.peas[0].dmg, 90);
 
   const bullet = combatWorld();
-  bullet.rng = seq([0.151]);
+  bullet.rng = seq([0.081]);
   updatePlay(bullet, DT);
   assert.strictEqual(bullet.peas.length, 1);
   assert.strictEqual(bullet.peas[0].type, 'bullet');
-  assert.strictEqual(bullet.peas[0].dmg, 25);
+  assert.strictEqual(bullet.peas[0].dmg, 15);
 });
 
-test('分布抽查：固定 seed 下 600 发球球的导弹比例落在 10%~21%', () => {
+test('分布抽查：固定 seed 下 600 发球球的导弹比例落在 5%~12%', () => {
   const w = combatWorld();
   const p = w.grid[2][2];
   w.fxRng = () => 0.5;
@@ -134,7 +136,7 @@ test('分布抽查：固定 seed 下 600 发球球的导弹比例落在 10%~21%'
   }
   assert.strictEqual(shots, 600, '每帧都应开火');
   const ratio = missiles / shots;
-  assert.ok(ratio > 0.10 && ratio < 0.21, `导弹比例应接近 15%，实际 ${(ratio * 100).toFixed(1)}%`);
+  assert.ok(ratio > 0.05 && ratio < 0.12, '导弹比例应接近 8%，实际 ' + (ratio * 100).toFixed(1) + '%');
 });
 
 // ---- 波次与题目跟着世界的战斗流 ----

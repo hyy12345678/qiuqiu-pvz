@@ -392,7 +392,7 @@ const def = ZTYPES[type];
 const def = check.def;
 const disabled = opts.disabled;
 const dmg = 1 - hpFrac;
-const dmg = isMissile ? 90 : 25;
+const dmg = isMissile ? 90 : 15;
 const draw = (x,y,r)=>{
 const draw = PLANT_DRAWERS[p.type];
 const draw = PLANT_DRAWERS[type];
@@ -461,7 +461,7 @@ const inRow = Math.min(COLS, PLANT_ORDER.length - row*COLS);
 const inTeam = world.slots.some(s=>s.type===type);
 const inner = { x:x0+4, w:(x1-x0)-8 };
 const isCoffee = selType === 'coffee';
-const isMissile = world.rng() < 0.15;
+const isMissile = world.rng() < 0.08;
 const izx0 = zx + 165 - (nIco-1)*31;
 const j = Math.floor(rng() * (i + 1));
 const k = ICON_SPRITE_SCALE;
@@ -2854,7 +2854,7 @@ p.life -= dt;
 p.lifeT -= dt;
 p.recoil = Math.max(0, p.recoil - dt*(p.type==='qiuqiu' ? 4 : 1.4));
 p.sunT -= dt;
-p.sunT = rand(world.rng,8, 10);
+p.sunT = rand(world.rng,10, 12);
 p.x += p.vx*dt; p.y += p.vy*dt;
 paintBankStatic();
 paintBottomGrass(R);
@@ -3007,7 +3007,7 @@ skyTimer:5, lastRows:[],
 slots:[],
 snowShoot(){ this.tone(980, 420, 0.1, 'sine', 0.09); this.noise(0.06, 0.03, 4000); },
 snowpea: (t, p) => drawShooter(t, p.phase, 'snow', p.recoil, p.flash),
-snowpea: { name:'寒冰射手', cost:175, hp:300, cool:7.5, desc:'冰豌豆可减速僵尸' },
+snowpea: { name:'寒冰射手', cost:125, hp:300, cool:7.5, desc:'冰豌豆可减速僵尸' },
 snowpea: { phase:3, recoil:0, flash:0 },
 sound(){},
 sound: name => SFX[name](),
@@ -3178,7 +3178,7 @@ world.ports.sound('win');
 world.quiz = { idx: 0, energy: 50, questions: makeQuiz(world.rng), feedback: 0, correct: true };
 world.skyTimer -= dt;
 world.skyTimer = 2; world.visual.groanTimer = 4;
-world.skyTimer = rand(world.rng,4.5, 6.5);
+world.skyTimer = rand(world.rng,9, 12);
 world.slots = [];
 world.slots = world.slots.map(s=>({type:s.type, cool:0}));
 world.slots.push({ type, cool:0 });
@@ -3252,9 +3252,9 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { id:'mute', label: musicOn ? '音乐开' : '音乐关', action:{ type:'music' } },
 { id:'pause', label: world.paused ? '继续' : '暂停', action:{ type:'pause' } },
 { name:'第 1 关 · 前院草坪', count:20, slots:6, types:[['normal',8],['cone',2]] },
-{ name:'第 2 关 · 来者不善', count:32, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
+{ name:'第 2 关 · 来者不善', count:27, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
-{ name:'第 4 关 · 月夜突袭', count:52, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
+{ name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
 { type:'startQuiz' },
 }
 }

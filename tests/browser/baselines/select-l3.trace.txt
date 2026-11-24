@@ -489,7 +489,7 @@ c1 font=800 12px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=left
 c1 textBaseline=middle
 c1 fillStyle=#6b4c10
-c1 fillText(175,438,321)
+c1 fillText(125,438,321)
 c1 restore()
 c1 save()
 c1 fillStyle=rgba(20,12,4,0.35)

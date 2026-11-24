@@ -3939,7 +3939,7 @@ c1 font=700 14px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=#6b4c20
-c1 fillText(僵尸 × 32,394,384)
+c1 fillText(僵尸 × 27,394,384)
 c1 restore()
 c1 save()
 c1 fillStyle=rgba(20,35,10,0.35)
@@ -4566,7 +4566,7 @@ c1 font=700 14px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=#6b4c20
-c1 fillText(僵尸 × 52 · 夜间,866,384)
+c1 fillText(僵尸 × 46 · 夜间,866,384)
 c1 restore()
 c1 createLinearGradient g678(0,462,0,514)
 c1 g678.addColorStop(0,#7aa848)

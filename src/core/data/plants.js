@@ -5,7 +5,9 @@ export const PLANTS = {
   qiuqiu:     { name:'球球',     cost:150, hp:900,  cool:20,  desc:'5岁的小男孩，加特林火力全开' },
   sunflower:  { name:'向日葵',   cost:50,  hp:300,  cool:7.5, desc:'生产阳光，经济的基石' },
   peashooter: { name:'豌豆射手', cost:100, hp:300,  cool:7.5, desc:'发射豌豆攻击前方僵尸' },
-  snowpea:    { name:'寒冰射手', cost:175, hp:300,  cool:7.5, desc:'冰豌豆可减速僵尸' },
+  // E20：175 → 125。原价下它比豌豆贵 75 而 DPS 完全一样，减速在"输出够用"时是纯冗余，
+  // 等于付钱买空气。降价后它与豌豆之间才是"取舍"而不是"更贵更差"。
+  snowpea:    { name:'寒冰射手', cost:125, hp:300,  cool:7.5, desc:'冰豌豆可减速僵尸' },
   repeater:   { name:'双发射手', cost:200, hp:300,  cool:7.5, desc:'一次发射两颗豌豆' },
   wallnut:    { name:'坚果墙',   cost:50,  hp:4000, cool:24,  desc:'坚固的屏障，阻挡僵尸' },
   potato:     { name:'土豆雷',   cost:25,  hp:300,  cool:24,  desc:'钻出地面后爆炸，需要时间准备' },

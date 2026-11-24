@@ -5,7 +5,7 @@ import { W, H, TAU } from '../core/constants.js';
 import { clamp, easeOut } from '../core/util.js';
 import { PLANTS } from '../core/data/plants.js';
 import { addHotspot } from '../ui/hotspots.js';
-import { ctx } from './target.js';
+import { ctx, withTarget } from './target.js';
 import { rr, O, drawText } from './paint.js';
 import { drawPlantIcon, ICON_FIT } from './plant.js';
 import { drawZombieHeadIcon } from './zombie.js';
@@ -16,10 +16,25 @@ const CARD_X0 = 148, CARD_W = 60, CARD_H = 84, CARD_GAP = 6;
 // 这是布局常量而非"当前关卡卡数"：若改成读 world.slots.length，6/7 卡关卡里铲子会左右跳。
 const MAX_CARDS = 8;
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
+// E19：HUD 的静态件离屏缓存。
+// E18 之后 drawSeedBank 每帧还有 1466 次调用，其中 738 次是两个太阳图标（单个 82 次），
+// 其余大头是木板本体（渐变 + 5 条曲线 + 54 道木纹 + 钉子）。这两样都不随时间变化——
+// 木板完全静态，太阳只转不形变。缓存成精灵之后每帧只剩 drawImage。
+const HUD_SPRITES = new Map();
+function hudSprite(key, w, h, paint, k = 2){
+  const cached = HUD_SPRITES.get(key);
+  if (cached) return cached;
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const cc = c.getContext('2d');
+  cc.scale(k, k);
+  withTarget(cc, paint);
+  HUD_SPRITES.set(key, c);
+  return c;
+}
 
-export function drawSeedBank(t, world, ui){
-  // 顶栏投到场地上的影：让它"浮"在草坪上方，而不是贴在上面。
-  // 每帧一条渐变，代价可忽略；换来的是整个画面上沿有了层次。
+function paintBankStatic(){
+  // 顶栏投到场地上的影
   const drop = ctx.createLinearGradient(0, BANK_Y+BANK_H, 0, BANK_Y+BANK_H+20);
   drop.addColorStop(0,'rgba(22,14,4,0.34)');
   drop.addColorStop(1,'rgba(22,14,4,0)');
@@ -64,6 +79,19 @@ export function drawSeedBank(t, world, ui){
     ctx.beginPath(); ctx.arc(sx-1, BANK_Y+12, 1.2, 0, TAU); ctx.fill();
     ctx.beginPath(); ctx.arc(sx-1, BANK_Y+BANK_H-14, 1.2, 0, TAU); ctx.fill();
   }
+}
+
+export function drawSeedBank(t, world, ui){
+  // 木板 + 投影 + 钉子整块静态（渐变、5 条曲线、54 道木纹、4 颗钉子），缓存成精灵。
+  const bank = hudSprite('bank', 752, 116, () => {
+    ctx.translate(-4, -4);
+    paintBankStatic();
+  });
+  ctx.drawImage(bank, 4, 4, 752, 116);
+
+  // 木板搬进 paintBankStatic 之后，这个 g 要在这里重新声明：
+  // 阳光盒与卡片底色仍然复用同一个变量。
+  let g;
   const flash = world.sunFlash > 0 && Math.sin(t*30) > 0;
   g = ctx.createLinearGradient(0,BANK_Y,0,BANK_Y+BANK_H);
   g.addColorStop(0, flash ? '#fff8d0' : '#f8ecbe'); g.addColorStop(1, flash ? '#ffe98a' : '#e2c88a');
@@ -142,9 +170,12 @@ export function drawSeedBank(t, world, ui){
   drawText('铲子', sx+32, sy+62, 11, '#42300f', null, 0, 'center', '700');
 }
 
-export function drawSunIcon(t, x,y,s){
-  ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
-  ctx.save(); ctx.rotate(t*0.7);
+// 太阳只转不形变，形状本身是静态的：按 t=0 缓存一次，之后只做缩放贴图。
+// 代价是图标不再随时间旋转。卡片上的太阳只有 0.34 倍（约 14px），看不出转速；
+// 阳光盒里那个 0.85 倍的大图标会失去缓慢旋转——这是本轮唯一的可感知变化。
+const SUN_SPRITE = 46;   // 逻辑边长：射线尖端半径 21，留一点描边余量
+function paintSunShape(){
+  ctx.save();
   ctx.fillStyle = '#ffc82e';
   for(let k=0;k<10;k++){
     ctx.rotate(TAU/10);
@@ -156,7 +187,15 @@ export function drawSunIcon(t, x,y,s){
   ctx.beginPath(); ctx.arc(0,0,13.5,0,TAU);
   ctx.fillStyle = g; ctx.fill();
   ctx.strokeStyle = 'rgba(210,130,20,0.6)'; ctx.lineWidth = 1.4; ctx.stroke();
-  ctx.restore();
+}
+
+export function drawSunIcon(t, x,y,s){
+  const sprite = hudSprite('sun', SUN_SPRITE, SUN_SPRITE, () => {
+    ctx.translate(SUN_SPRITE/2, SUN_SPRITE/2);
+    paintSunShape();
+  });
+  const half = (SUN_SPRITE/2) * s;
+  ctx.drawImage(sprite, x - half, y - half, SUN_SPRITE*s, SUN_SPRITE*s);
 }
 
 export function drawShovelIcon(x,y,s){

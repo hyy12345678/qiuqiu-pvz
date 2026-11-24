@@ -53,15 +53,18 @@ test('夹具3 scenario 绑定主画布并启动帧链，菜单帧真实绘制天
 });
 
 test('夹具3b 战斗帧经背景缓存走 drawImage，主题切换后缓存重新生成', () => {
-  const h = scenario({ seed: 7 });
+  const h = scenario({ seed: 7, trace: true });
   startLevel(h.world, 0);
-  // 不带卡片：E18 起卡槽图标也走 drawImage，会干扰"每帧贴一次背景"的计数。
   h.world.slots = [];
   beginPlay(h.world);
+  // E18/E19 之后卡槽图标、木板、太阳图标都走 drawImage，总数不再等于「背景贴了几次」。
+  // 改成数「整屏级」贴图：drawImage(画布, 0, 0, 1024, 640)。
+  const bgBlits = () => h.paint.trace.filter(e => e.op === 'drawImage'
+    && e.args[1] === 0 && e.args[2] === 0 && e.args[3] === 1024).length;
   h.frame();
-  assert.equal(h.paint.counts.get('drawImage'), 1, '首个战斗帧应生成并贴出背景缓存');
+  assert.equal(bgBlits(), 1, '首个战斗帧应生成并贴出背景缓存');
   h.frame();
-  assert.equal(h.paint.counts.get('drawImage'), 2, '同主题第二帧应命中缓存后再次贴图');
+  assert.equal(bgBlits(), 2, '同主题第二帧应命中缓存后再次贴图');
   assert.equal(bgCache.theme, 'day');
 });
 

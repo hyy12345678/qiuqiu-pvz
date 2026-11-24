@@ -21,11 +21,21 @@ function countsOf(paint){
   return out;
 }
 
+// E19：HUD 的木板与太阳图标也改成了贴精灵，drawImage 总数不再是「背景贴了几次」。
+// 用 trace 精确数「整屏级」贴图（drawImage(画布, 0, 0, 1024, 640)），其余断言不受影响。
+let lastTrace = [];
+function bgBlits(){
+  return lastTrace.filter(e => e.op === 'drawImage'
+    && e.args[1] === 0 && e.args[2] === 0 && e.args[3] === 1024).length;
+}
+
 // 单独驱动一帧，返回这一帧的绘制增量。
 function oneFrame(sc){
   sc.activate();
   const before = countsOf(sc.paint);
+  const start = sc.trace ? sc.trace.length : 0;
   sc.frame();
+  lastTrace = sc.trace ? sc.trace.slice(start) : [];
   const after = countsOf(sc.paint);
   const delta = {};
   for (const key of KEYS) delta[key] = after[key] - before[key];
@@ -52,7 +62,7 @@ function filled(delta){
 
 describe('场景 D：各界面用真实 render 各画一帧', () => {
   test('D1：菜单 / 说明 / 选关 / 算术 / 战斗 / 结算都能画，热点表随界面切换', () => {
-    const sc = scenario({ seed: 7 });
+    const sc = scenario({ seed: 7, trace: true });
     const themeBeforeMenu = bgCache.theme;
     const menu = oneFrame(sc);
     assert.ok(filled(menu) > 300, `菜单绘制过少：${JSON.stringify(menu)}`);
@@ -85,14 +95,14 @@ describe('场景 D：各界面用真实 render 各画一帧', () => {
 
     beginPlay(sc.world, 50);
     const play = oneFrame(sc);
-    assert.equal(play.drawImage, 1, '战斗帧应恰好贴一次背景缓存');
+    assert.equal(bgBlits(), 1, '战斗帧应恰好贴一次背景缓存');
     assert.ok(filled(play) > 100, '战斗界面没画出来');
     const playHotspots = sc.ui.hotspots.length;
 
     for (const state of ['won', 'lost']){
       sc.world.state = state;
       const end = oneFrame(sc);
-      assert.equal(end.drawImage, 1, `${state}：结算仍走战斗背景`);
+      assert.equal(bgBlits(), 1, state + '：结算仍走战斗背景');
       assert.ok(end.fillText > play.fillText, `${state}：结算面板应补上文字`);
       assert.ok(sc.ui.hotspots.length > playHotspots, `${state}：结算面板应新增按钮热点`);
     }

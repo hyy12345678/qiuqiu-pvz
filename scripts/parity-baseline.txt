@@ -39,6 +39,7 @@ C.shirtFill = vgrad(slowed ? '#b4c9d5' : '#c8c2ad', slowed ? '#8498a4' : '#8e887
 C.suitFill = vgrad(slowed ? '#5a6c7c' : '#6a6154', slowed ? '#33414d' : '#332f28', -18, -84, 18, -34);
 DPR = dpr;
 E4:329.63, G4:392, A4:440, B4:493.88, C5:523.25, D5:587.33, E5:659.25, G5:783.99 };
+HUD_SPRITES.set(key, c);
 ICON_SPRITES.set(type, c);
 LX+COLS*CW*0.42, LY+ROWS*CH*0.44, COLS*CW*0.72);
 O('#2e2a24', '#17140f', 1.6);
@@ -213,6 +214,7 @@ bucket:{ name:'铁桶僵尸', hp:200, acc:1100, speed:17 },
 bulletHit(){ this.noise(0.05, 0.08, 1600); this.tone(150, 90, 0.05, 'square', 0.04); },
 c.height = Math.round(ICON_BOX.h * k);
 c.width = Math.round(ICON_BOX.w * k);
+c.width = Math.round(w * k); c.height = Math.round(h * k);
 c.width = W*scale; c.height = H*scale;
 canvas = c; theme = nextTheme;
 canvas.addEventListener('contextmenu', e=>{
@@ -240,6 +242,7 @@ case 'startQuiz':
 case 'sunflower': case 'sunshroom':
 case 'tiga': {
 case 'unlockAll': toggleUnlockAll(world); return;
+cc.scale(k, k);
 cctx.scale(k, k);
 cctx.scale(scale, scale);
 cctx.translate(ICON_BOX.w / 2, ICON_BASE_Y);
@@ -277,6 +280,7 @@ const FX_SEED_XOR = 0x9E3779B9;
 const G = createWorld({ seed: SEED, ports, unlocked: loadUnlocked(), unlockAll: loadUnlockAll() });
 const HOUSE_Y0 = LY-34;
 const HOUSE_Y1 = LY+ROWS*CH+4;
+const HUD_SPRITES = new Map();
 const ICON_BASE_Y = 104;
 const ICON_BOX = { w: 96, h: 112 };
 const ICON_FIT = { tiga: 0.76 };
@@ -297,6 +301,7 @@ const SEED = randomSeed();
 const SFX = {
 const SILENT = {
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
+const SUN_SPRITE = 46;
 const TAU = Math.PI * 2;
 const UI = createUI();
 const W = 1024, H = 640;
@@ -322,6 +327,7 @@ const animMul = (z.type==='vault' && !z.poleLost) ? 1.7 : (z.angry ? 2.1 : 1);
 const armSway = walk ? Math.sin(ph+1.1)*3 : (eat ? Math.sin(z.eatT*9)*2.4 : 0);
 const at = z.animT || 0;
 const b = bar*3;
+const bank = hudSprite('bank', 752, 116, () => {
 const beam = pea.type === 'beam';
 const bgCache = createBackgroundCache();
 const bl = 12, pu = Math.sin(t*6)*1.5;
@@ -354,8 +360,11 @@ const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
 const c = bgCache.ensure(night ? 'night' : 'day', () => paintBattleBG(night));
 const c = createCanvas();
 const c = document.createElement('canvas');
+const c = document.createElement('canvas');
+const cached = HUD_SPRITES.get(key);
 const cached = ICON_SPRITES.get(type);
 const cardW = 214, cardH = 150, gap = 22;
+const cc = c.getContext('2d');
 const cctx = c.getContext('2d');
 const cctx = c.getContext('2d');
 const check = inspectUseCard(world, slotIndex, row, col);
@@ -429,6 +438,7 @@ const gx = R()*196, gy = y0 + 8 + R()*(y1-y0-16);
 const gy = BANK_Y + 6 + ((k * 37) % (BANK_H - 14));
 const h = hitHotspot(ui, p);
 const h = ui.hotspots[i];
+const half = (SUN_SPRITE/2) * s;
 const hc = ui.hoverCell;
 const hop = Math.abs(Math.sin(t*2+ph))*2.5;
 const hop = Math.abs(Math.sin(t*2.6+ph))*2.4;
@@ -567,6 +577,7 @@ const slowed = z.slowT > 0;
 const small = p.type === 'sunshroom';
 const spin = t*2 + r*18;
 const spread = 0.5 + R()*0.55;
+const sprite = hudSprite('sun', SUN_SPRITE, SUN_SPRITE, () => {
 const sprite = iconSprite(type);
 const src = this.ctx.createBufferSource(); src.buffer = buf;
 const step = Math.sin(t*1.3 + ph)*1.2;
@@ -1115,8 +1126,10 @@ ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill(); ctx.stroke();
+ctx.drawImage(bank, 4, 4, 752, 116);
 ctx.drawImage(c, 0, 0, W, H);
 ctx.drawImage(sprite, -ICON_BOX.w / 2, -ICON_BASE_Y, ICON_BOX.w, ICON_BOX.h);
+ctx.drawImage(sprite, x - half, y - half, SUN_SPRITE*s, SUN_SPRITE*s);
 ctx.ellipse(208+R()*50, LY+r*CH+14+R()*70, 4+R()*4, 2.5+R()*2, R(), 0, TAU);
 ctx.ellipse(bx, by, br, br*(0.20 + R()*0.16), R()*0.5-0.25, 0, TAU);
 ctx.fill();
@@ -1613,7 +1626,6 @@ ctx.restore();
 ctx.restore();
 ctx.restore();
 ctx.restore();
-ctx.restore();
 ctx.rotate(-0.22 + wob);
 ctx.rotate(Math.sin(at*14)*0.012);
 ctx.rotate(Math.sin(t*0.9 + ph)*0.02);
@@ -1678,11 +1690,11 @@ ctx.save();
 ctx.save();
 ctx.save();
 ctx.save();
+ctx.save();
 ctx.save(); ctx.rotate(Math.sin(t+ph)*0.05 + TAU/24);
 ctx.save(); ctx.rotate(Math.sin(t+ph)*0.05);
 ctx.save(); ctx.rotate(k*TAU/12);
 ctx.save(); ctx.rotate(k*TAU/12);
-ctx.save(); ctx.rotate(t*0.7);
 ctx.save(); ctx.scale(s,s);
 ctx.save(); ctx.translate(0, bob*0.4);
 ctx.save(); ctx.translate(0,-hop);
@@ -1699,7 +1711,6 @@ ctx.save(); ctx.translate(hx,hy); ctx.rotate(Math.sin(t*0.9+ph)*0.08);
 ctx.save(); ctx.translate(hx-7, hy-20); ctx.rotate(-0.55+Math.sin(t*2+ph)*0.12);
 ctx.save(); ctx.translate(x,y); ctx.rotate(-0.7); ctx.scale(s,s);
 ctx.save(); ctx.translate(x,y); ctx.rotate(spin||0);
-ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
 ctx.scale(dpr, dpr);
 ctx.scale(pulse, pulse);
 ctx.scale(s * fit, s * fit);
@@ -1831,6 +1842,7 @@ ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
 ctx.textAlign = align || 'center';
 ctx.textBaseline = 'middle';
 ctx.translate(-34, -78);
+ctx.translate(-4, -4);
 ctx.translate(-7, -96);
 ctx.translate(-7, 6); ctx.rotate(-0.2);
 ctx.translate(-lunge*0.35, -bob);
@@ -1843,6 +1855,7 @@ ctx.translate(0, d*10);
 ctx.translate(0,-85);
 ctx.translate(14, -118 + ang*0.4);
 ctx.translate(2,-66);
+ctx.translate(SUN_SPRITE/2, SUN_SPRITE/2);
 ctx.translate(W/2, 128);
 ctx.translate(W/2, H/2 - 30);
 ctx.translate(W/2, H/2 - 40);
@@ -2213,6 +2226,7 @@ function handleKey(key){
 function handleMove(p){
 function handlePress(p){
 function hitHotspot(ui, p){
+function hudSprite(key, w, h, paint, k = 2){
 function iconSprite(type){
 function inBounds(row, col){
 function inspectUseCard(world, slotIndex, row, col){
@@ -2223,6 +2237,7 @@ function loadUnlockAll(){ try{ return localStorage.getItem('pvzweb_unlockall') =
 function loadUnlocked(){ try{ return clamp(parseInt(localStorage.getItem('pvzweb_unlocked'))||1,1,LEVELS.length); }catch(e){ return 1; } }
 function makeQuiz(rng = Math.random){
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function paintBankStatic(){
 function paintBattleBG(night){
 function paintBottomGrass(R){
 function paintDirtStrip(R){
@@ -2231,6 +2246,7 @@ function paintHouse(R){
 function paintLawn(R){
 function paintNight(R){
 function paintSky(R){
+function paintSunShape(){
 function pickSlot(world, ui, slotIndex){
 function pickTeamPlant(world, ui, type){
 function pickType(lv, prog, rng){
@@ -2435,6 +2451,7 @@ hotspots:[],
 hoverCell:null,
 hp: def.hp, acc: def.acc, maxHp: def.hp + def.acc,
 i += size;
+if (cached) return cached;
 if (cached) return cached;
 if (draw) draw(0, ICON_POSE[type]);
 if(!(pea.x >= z.x-24 && pea.x <= z.x+16)) continue;
@@ -2763,6 +2780,7 @@ let g;
 let g;
 let g;
 let g;
+let g;
 let gi = ctx.createLinearGradient(0,zy,0,zy+220);
 let guard = 0;
 let has = false;
@@ -2838,12 +2856,14 @@ p.recoil = Math.max(0, p.recoil - dt*(p.type==='qiuqiu' ? 4 : 1.4));
 p.sunT -= dt;
 p.sunT = rand(world.rng,8, 10);
 p.x += p.vx*dt; p.y += p.vy*dt;
+paintBankStatic();
 paintBottomGrass(R);
 paintDirtStrip(R);
 paintEntryShade();
 paintHouse(R);
 paintLawn(R);
 paintSky(R);
+paintSunShape();
 pants: slowed ? '#42525e' : '#4d463c',
 paper: type==='newspaper' ? ZTYPES.newspaper.acc : 0, angry:false,
 paperTear(){ this.noise(0.18, 0.16, 5200); this.tone(1400, 420, 0.16, 'sawtooth', 0.05); },
@@ -2896,6 +2916,7 @@ return Object.assign({}, SILENT, overrides);
 return [t, ww];
 return arr;
 return best;
+return c;
 return c;
 return c;
 return check;
@@ -3096,6 +3117,7 @@ wi.addColorStop(0,'rgba(52,38,20,0.45)'); wi.addColorStop(1,'rgba(52,38,20,0)');
 win(){ const seq=[523.25,659.25,783.99,1046.5]; seq.forEach((f,i)=>this.tone(f,f,0.22,'triangle',0.11,i*0.14)); },
 winT:0, loseZombie:null,
 window.addEventListener('keydown', e=> onKey(e.key));
+withTarget(cc, paint);
 withTarget(cctx, () => {
 withTarget(cctx, paint);
 world.evIdx = 0; world.killed = 0;
@@ -3592,6 +3614,9 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 }
 }
 }
+}
+}
+}
 } else if(acc==='bucket'){
 } else if(acc==='flag'){
 } else if(acc==='newspaper'){
@@ -3632,6 +3657,8 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 } else {
 } finally {
 } finally {
+});
+});
 });
 });
 });

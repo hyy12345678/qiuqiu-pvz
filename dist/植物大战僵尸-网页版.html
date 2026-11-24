@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src a1e23052 */
+/* build: v0.1.0 pretty · src b6f29f2b */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -2627,7 +2627,20 @@
   var CARD_GAP = 6;
   var MAX_CARDS = 8;
   var SUN_BOX = { x: 14, y: BANK_Y, w: 120, h: BANK_H };
-  function drawSeedBank(t, world, ui) {
+  var HUD_SPRITES = /* @__PURE__ */ new Map();
+  function hudSprite(key, w, h, paint, k = 2) {
+    const cached = HUD_SPRITES.get(key);
+    if (cached) return cached;
+    const c = document.createElement("canvas");
+    c.width = Math.round(w * k);
+    c.height = Math.round(h * k);
+    const cc = c.getContext("2d");
+    cc.scale(k, k);
+    withTarget(cc, paint);
+    HUD_SPRITES.set(key, c);
+    return c;
+  }
+  function paintBankStatic() {
     const drop = ctx.createLinearGradient(0, BANK_Y + BANK_H, 0, BANK_Y + BANK_H + 20);
     drop.addColorStop(0, "rgba(22,14,4,0.34)");
     drop.addColorStop(1, "rgba(22,14,4,0)");
@@ -2671,22 +2684,30 @@
     ctx.fillStyle = bankShade;
     ctx.fillRect(8, BANK_Y + BANK_H - 14, 744, 14);
     ctx.restore();
-    for (const sx2 of [22, 738]) {
+    for (const sx of [22, 738]) {
       ctx.fillStyle = "#3a220c";
       ctx.beginPath();
-      ctx.arc(sx2, BANK_Y + 13, 3.2, 0, TAU);
+      ctx.arc(sx, BANK_Y + 13, 3.2, 0, TAU);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(sx2, BANK_Y + BANK_H - 13, 3.2, 0, TAU);
+      ctx.arc(sx, BANK_Y + BANK_H - 13, 3.2, 0, TAU);
       ctx.fill();
       ctx.fillStyle = "rgba(255,230,180,0.35)";
       ctx.beginPath();
-      ctx.arc(sx2 - 1, BANK_Y + 12, 1.2, 0, TAU);
+      ctx.arc(sx - 1, BANK_Y + 12, 1.2, 0, TAU);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(sx2 - 1, BANK_Y + BANK_H - 14, 1.2, 0, TAU);
+      ctx.arc(sx - 1, BANK_Y + BANK_H - 14, 1.2, 0, TAU);
       ctx.fill();
     }
+  }
+  function drawSeedBank(t, world, ui) {
+    const bank = hudSprite("bank", 752, 116, () => {
+      ctx.translate(-4, -4);
+      paintBankStatic();
+    });
+    ctx.drawImage(bank, 4, 4, 752, 116);
+    let g;
     const flash = world.sunFlash > 0 && Math.sin(t * 30) > 0;
     g = ctx.createLinearGradient(0, BANK_Y, 0, BANK_Y + BANK_H);
     g.addColorStop(0, flash ? "#fff8d0" : "#f8ecbe");
@@ -2777,12 +2798,9 @@
     drawShovelIcon(sx + 32, sy + 34, hoverS || active ? 1.08 : 1);
     drawText("铲子", sx + 32, sy + 62, 11, "#42300f", null, 0, "center", "700");
   }
-  function drawSunIcon(t, x, y, s) {
+  var SUN_SPRITE = 46;
+  function paintSunShape() {
     ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(s, s);
-    ctx.save();
-    ctx.rotate(t * 0.7);
     ctx.fillStyle = "#ffc82e";
     for (let k = 0; k < 10; k++) {
       ctx.rotate(TAU / 10);
@@ -2804,7 +2822,14 @@
     ctx.strokeStyle = "rgba(210,130,20,0.6)";
     ctx.lineWidth = 1.4;
     ctx.stroke();
-    ctx.restore();
+  }
+  function drawSunIcon(t, x, y, s) {
+    const sprite = hudSprite("sun", SUN_SPRITE, SUN_SPRITE, () => {
+      ctx.translate(SUN_SPRITE / 2, SUN_SPRITE / 2);
+      paintSunShape();
+    });
+    const half = SUN_SPRITE / 2 * s;
+    ctx.drawImage(sprite, x - half, y - half, SUN_SPRITE * s, SUN_SPRITE * s);
   }
   function drawShovelIcon(x, y, s) {
     ctx.save();

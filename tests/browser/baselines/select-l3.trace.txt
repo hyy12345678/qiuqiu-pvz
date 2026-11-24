@@ -1364,7 +1364,7 @@ c1 font=600 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=left
 c1 textBaseline=middle
 c1 fillStyle=#d8c090
-c1 fillText(铁门僵尸：铁门挡豌豆！用樱桃炸弹 / 土豆雷 / 火豌豆破门。,662,438)
+c1 fillText(铁门僵尸：挡豌豆！伤害仅剩 1/4，用火豌豆或爆炸破门。,662,438)
 c1 font=600 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=left
 c1 textBaseline=middle

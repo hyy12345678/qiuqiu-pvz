@@ -15,16 +15,30 @@ function mk(){
   return w;
 }
 
-test('E22：铁门挡弹道——豌豆打不掉血也打不掉护盾', () => {
+test('E23：铁门把弹道削到 25%——豌豆不是无效，而是变慢', () => {
   const w = mk();
   spawnZombie(w, 'screen');
   const z = w.zombies[0];
   assert.strictEqual(z.screen, true, '铁门僵尸应带 screen 标记');
-  const hp = z.hp, acc = z.acc;
-  for(let i=0;i<50;i++) damageZombie(w, z, 20);          // 弹道
-  assert.strictEqual(z.hp, hp, '弹道不应伤到本体');
-  assert.strictEqual(z.acc, acc, '弹道不应磨损铁门');
-  assert.strictEqual(z.state, 'walk', '不应被打死');
+  const acc = z.acc;
+  damageZombie(w, z, 20);                                 // 一发豌豆
+  assert.strictEqual(z.acc, acc - 5, '20 伤害的弹道应只削 5 点铁门（25%）');
+  assert.strictEqual(z.hp, 200, '铁门没破前不该伤到本体');
+
+  // 堆够火力仍然能打穿：900 盾 ÷ (20×0.25) = 180 发
+  for(let i=0;i<200;i++) damageZombie(w, z, 20);
+  assert.ok(z.acc <= 0, '持续豌豆火力最终应磨穿铁门');
+});
+
+test('E23：穿透伤害无视铁门的削减', () => {
+  const w = mk();
+  spawnZombie(w, 'screen');
+  const z = w.zombies[0];
+  const acc = z.acc;
+  damageZombie(w, z, 300, true);                          // 樱桃/导弹/光线这一路
+  assert.strictEqual(z.acc, acc - 300, '穿透伤害不打折');
+  damageZombie(w, z, 9999, true);                         // 小推车
+  assert.strictEqual(z.state, 'dying', '推车应能碾过铁门僵尸');
 });
 
 test('E22：非弹道伤害无视铁门——爆炸、光线、小推车都算', () => {

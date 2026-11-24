@@ -92,12 +92,19 @@ export function explodeMissile(world, x, row, col){
 }
 
 // pierce：本次伤害能否穿透「铁门」这类只挡弹道的护盾。
-// 豌豆/孢子/冰/球球子弹走默认 false（被挡），爆炸、光线、小推车显式传 true。
+// 豌豆/孢子/冰/球球子弹走默认 false（削到 25%），爆炸、光线、小推车显式传 true。
+//
+// E23：原来是「弹道完全无效」，实测过于劝退——13 种植物里能破门的只有樱桃/土豆雷/迪迦，
+// 三个全是"一次性 + 长冷却"，没有常驻解法。铁门应该是"换个打法"，不是"必须押宝那张卡"。
+// 改成弹道只造成 25%：豌豆不是废了，而是效率降到 1/4，堆够多仍然能过，只是慢。
+export const SCREEN_BALLISTIC_MULT = 0.25;
+
 export function damageZombie(world, z, d, pierce){
   if(z.screen && !pierce && z.acc > 0){
-    // 铁门挡住弹道：不掉血、不掉护盾，只给一点火花反馈（由渲染层根据 screenHitT 画）
+    // 铁门吃四分之一弹道伤害，并给火花反馈（渲染层根据 screenHitT 画）
     z.screenHitT = 0.12;
-    return false;
+    d = d * SCREEN_BALLISTIC_MULT;
+    if(d < 1) return false;          // 太薄了，忽略，免得零头无限累积
   }
   if(z.acc > 0){
     z.acc -= d;

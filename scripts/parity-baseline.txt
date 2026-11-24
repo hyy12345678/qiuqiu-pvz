@@ -21,7 +21,7 @@
 '普通僵尸：最基础的敌人。',
 '白天蘑菇会打盹，用咖啡豆点它唤醒。',
 '路障 / 铁桶僵尸：头戴护具，非常耐打。',
-'铁门僵尸：铁门挡豌豆！用樱桃炸弹 / 土豆雷 / 火豌豆破门。',
+'铁门僵尸：挡豌豆！伤害仅剩 1/4，用火豌豆或爆炸破门。',
 );
 : (tone < 0.84 ? 'rgba(154,204,98,0.50)' : 'rgba(44,84,22,0.52)');
 : ['#8fd44a','#b8e88a'];
@@ -302,6 +302,7 @@ const PLANT_DRAWERS = {
 const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee','tiga'];
 const R = mulberry32(20260814);
 const RAMP_A = 45, RAMP_B = 120;
+const SCREEN_BALLISTIC_MULT = 0.25;
 const SEED = randomSeed();
 const SFX = {
 const SILENT = {
@@ -1915,6 +1916,7 @@ ctx.translate(x,y); ctx.scale(s,s);
 ctx.translate(z.x, fy);
 ctx:null, master:null, musicGain:null, musicTimer:null, loopStart:0,
 cx: cellCX(col), fy: cellFY(row),
+d = d * SCREEN_BALLISTIC_MULT;
 damageZombie(world, z, 1800, true);
 damageZombie(world, z, 90, true);
 damageZombie(world, z, 9999, true);
@@ -2569,6 +2571,7 @@ if(check.reason === 'not-enough-sun'){
 if(collectSun(world, p.x, p.y).ok) return;
 if(correct){
 if(d < 0) d = ans + randi(1, 9);
+if(d < 1) return false;
 if(disabled){
 if(dmg > 0.33){
 if(dmg > 0.4) ctx.rotate(Math.sin(t*9)*0.015);
@@ -2979,7 +2982,6 @@ return check;
 return ctx;
 return false;
 return false;
-return false;
 return g;
 return hover;
 return null;
@@ -3051,7 +3053,7 @@ saveUnlockAll(){},
 saveUnlockAll: on => saveUnlockAll(on),
 scale = 1 - s.ft*0.4;
 screen: !!def.screen, screenHitT: 0,
-screen:{ name:'铁门僵尸', hp:200, acc:900, speed:16, screen:true },
+screen:{ name:'铁门僵尸', hp:200, acc:600, speed:16, screen:true },
 seed,
 sel:-1, shovel:false,
 select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },

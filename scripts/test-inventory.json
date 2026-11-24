@@ -130,8 +130,8 @@
     },
     {
       "path": "tests/zombie-screen.test.mjs",
-      "count": 4
+      "count": 5
     }
   ],
-  "total": 198
+  "total": 199
 }

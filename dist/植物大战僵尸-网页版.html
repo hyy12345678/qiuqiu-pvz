@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 73bfbab7 */
+/* build: v0.1.0 pretty · src 4bf5aab0 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -5049,7 +5049,13 @@
       if (!lv.night) {
         world.skyTimer -= dt;
         if (world.skyTimer <= 0) {
-          world.skyTimer = rand(world.rng, 9, 12);
+          const SUN_EARLY = [4.5, 6.5];
+          const SUN_LATE = [10, 13];
+          const RAMP_A = 45, RAMP_B = 120;
+          const k = Math.min(1, Math.max(0, (world.t - RAMP_A) / (RAMP_B - RAMP_A)));
+          const lo = SUN_EARLY[0] + (SUN_LATE[0] - SUN_EARLY[0]) * k;
+          const hi = SUN_EARLY[1] + (SUN_LATE[1] - SUN_EARLY[1]) * k;
+          world.skyTimer = rand(world.rng, lo, hi);
           spawnSun(world, rand(world.rng, LX + 30, LX + COLS * CW - 30), -30, rand(world.rng, LY + 60, LY + ROWS * CH - 40), true);
         }
       }

@@ -297,10 +297,13 @@ const PLANTS = {
 const PLANT_DRAWERS = {
 const PLANT_ORDER = ['qiuqiu','sunflower','peashooter','snowpea','repeater','wallnut','potato','torch','cherry','puff','sunshroom','coffee','tiga'];
 const R = mulberry32(20260814);
+const RAMP_A = 45, RAMP_B = 120;
 const SEED = randomSeed();
 const SFX = {
 const SILENT = {
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
+const SUN_EARLY = [4.5, 6.5];
+const SUN_LATE = [10, 13];
 const SUN_SPRITE = 46;
 const TAU = Math.PI * 2;
 const UI = createUI();
@@ -440,6 +443,7 @@ const h = hitHotspot(ui, p);
 const h = ui.hotspots[i];
 const half = (SUN_SPRITE/2) * s;
 const hc = ui.hoverCell;
+const hi = SUN_EARLY[1] + (SUN_LATE[1] - SUN_EARLY[1]) * k;
 const hop = Math.abs(Math.sin(t*2+ph))*2.5;
 const hop = Math.abs(Math.sin(t*2.6+ph))*2.4;
 const hover = !locked && ui.mouse.x>=x && ui.mouse.x<=x+cardW && ui.mouse.y>=y && ui.mouse.y<=y+cardH;
@@ -465,6 +469,7 @@ const isMissile = world.rng() < 0.08;
 const izx0 = zx + 165 - (nIco-1)*31;
 const j = Math.floor(rng() * (i + 1));
 const k = ICON_SPRITE_SCALE;
+const k = Math.min(1, Math.max(0, (world.t - RAMP_A) / (RAMP_B - RAMP_A)));
 const k = easeOut(s.ft);
 const k = inPhase ? clamp((t+1.4)/0.3, 0, 1) : clamp((t+3.2)/0.3, 0, 1);
 const kind = p.type==='snowpea' ? 'snow' : 'pea';
@@ -479,6 +484,7 @@ const len = 6 + ((k * 7) % 14);
 const light = (r+c)%2===0;
 const limb = (x1,y1,x2,y2,cx1,cy1)=>{
 const lines = [
+const lo = SUN_EARLY[0] + (SUN_LATE[0] - SUN_EARLY[0]) * k;
 const locked = !world.unlockAll && i+1 > world.unlocked;
 const long = k%2===0;
 const low = ratio < 0.25;
@@ -3178,7 +3184,7 @@ world.ports.sound('win');
 world.quiz = { idx: 0, energy: 50, questions: makeQuiz(world.rng), feedback: 0, correct: true };
 world.skyTimer -= dt;
 world.skyTimer = 2; world.visual.groanTimer = 4;
-world.skyTimer = rand(world.rng,9, 12);
+world.skyTimer = rand(world.rng, lo, hi);
 world.slots = [];
 world.slots = world.slots.map(s=>({type:s.type, cool:0}));
 world.slots.push({ type, cool:0 });

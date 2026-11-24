@@ -41,9 +41,23 @@ function stepSpawns(world, dt){
     if(!lv.night){
       world.skyTimer -= dt;
       if(world.skyTimer <= 0){
-        // E20：4.5~6.5s → 9~12s。原产量下 L1 一局能掉 1500+ 阳光，远超需要，
-        // 「攒阳光」这个核心张力根本不存在。放稀之后前期真的要规划。
-        world.skyTimer = rand(world.rng,9, 12);
+        // E21：天降阳光改成随关卡时间递减。
+        //
+        // E20 把间隔从 4.5~6.5s 一刀切到 9~12s，解决了"后期阳光过剩"，
+        // 但同时把开局也弄紧了——而开局恰恰是最需要容错的地方。
+        // 现在按两段线性衰减：
+        //   0 → 45s   : 4.5~6.5s（比 E20 更宽松，照顾上手）
+        //   45 → 120s : 平滑过渡
+        //   120s 之后 : 10~13s（比 E20 略紧，压住后期）
+        // 用世界时钟 world.t 而不是出怪进度：后者会被波次随机性影响，
+        // 且"第几波"对玩家不可见，不如"玩了几分钟"直观。
+        const SUN_EARLY = [4.5, 6.5];
+        const SUN_LATE  = [10, 13];
+        const RAMP_A = 45, RAMP_B = 120;
+        const k = Math.min(1, Math.max(0, (world.t - RAMP_A) / (RAMP_B - RAMP_A)));
+        const lo = SUN_EARLY[0] + (SUN_LATE[0] - SUN_EARLY[0]) * k;
+        const hi = SUN_EARLY[1] + (SUN_LATE[1] - SUN_EARLY[1]) * k;
+        world.skyTimer = rand(world.rng, lo, hi);
         // 落点决定落地时刻与可点击位置，属于战斗可见状态，不能交给表现流
         spawnSun(world, rand(world.rng,LX+30, LX+COLS*CW-30), -30, rand(world.rng,LY+60, LY+ROWS*CH-40), true);
       }

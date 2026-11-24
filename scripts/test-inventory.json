@@ -113,6 +113,10 @@
       "count": 12
     },
     {
+      "path": "tests/sky-sun-rhythm.test.mjs",
+      "count": 3
+    },
+    {
       "path": "tests/test-inventory.test.mjs",
       "count": 4
     },
@@ -125,5 +129,5 @@
       "count": 8
     }
   ],
-  "total": 191
+  "total": 194
 }

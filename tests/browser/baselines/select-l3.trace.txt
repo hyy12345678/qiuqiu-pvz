@@ -1,12 +1,12 @@
 c1 save()
-c1 createLinearGradient g268(0,0,0,640)
-c1 g268.addColorStop(0,#3c5a2a)
-c1 g268.addColorStop(1,#243818)
-c1 fillStyle=g268
+c1 createLinearGradient g282(0,0,0,640)
+c1 g282.addColorStop(0,#3c5a2a)
+c1 g282.addColorStop(1,#243818)
+c1 fillStyle=g282
 c1 fillRect(0,0,1024,640)
-c1 createLinearGradient g269(0,70,0,600)
-c1 g269.addColorStop(0,#96652f)
-c1 g269.addColorStop(1,#6b4520)
+c1 createLinearGradient g283(0,70,0,600)
+c1 g283.addColorStop(0,#96652f)
+c1 g283.addColorStop(1,#6b4520)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(56,70)
@@ -15,7 +15,7 @@ c1 arcTo(984,590,40,590,16)
 c1 arcTo(40,590,40,70,16)
 c1 arcTo(40,70,984,70,16)
 c1 closePath()
-c1 fillStyle=g269
+c1 fillStyle=g283
 c1 fill()
 c1 strokeStyle=#3a220c
 c1 lineWidth=4.500
@@ -78,9 +78,9 @@ c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=#e8d2a0
 c1 fillText(第 3 关 · 最终决战　·　可携带 8 种植物,512,96)
-c1 createLinearGradient g270(0,118,0,218)
-c1 g270.addColorStop(0,#4a3418)
-c1 g270.addColorStop(1,#33220e)
+c1 createLinearGradient g284(0,118,0,218)
+c1 g284.addColorStop(0,#4a3418)
+c1 g284.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(197,118)
@@ -89,7 +89,7 @@ c1 arcTo(261,218,189,218,8)
 c1 arcTo(189,218,189,118,8)
 c1 arcTo(189,118,261,118,8)
 c1 closePath()
-c1 fillStyle=g270
+c1 fillStyle=g284
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -101,9 +101,9 @@ c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=rgba(232,210,160,0.25)
 c1 fillText(1,225,168)
-c1 createLinearGradient g271(0,118,0,218)
-c1 g271.addColorStop(0,#4a3418)
-c1 g271.addColorStop(1,#33220e)
+c1 createLinearGradient g285(0,118,0,218)
+c1 g285.addColorStop(0,#4a3418)
+c1 g285.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(279,118)
@@ -112,7 +112,7 @@ c1 arcTo(343,218,271,218,8)
 c1 arcTo(271,218,271,118,8)
 c1 arcTo(271,118,343,118,8)
 c1 closePath()
-c1 fillStyle=g271
+c1 fillStyle=g285
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -124,9 +124,9 @@ c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=rgba(232,210,160,0.25)
 c1 fillText(2,307,168)
-c1 createLinearGradient g272(0,118,0,218)
-c1 g272.addColorStop(0,#4a3418)
-c1 g272.addColorStop(1,#33220e)
+c1 createLinearGradient g286(0,118,0,218)
+c1 g286.addColorStop(0,#4a3418)
+c1 g286.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(361,118)
@@ -135,7 +135,7 @@ c1 arcTo(425,218,353,218,8)
 c1 arcTo(353,218,353,118,8)
 c1 arcTo(353,118,425,118,8)
 c1 closePath()
-c1 fillStyle=g272
+c1 fillStyle=g286
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -147,9 +147,9 @@ c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=rgba(232,210,160,0.25)
 c1 fillText(3,389,168)
-c1 createLinearGradient g273(0,118,0,218)
-c1 g273.addColorStop(0,#4a3418)
-c1 g273.addColorStop(1,#33220e)
+c1 createLinearGradient g287(0,118,0,218)
+c1 g287.addColorStop(0,#4a3418)
+c1 g287.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(443,118)
@@ -158,7 +158,7 @@ c1 arcTo(507,218,435,218,8)
 c1 arcTo(435,218,435,118,8)
 c1 arcTo(435,118,507,118,8)
 c1 closePath()
-c1 fillStyle=g273
+c1 fillStyle=g287
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -170,9 +170,9 @@ c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=rgba(232,210,160,0.25)
 c1 fillText(4,471,168)
-c1 createLinearGradient g274(0,118,0,218)
-c1 g274.addColorStop(0,#4a3418)
-c1 g274.addColorStop(1,#33220e)
+c1 createLinearGradient g288(0,118,0,218)
+c1 g288.addColorStop(0,#4a3418)
+c1 g288.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(525,118)
@@ -181,7 +181,7 @@ c1 arcTo(589,218,517,218,8)
 c1 arcTo(517,218,517,118,8)
 c1 arcTo(517,118,589,118,8)
 c1 closePath()
-c1 fillStyle=g274
+c1 fillStyle=g288
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -193,9 +193,9 @@ c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=rgba(232,210,160,0.25)
 c1 fillText(5,553,168)
-c1 createLinearGradient g275(0,118,0,218)
-c1 g275.addColorStop(0,#4a3418)
-c1 g275.addColorStop(1,#33220e)
+c1 createLinearGradient g289(0,118,0,218)
+c1 g289.addColorStop(0,#4a3418)
+c1 g289.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(607,118)
@@ -204,7 +204,7 @@ c1 arcTo(671,218,599,218,8)
 c1 arcTo(599,218,599,118,8)
 c1 arcTo(599,118,671,118,8)
 c1 closePath()
-c1 fillStyle=g275
+c1 fillStyle=g289
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -216,9 +216,9 @@ c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=rgba(232,210,160,0.25)
 c1 fillText(6,635,168)
-c1 createLinearGradient g276(0,118,0,218)
-c1 g276.addColorStop(0,#4a3418)
-c1 g276.addColorStop(1,#33220e)
+c1 createLinearGradient g290(0,118,0,218)
+c1 g290.addColorStop(0,#4a3418)
+c1 g290.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(689,118)
@@ -227,7 +227,7 @@ c1 arcTo(753,218,681,218,8)
 c1 arcTo(681,218,681,118,8)
 c1 arcTo(681,118,753,118,8)
 c1 closePath()
-c1 fillStyle=g276
+c1 fillStyle=g290
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -239,9 +239,9 @@ c1 textAlign=center
 c1 textBaseline=middle
 c1 fillStyle=rgba(232,210,160,0.25)
 c1 fillText(7,717,168)
-c1 createLinearGradient g277(0,118,0,218)
-c1 g277.addColorStop(0,#4a3418)
-c1 g277.addColorStop(1,#33220e)
+c1 createLinearGradient g291(0,118,0,218)
+c1 g291.addColorStop(0,#4a3418)
+c1 g291.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(771,118)
@@ -250,7 +250,7 @@ c1 arcTo(835,218,763,218,8)
 c1 arcTo(763,218,763,118,8)
 c1 arcTo(763,118,835,118,8)
 c1 closePath()
-c1 fillStyle=g277
+c1 fillStyle=g291
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -278,9 +278,9 @@ c1 arcTo(62,336,62,258,9)
 c1 arcTo(62,258,166,258,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g278(0,254,0,332)
-c1 g278.addColorStop(0,#e8d7ae)
-c1 g278.addColorStop(1,#ccb586)
+c1 createLinearGradient g292(0,254,0,332)
+c1 g292.addColorStop(0,#e8d7ae)
+c1 g292.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(69,254)
@@ -289,7 +289,7 @@ c1 arcTo(164,332,60,332,9)
 c1 arcTo(60,332,60,254,9)
 c1 arcTo(60,254,164,254,9)
 c1 closePath()
-c1 fillStyle=g278
+c1 fillStyle=g292
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -334,9 +334,9 @@ c1 arcTo(174,336,174,258,9)
 c1 arcTo(174,258,278,258,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g279(0,254,0,332)
-c1 g279.addColorStop(0,#e8d7ae)
-c1 g279.addColorStop(1,#ccb586)
+c1 createLinearGradient g293(0,254,0,332)
+c1 g293.addColorStop(0,#e8d7ae)
+c1 g293.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(181,254)
@@ -345,7 +345,7 @@ c1 arcTo(276,332,172,332,9)
 c1 arcTo(172,332,172,254,9)
 c1 arcTo(172,254,276,254,9)
 c1 closePath()
-c1 fillStyle=g279
+c1 fillStyle=g293
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -390,9 +390,9 @@ c1 arcTo(286,336,286,258,9)
 c1 arcTo(286,258,390,258,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g280(0,254,0,332)
-c1 g280.addColorStop(0,#e8d7ae)
-c1 g280.addColorStop(1,#ccb586)
+c1 createLinearGradient g294(0,254,0,332)
+c1 g294.addColorStop(0,#e8d7ae)
+c1 g294.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(293,254)
@@ -401,7 +401,7 @@ c1 arcTo(388,332,284,332,9)
 c1 arcTo(284,332,284,254,9)
 c1 arcTo(284,254,388,254,9)
 c1 closePath()
-c1 fillStyle=g280
+c1 fillStyle=g294
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -446,9 +446,9 @@ c1 arcTo(398,336,398,258,9)
 c1 arcTo(398,258,502,258,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g281(0,254,0,332)
-c1 g281.addColorStop(0,#e8d7ae)
-c1 g281.addColorStop(1,#ccb586)
+c1 createLinearGradient g295(0,254,0,332)
+c1 g295.addColorStop(0,#e8d7ae)
+c1 g295.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(405,254)
@@ -457,7 +457,7 @@ c1 arcTo(500,332,396,332,9)
 c1 arcTo(396,332,396,254,9)
 c1 arcTo(396,254,500,254,9)
 c1 closePath()
-c1 fillStyle=g281
+c1 fillStyle=g295
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -502,9 +502,9 @@ c1 arcTo(510,336,510,258,9)
 c1 arcTo(510,258,614,258,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g282(0,254,0,332)
-c1 g282.addColorStop(0,#e8d7ae)
-c1 g282.addColorStop(1,#ccb586)
+c1 createLinearGradient g296(0,254,0,332)
+c1 g296.addColorStop(0,#e8d7ae)
+c1 g296.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(517,254)
@@ -513,7 +513,7 @@ c1 arcTo(612,332,508,332,9)
 c1 arcTo(508,332,508,254,9)
 c1 arcTo(508,254,612,254,9)
 c1 closePath()
-c1 fillStyle=g282
+c1 fillStyle=g296
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -558,9 +558,9 @@ c1 arcTo(62,420,62,342,9)
 c1 arcTo(62,342,166,342,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g283(0,338,0,416)
-c1 g283.addColorStop(0,#e8d7ae)
-c1 g283.addColorStop(1,#ccb586)
+c1 createLinearGradient g297(0,338,0,416)
+c1 g297.addColorStop(0,#e8d7ae)
+c1 g297.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(69,338)
@@ -569,7 +569,7 @@ c1 arcTo(164,416,60,416,9)
 c1 arcTo(60,416,60,338,9)
 c1 arcTo(60,338,164,338,9)
 c1 closePath()
-c1 fillStyle=g283
+c1 fillStyle=g297
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -614,9 +614,9 @@ c1 arcTo(174,420,174,342,9)
 c1 arcTo(174,342,278,342,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g284(0,338,0,416)
-c1 g284.addColorStop(0,#e8d7ae)
-c1 g284.addColorStop(1,#ccb586)
+c1 createLinearGradient g298(0,338,0,416)
+c1 g298.addColorStop(0,#e8d7ae)
+c1 g298.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(181,338)
@@ -625,7 +625,7 @@ c1 arcTo(276,416,172,416,9)
 c1 arcTo(172,416,172,338,9)
 c1 arcTo(172,338,276,338,9)
 c1 closePath()
-c1 fillStyle=g284
+c1 fillStyle=g298
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -670,9 +670,9 @@ c1 arcTo(286,420,286,342,9)
 c1 arcTo(286,342,390,342,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g285(0,338,0,416)
-c1 g285.addColorStop(0,#e8d7ae)
-c1 g285.addColorStop(1,#ccb586)
+c1 createLinearGradient g299(0,338,0,416)
+c1 g299.addColorStop(0,#e8d7ae)
+c1 g299.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(293,338)
@@ -681,7 +681,7 @@ c1 arcTo(388,416,284,416,9)
 c1 arcTo(284,416,284,338,9)
 c1 arcTo(284,338,388,338,9)
 c1 closePath()
-c1 fillStyle=g285
+c1 fillStyle=g299
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -726,9 +726,9 @@ c1 arcTo(398,420,398,342,9)
 c1 arcTo(398,342,502,342,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g286(0,338,0,416)
-c1 g286.addColorStop(0,#e8d7ae)
-c1 g286.addColorStop(1,#ccb586)
+c1 createLinearGradient g300(0,338,0,416)
+c1 g300.addColorStop(0,#e8d7ae)
+c1 g300.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(405,338)
@@ -737,7 +737,7 @@ c1 arcTo(500,416,396,416,9)
 c1 arcTo(396,416,396,338,9)
 c1 arcTo(396,338,500,338,9)
 c1 closePath()
-c1 fillStyle=g286
+c1 fillStyle=g300
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -782,9 +782,9 @@ c1 arcTo(510,420,510,342,9)
 c1 arcTo(510,342,614,342,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g287(0,338,0,416)
-c1 g287.addColorStop(0,#e8d7ae)
-c1 g287.addColorStop(1,#ccb586)
+c1 createLinearGradient g301(0,338,0,416)
+c1 g301.addColorStop(0,#e8d7ae)
+c1 g301.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(517,338)
@@ -793,7 +793,7 @@ c1 arcTo(612,416,508,416,9)
 c1 arcTo(508,416,508,338,9)
 c1 arcTo(508,338,612,338,9)
 c1 closePath()
-c1 fillStyle=g287
+c1 fillStyle=g301
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -838,9 +838,9 @@ c1 arcTo(174,504,174,426,9)
 c1 arcTo(174,426,278,426,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g288(0,422,0,500)
-c1 g288.addColorStop(0,#e8d7ae)
-c1 g288.addColorStop(1,#ccb586)
+c1 createLinearGradient g302(0,422,0,500)
+c1 g302.addColorStop(0,#e8d7ae)
+c1 g302.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(181,422)
@@ -849,7 +849,7 @@ c1 arcTo(276,500,172,500,9)
 c1 arcTo(172,500,172,422,9)
 c1 arcTo(172,422,276,422,9)
 c1 closePath()
-c1 fillStyle=g288
+c1 fillStyle=g302
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -894,9 +894,9 @@ c1 arcTo(286,504,286,426,9)
 c1 arcTo(286,426,390,426,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g289(0,422,0,500)
-c1 g289.addColorStop(0,#e8d7ae)
-c1 g289.addColorStop(1,#ccb586)
+c1 createLinearGradient g303(0,422,0,500)
+c1 g303.addColorStop(0,#e8d7ae)
+c1 g303.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(293,422)
@@ -905,7 +905,7 @@ c1 arcTo(388,500,284,500,9)
 c1 arcTo(284,500,284,422,9)
 c1 arcTo(284,422,388,422,9)
 c1 closePath()
-c1 fillStyle=g289
+c1 fillStyle=g303
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -950,9 +950,9 @@ c1 arcTo(398,504,398,426,9)
 c1 arcTo(398,426,502,426,9)
 c1 closePath()
 c1 fill()
-c1 createLinearGradient g290(0,422,0,500)
-c1 g290.addColorStop(0,#e8d7ae)
-c1 g290.addColorStop(1,#ccb586)
+c1 createLinearGradient g304(0,422,0,500)
+c1 g304.addColorStop(0,#e8d7ae)
+c1 g304.addColorStop(1,#ccb586)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(405,422)
@@ -961,7 +961,7 @@ c1 arcTo(500,500,396,500,9)
 c1 arcTo(396,500,396,422,9)
 c1 arcTo(396,422,500,422,9)
 c1 closePath()
-c1 fillStyle=g290
+c1 fillStyle=g304
 c1 fill()
 c1 strokeStyle=#5f451f
 c1 lineWidth=2.200
@@ -1000,9 +1000,9 @@ c1 textAlign=left
 c1 textBaseline=middle
 c1 fillStyle=#e8d2a0
 c1 fillText(本关出没的僵尸,750,250)
-c1 createLinearGradient g291(0,270,0,490)
-c1 g291.addColorStop(0,#4a3418)
-c1 g291.addColorStop(1,#33220e)
+c1 createLinearGradient g305(0,270,0,490)
+c1 g305.addColorStop(0,#4a3418)
+c1 g305.addColorStop(1,#33220e)
 c1 beginPath()
 c1 beginPath()
 c1 moveTo(650,270)
@@ -1011,7 +1011,7 @@ c1 arcTo(970,490,640,490,10)
 c1 arcTo(640,490,640,270,10)
 c1 arcTo(640,270,970,270,10)
 c1 closePath()
-c1 fillStyle=g291
+c1 fillStyle=g305
 c1 fill()
 c1 strokeStyle=#20140a
 c1 lineWidth=2.500
@@ -1019,14 +1019,14 @@ c1 lineJoin=round
 c1 lineCap=round
 c1 stroke()
 c1 save()
-c1 translate(681,314)
+c1 translate(650,314)
 c1 scale(1.100,1.100)
-c1 createRadialGradient g292(-5,-6,2,0,0,16)
-c1 g292.addColorStop(0,#bcc7a0)
-c1 g292.addColorStop(1,#a3b187)
+c1 createRadialGradient g306(-5,-6,2,0,0,16)
+c1 g306.addColorStop(0,#bcc7a0)
+c1 g306.addColorStop(1,#a3b187)
 c1 beginPath()
 c1 arc(0,0,14,0,6.283)
-c1 fillStyle=g292
+c1 fillStyle=g306
 c1 fill()
 c1 strokeStyle=#39412e
 c1 lineWidth=2.200
@@ -1056,14 +1056,14 @@ c1 fillRect(-5,4.600,2.200,2.600)
 c1 fillRect(-1.400,4.900,2.200,2.400)
 c1 restore()
 c1 save()
-c1 translate(743,314)
+c1 translate(712,314)
 c1 scale(1.100,1.100)
-c1 createRadialGradient g293(-5,-6,2,0,0,16)
-c1 g293.addColorStop(0,#bcc7a0)
-c1 g293.addColorStop(1,#a3b187)
+c1 createRadialGradient g307(-5,-6,2,0,0,16)
+c1 g307.addColorStop(0,#bcc7a0)
+c1 g307.addColorStop(1,#a3b187)
 c1 beginPath()
 c1 arc(0,0,14,0,6.283)
-c1 fillStyle=g293
+c1 fillStyle=g307
 c1 fill()
 c1 strokeStyle=#39412e
 c1 lineWidth=2.200
@@ -1096,10 +1096,10 @@ c1 moveTo(-12,-8)
 c1 lineTo(11,-9)
 c1 lineTo(2,-33)
 c1 closePath()
-c1 createLinearGradient g294(-10,-30,10,-10)
-c1 g294.addColorStop(0,#f09a3e)
-c1 g294.addColorStop(1,#c06a18)
-c1 fillStyle=g294
+c1 createLinearGradient g308(-10,-30,10,-10)
+c1 g308.addColorStop(0,#f09a3e)
+c1 g308.addColorStop(1,#c06a18)
+c1 fillStyle=g308
 c1 fill()
 c1 strokeStyle=#7a420c
 c1 lineWidth=2
@@ -1108,14 +1108,14 @@ c1 lineCap=round
 c1 stroke()
 c1 restore()
 c1 save()
-c1 translate(805,314)
+c1 translate(774,314)
 c1 scale(1.100,1.100)
-c1 createRadialGradient g295(-5,-6,2,0,0,16)
-c1 g295.addColorStop(0,#bcc7a0)
-c1 g295.addColorStop(1,#a3b187)
+c1 createRadialGradient g309(-5,-6,2,0,0,16)
+c1 g309.addColorStop(0,#bcc7a0)
+c1 g309.addColorStop(1,#a3b187)
 c1 beginPath()
 c1 arc(0,0,14,0,6.283)
-c1 fillStyle=g295
+c1 fillStyle=g309
 c1 fill()
 c1 strokeStyle=#39412e
 c1 lineWidth=2.200
@@ -1149,10 +1149,10 @@ c1 lineTo(12,-8)
 c1 lineTo(9,-30)
 c1 lineTo(-10,-28)
 c1 closePath()
-c1 createLinearGradient g296(-12,-28,11,-8)
-c1 g296.addColorStop(0,#d4dade)
-c1 g296.addColorStop(1,#77818a)
-c1 fillStyle=g296
+c1 createLinearGradient g310(-12,-28,11,-8)
+c1 g310.addColorStop(0,#d4dade)
+c1 g310.addColorStop(1,#77818a)
+c1 fillStyle=g310
 c1 fill()
 c1 strokeStyle=#3f474d
 c1 lineWidth=2
@@ -1161,14 +1161,14 @@ c1 lineCap=round
 c1 stroke()
 c1 restore()
 c1 save()
-c1 translate(867,314)
+c1 translate(836,314)
 c1 scale(1.100,1.100)
-c1 createRadialGradient g297(-5,-6,2,0,0,16)
-c1 g297.addColorStop(0,#bcc7a0)
-c1 g297.addColorStop(1,#a3b187)
+c1 createRadialGradient g311(-5,-6,2,0,0,16)
+c1 g311.addColorStop(0,#bcc7a0)
+c1 g311.addColorStop(1,#a3b187)
 c1 beginPath()
 c1 arc(0,0,14,0,6.283)
-c1 fillStyle=g297
+c1 fillStyle=g311
 c1 fill()
 c1 strokeStyle=#39412e
 c1 lineWidth=2.200
@@ -1210,14 +1210,14 @@ c1 lineTo(16,-24)
 c1 stroke()
 c1 restore()
 c1 save()
-c1 translate(929,314)
+c1 translate(898,314)
 c1 scale(1.100,1.100)
-c1 createRadialGradient g298(-5,-6,2,0,0,16)
-c1 g298.addColorStop(0,#bcc7a0)
-c1 g298.addColorStop(1,#a3b187)
+c1 createRadialGradient g312(-5,-6,2,0,0,16)
+c1 g312.addColorStop(0,#bcc7a0)
+c1 g312.addColorStop(1,#a3b187)
 c1 beginPath()
 c1 arc(0,0,14,0,6.283)
-c1 fillStyle=g298
+c1 fillStyle=g312
 c1 fill()
 c1 strokeStyle=#39412e
 c1 lineWidth=2.200
@@ -1256,10 +1256,10 @@ c1 arcTo(11,8,-11,8,1.500)
 c1 arcTo(-11,8,-11,-9,1.500)
 c1 arcTo(-11,-9,11,-9,1.500)
 c1 closePath()
-c1 createLinearGradient g299(-11,-9,11,8)
-c1 g299.addColorStop(0,#f4efe2)
-c1 g299.addColorStop(1,#d8d2be)
-c1 fillStyle=g299
+c1 createLinearGradient g313(-11,-9,11,8)
+c1 g313.addColorStop(0,#f4efe2)
+c1 g313.addColorStop(1,#d8d2be)
+c1 fillStyle=g313
 c1 fill()
 c1 strokeStyle=#6e6858
 c1 lineWidth=1.800
@@ -1273,6 +1273,72 @@ c1 fillRect(-9,-2.400,17,1.200)
 c1 fillRect(-9,0.600,17,1.200)
 c1 fillRect(-9,3.600,17,1.200)
 c1 restore()
+c1 restore()
+c1 save()
+c1 translate(960,314)
+c1 scale(1.100,1.100)
+c1 createRadialGradient g314(-5,-6,2,0,0,16)
+c1 g314.addColorStop(0,#bcc7a0)
+c1 g314.addColorStop(1,#a3b187)
+c1 beginPath()
+c1 arc(0,0,14,0,6.283)
+c1 fillStyle=g314
+c1 fill()
+c1 strokeStyle=#39412e
+c1 lineWidth=2.200
+c1 lineJoin=round
+c1 lineCap=round
+c1 stroke()
+c1 fillStyle=#5c6247
+c1 beginPath()
+c1 ellipse(-5,-3,3.800,4.600,0,0,6.283)
+c1 fill()
+c1 beginPath()
+c1 ellipse(4.500,-3,3.400,4.200,0,0,6.283)
+c1 fill()
+c1 fillStyle=#e8e4d4
+c1 beginPath()
+c1 arc(-5.500,-2.600,1.500,0,6.283)
+c1 fill()
+c1 beginPath()
+c1 arc(4,-2.600,1.400,0,6.283)
+c1 fill()
+c1 fillStyle=#2e2018
+c1 beginPath()
+c1 ellipse(-1,7.500,6,2.600,0,0,6.283)
+c1 fill()
+c1 fillStyle=#ddd8c6
+c1 fillRect(-5,4.600,2.200,2.600)
+c1 fillRect(-1.400,4.900,2.200,2.400)
+c1 beginPath()
+c1 moveTo(-13,-8)
+c1 quadraticCurveTo(-14,-32,0,-34)
+c1 quadraticCurveTo(14,-32,13,-8)
+c1 closePath()
+c1 createLinearGradient g315(-12,-32,11,-8)
+c1 g315.addColorStop(0,#c8ced4)
+c1 g315.addColorStop(1,#6d757b)
+c1 fillStyle=g315
+c1 fill()
+c1 strokeStyle=#333a3f
+c1 lineWidth=2
+c1 lineJoin=round
+c1 lineCap=round
+c1 stroke()
+c1 strokeStyle=rgba(60,68,73,0.5)
+c1 lineWidth=1.200
+c1 beginPath()
+c1 moveTo(-6,-29.600)
+c1 lineTo(-6,-9)
+c1 stroke()
+c1 beginPath()
+c1 moveTo(0,-32)
+c1 lineTo(0,-9)
+c1 stroke()
+c1 beginPath()
+c1 moveTo(6,-29.600)
+c1 lineTo(6,-9)
+c1 stroke()
 c1 restore()
 c1 font=600 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=left
@@ -1298,20 +1364,25 @@ c1 font=600 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=left
 c1 textBaseline=middle
 c1 fillStyle=#d8c090
-c1 fillText(旗帜僵尸：出现在总攻的最前线。,662,438)
+c1 fillText(铁门僵尸：铁门挡豌豆！用樱桃炸弹 / 土豆雷 / 火豌豆破门。,662,438)
 c1 font=600 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=left
 c1 textBaseline=middle
 c1 fillStyle=#d8c090
-c1 fillText(消灭全部僵尸即可过关，小心小推车。,662,458)
+c1 fillText(旗帜僵尸：出现在总攻的最前线。,662,458)
 c1 font=600 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=left
 c1 textBaseline=middle
 c1 fillStyle=#d8c090
-c1 fillText(白天蘑菇会打盹，用咖啡豆点它唤醒。,662,478)
-c1 createLinearGradient g300(0,20,0,60)
-c1 g300.addColorStop(0,#7aa848)
-c1 g300.addColorStop(1,#4e7a2a)
+c1 fillText(消灭全部僵尸即可过关，小心小推车。,662,478)
+c1 font=600 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
+c1 textAlign=left
+c1 textBaseline=middle
+c1 fillStyle=#d8c090
+c1 fillText(白天蘑菇会打盹，用咖啡豆点它唤醒。,662,498)
+c1 createLinearGradient g316(0,20,0,60)
+c1 g316.addColorStop(0,#7aa848)
+c1 g316.addColorStop(1,#4e7a2a)
 c1 save()
 c1 fillStyle=rgba(15,25,8,0.4)
 c1 beginPath()
@@ -1331,7 +1402,7 @@ c1 arcTo(184,60,56,60,10)
 c1 arcTo(56,60,56,20,10)
 c1 arcTo(56,20,184,20,10)
 c1 closePath()
-c1 fillStyle=g300
+c1 fillStyle=g316
 c1 fill()
 c1 strokeStyle=#2e4a14
 c1 lineWidth=3
@@ -1352,9 +1423,9 @@ c1 lineJoin=round
 c1 strokeText(返回,120,41)
 c1 fillStyle=#fffbe8
 c1 fillText(返回,120,41)
-c1 createLinearGradient g301(0,552,0,598)
-c1 g301.addColorStop(0,#6b6b62)
-c1 g301.addColorStop(1,#4c4c44)
+c1 createLinearGradient g317(0,552,0,598)
+c1 g317.addColorStop(0,#6b6b62)
+c1 g317.addColorStop(1,#4c4c44)
 c1 save()
 c1 fillStyle=rgba(15,25,8,0.4)
 c1 beginPath()
@@ -1374,7 +1445,7 @@ c1 arcTo(936,598,738,598,10)
 c1 arcTo(738,598,738,552,10)
 c1 arcTo(738,552,936,552,10)
 c1 closePath()
-c1 fillStyle=g301
+c1 fillStyle=g317
 c1 fill()
 c1 strokeStyle=#3a3a34
 c1 lineWidth=3
@@ -1396,8 +1467,8 @@ c1 strokeText(请先选择植物,837,576)
 c1 fillStyle=#9a9a90
 c1 fillText(请先选择植物,837,576)
 c1 restore()
-c1 createRadialGradient g302(512,320,352,512,320,608)
-c1 g302.addColorStop(0,rgba(0,0,0,0))
-c1 g302.addColorStop(1,rgba(10,20,8,0.22))
-c1 fillStyle=g302
+c1 createRadialGradient g318(512,320,352,512,320,608)
+c1 g318.addColorStop(0,rgba(0,0,0,0))
+c1 g318.addColorStop(1,rgba(10,20,8,0.22))
+c1 fillStyle=g318
 c1 fillRect(0,0,1024,640)

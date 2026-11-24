@@ -64,7 +64,7 @@ export function explode(world, x, row, big){
   for(const z of world.zombies){
     if(z.state==='dying') continue;
     if(Math.abs(z.row-row) <= (big?1:0) && Math.abs(z.x-x) < (big?132:58)){
-      damageZombie(world, z, 1800);
+      damageZombie(world, z, 1800, true);   // 樱桃：爆炸无视铁门
     }
   }
 }
@@ -86,12 +86,19 @@ export function explodeMissile(world, x, row, col){
     if(z.state==='dying') continue;
     const zc = Math.floor((z.x - LX)/CW);
     if(Math.abs(z.row - row) <= 1 && Math.abs(zc - c) <= 1){
-      damageZombie(world, z, 90);
+      damageZombie(world, z, 90, true);     // 球球导弹：爆炸无视铁门
     }
   }
 }
 
-export function damageZombie(world, z, d){
+// pierce：本次伤害能否穿透「铁门」这类只挡弹道的护盾。
+// 豌豆/孢子/冰/球球子弹走默认 false（被挡），爆炸、光线、小推车显式传 true。
+export function damageZombie(world, z, d, pierce){
+  if(z.screen && !pierce && z.acc > 0){
+    // 铁门挡住弹道：不掉血、不掉护盾，只给一点火花反馈（由渲染层根据 screenHitT 画）
+    z.screenHitT = 0.12;
+    return false;
+  }
   if(z.acc > 0){
     z.acc -= d;
     if(z.acc < 0){ z.hp += z.acc; z.acc = 0; }
@@ -112,6 +119,7 @@ export function damageZombie(world, z, d){
     world.killed++;
     world.ports.sound('groan');
   }
+  return true;
 }
 
 export function spawnZombie(world, type){
@@ -130,6 +138,7 @@ export function spawnZombie(world, type){
     state:'walk', animT: rand(world.fxRng,0,TAU), eatT:0, slowT:0,
     poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null, dustT:0,
     paper: type==='newspaper' ? ZTYPES.newspaper.acc : 0, angry:false,
+    screen: !!def.screen, screenHitT: 0,
   });
 }
 

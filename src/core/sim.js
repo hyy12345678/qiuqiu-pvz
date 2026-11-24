@@ -210,7 +210,7 @@ function stepProjectiles(world, dt){
         // 所以只在本帧扫过僵尸前沿那一刻结算，天然保证「一只僵尸一发光线只吃一次、且不消失」。
         const front = z.x - 24;
         if(pea.prevX < front && pea.x >= front){
-          damageZombie(world, z, pea.dmg);
+          damageZombie(world, z, pea.dmg, true);   // 哉佩利敖光线：贯穿一切
           addPeaSplat(world, pea.x, pea.y, 'beam');
         }
         continue;              // 贯穿：不置 hit，光线飞到屏幕右缘才消失
@@ -226,7 +226,7 @@ function stepProjectiles(world, dt){
       if(pea.type==='fire'){
         for(const z2 of world.zombies){
           if(z2!==z && z2.row===pea.row && z2.state!=='dying' && Math.abs(z2.x-z.x)<45){
-            damageZombie(world, z2, 20);
+            damageZombie(world, z2, 20, true);   // 火豌豆的溅射：火焰绕过铁门
           }
         }
       }
@@ -252,6 +252,7 @@ function stepZombies(world, dt){
       continue;
     }
     if(z.slowT > 0) z.slowT -= dt;
+    if(z.screenHitT > 0) z.screenHitT = Math.max(0, z.screenHitT - dt);
     const slowMul = z.slowT > 0 ? 0.45 : 1;
     if(t <= 0) continue;
 
@@ -335,7 +336,7 @@ function stepMowers(world, dt){
       }
       for(const z of world.zombies){
         if(z.row===m.row && z.state!=='dying' && z.x < m.x+52 && z.x > m.x-70){
-          damageZombie(world, z, 9999);
+          damageZombie(world, z, 9999, true);   // 小推车：碾过去，铁门也一样
         }
       }
       if(m.x > W+80) m.state = 'gone';

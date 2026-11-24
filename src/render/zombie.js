@@ -76,6 +76,7 @@ export function drawZombieEntity(t, z, fyOverride){
   drawNewspaper(t, pose);
   drawAngryOverlay(t, pose);
   drawFrost(t, pose);
+  drawScreenSpark(z, pose);
 
   ctx.restore();
 }
@@ -268,6 +269,29 @@ function drawHead(t, z, p){
     O('#c03028', '#6e1810', 1.6);
     ctx.beginPath(); ctx.moveTo(13,-12); ctx.lineTo(19,-15); ctx.lineTo(17,-9); ctx.closePath();
     O('#c03028', '#6e1810', 1.4);
+  } else if(z.type==='screen'){
+    // 铁门戴在头上：一顶带铆钉的弧形铁盔，和铁桶区分开（桶是圆桶，门是拱形 + 钉子）
+    let sg = ctx.createLinearGradient(-16,-36, 14,-10);
+    sg.addColorStop(0,'#c8ced4'); sg.addColorStop(0.45,'#8f979e'); sg.addColorStop(1,'#5d656b');
+    ctx.beginPath();
+    ctx.moveTo(-17,-10);
+    ctx.quadraticCurveTo(-18,-40, 0,-42);
+    ctx.quadraticCurveTo(18,-40, 16,-10);
+    ctx.closePath();
+    O(sg, '#333a3f', 2.4);
+    // 前沿压条
+    ctx.beginPath(); ctx.moveTo(-16.5,-11); ctx.quadraticCurveTo(0,-6, 15.5,-11);
+    O('#a9b1b7', '#333a3f', 1.6);
+    // 铆钉
+    ctx.fillStyle = '#5d656b';
+    for(const [rx, ry] of [[-11,-30],[-4,-36],[3,-36],[10,-30]]){
+      ctx.beginPath(); ctx.arc(rx, ry, 1.6, 0, TAU); ctx.fill();
+    }
+    // 三根竖向加强筋
+    ctx.strokeStyle = 'rgba(60,68,73,0.45)'; ctx.lineWidth = 1.4;
+    for(const rx of [-8, 0, 8]){
+      ctx.beginPath(); ctx.moveTo(rx, -40 + Math.abs(rx)*0.35); ctx.lineTo(rx, -12); ctx.stroke();
+    }
   }
   ctx.restore();
 }
@@ -353,6 +377,32 @@ function drawAngryOverlay(t, p){
   }
 }
 
+// 铁门被弹道打中时的火花：没有这个反馈，玩家会以为子弹"没生效"而不是"被挡住了"。
+// 时长由 sim 的 screenHitT 控制（0.12 秒），画面上表现为门上的一圈亮斑 + 几点火星。
+function drawScreenSpark(z, p){
+  if(!z.screenHitT || z.screenHitT <= 0) return;
+  const k = z.screenHitT / 0.12;          // 1 → 0
+  ctx.save();
+  ctx.translate(-7, -96);                 // 头部坐标系
+  ctx.globalAlpha = k;
+  const sg = ctx.createRadialGradient(0, -20, 1, 0, -20, 20);
+  sg.addColorStop(0, 'rgba(255,246,200,0.95)');
+  sg.addColorStop(0.45, 'rgba(255,190,70,0.55)');
+  sg.addColorStop(1, 'rgba(255,150,40,0)');
+  ctx.fillStyle = sg;
+  ctx.beginPath(); ctx.arc(0, -20, 20, 0, TAU); ctx.fill();
+  // 几点火星，位置由 hitT 推出来（不用随机，保证绘制轨迹可复现）
+  ctx.fillStyle = '#ffd76a';
+  for(let i=0;i<5;i++){
+    const a = -1.9 + i*0.75 + (1-k)*0.6;
+    const r = 10 + (1-k)*12;
+    ctx.beginPath();
+    ctx.arc(Math.cos(a)*r, -20 + Math.sin(a)*r*0.7, 1.3 + (1-k)*1.2, 0, TAU);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 // 减速冰霜
 function drawFrost(t, p){
   if(!p.slowed) return;
@@ -404,6 +454,19 @@ export function drawZombieHeadIcon(x, y, s, acc){
     ctx.beginPath(); ctx.moveTo(-16,11); ctx.lineTo(16,-24); ctx.stroke();
     ctx.strokeStyle = '#b8b2a2'; ctx.lineWidth = 2.4;
     ctx.beginPath(); ctx.moveTo(-16,11); ctx.lineTo(16,-24); ctx.stroke();
+  } else if(acc==='screen'){
+    ctx.beginPath();
+    ctx.moveTo(-13,-8);
+    ctx.quadraticCurveTo(-14,-32, 0,-34);
+    ctx.quadraticCurveTo(14,-32, 13,-8);
+    ctx.closePath();
+    g = ctx.createLinearGradient(-12,-32, 11,-8);
+    g.addColorStop(0,'#c8ced4'); g.addColorStop(1,'#6d757b');
+    O(g, '#333a3f', 2);
+    ctx.strokeStyle = 'rgba(60,68,73,0.5)'; ctx.lineWidth = 1.2;
+    for(const rx of [-6, 0, 6]){
+      ctx.beginPath(); ctx.moveTo(rx, -32 + Math.abs(rx)*0.4); ctx.lineTo(rx, -9); ctx.stroke();
+    }
   } else if(acc==='newspaper'){
     ctx.save();
     ctx.translate(-7, 6); ctx.rotate(-0.2);

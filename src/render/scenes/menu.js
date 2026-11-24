@@ -89,6 +89,11 @@ export function drawMenuScene(t){
   ctx.save(); ctx.translate(W-470, H-16); ctx.scale(1.2,1.2);
   drawZombieEntity(t, { type:'newspaper', row:0, x:0, vy:0, state:'walk', animT:t+1.2, eatT:0, slowT:0, deathT:0, dustT:0, paper:400, angry:false }, 0);
   ctx.restore();
+  // E22：铁门僵尸。放在球球右侧的空档（x≈612）。之前试过最右边，会被"全部关卡"按钮
+  // 和报纸僵尸挤住只露半个；这里原本是一片空草坪。
+  ctx.save(); ctx.translate(612, H-12); ctx.scale(1.04,1.04);
+  drawZombieEntity(t, { type:'screen', row:0, x:0, vy:0, state:'walk', animT:t+3, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
+  ctx.restore();
 }
 
 export function renderMenu(t, world, ui, musicOn){

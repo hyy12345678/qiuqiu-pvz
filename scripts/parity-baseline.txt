@@ -21,6 +21,7 @@
 '普通僵尸：最基础的敌人。',
 '白天蘑菇会打盹，用咖啡豆点它唤醒。',
 '路障 / 铁桶僵尸：头戴护具，非常耐打。',
+'铁门僵尸：铁门挡豌豆！用樱桃炸弹 / 土豆雷 / 火豌豆破门。',
 );
 : (tone < 0.84 ? 'rgba(154,204,98,0.50)' : 'rgba(44,84,22,0.52)');
 : ['#8fd44a','#b8e88a'];
@@ -56,6 +57,7 @@ O('#7cc24a', '#2c5214', 1.8);
 O('#9fe4ff', '#4a86a8', 1.2);
 O('#a3b187', '#4a5238', 1.8);
 O('#a8763c', '#5f3c18', 2.4);
+O('#a9b1b7', '#333a3f', 1.6);
 O('#b02a20', '#5e120c', 1.6);
 O('#b02a20', '#5e120c', 2.2);
 O('#b8895a', '#3c2610', 2.4);
@@ -102,6 +104,7 @@ O(bg, locked ? '#2c2c28' : '#6b4c20', 3);
 O(col||'#5cb444', outline||'#2c6b1c', 2);
 O(g, '#241204', 2.4);
 O(g, '#241204', 2.4);
+O(g, '#333a3f', 2);
 O(g, '#39412e', 2.2);
 O(g, '#3a220c', 3);
 O(g, '#3a220c', 4.5);
@@ -155,6 +158,7 @@ O(pal.mouth, null);
 O(pal.mouth, pal.line, 2);
 O(purple, purpleDk, 1.3);
 O(red, redDk, 1.4);
+O(sg, '#333a3f', 2.4);
 O(silver, line, 2);
 O(silverHi, line, 2);
 O(timer, 'rgba(63,70,82,0.85)', 1.8);
@@ -311,6 +315,7 @@ const W = 1024, H = 640;
 const ZTYPES = {
 const a = (blades===1 ? 0 : (b/(blades-1) - 0.5)) * spread;
 const a = (t*13 + k*TAU/5) % TAU;
+const a = -1.9 + i*0.75 + (1-k)*0.6;
 const a = 1 - cyc;
 const a = clamp(0.30 + Math.sin(t*2.3+k*1.4)*0.34, 0, 1);
 const a = clamp(world.visual.nightHint/1.4, 0, 1);
@@ -472,6 +477,7 @@ const k = ICON_SPRITE_SCALE;
 const k = Math.min(1, Math.max(0, (world.t - RAMP_A) / (RAMP_B - RAMP_A)));
 const k = easeOut(s.ft);
 const k = inPhase ? clamp((t+1.4)/0.3, 0, 1) : clamp((t+3.2)/0.3, 0, 1);
+const k = z.screenHitT / 0.12;
 const kind = p.type==='snowpea' ? 'snow' : 'pea';
 const kneeX = (hipX+footX)/2 + 2;
 const lastLv = world.level >= LEVELS.length-1;
@@ -548,6 +554,7 @@ const q = world.quiz;
 const q = world.quiz;
 const q = world.quiz;
 const qs = [];
+const r = 10 + (1-k)*12;
 const r = canvas.getBoundingClientRect();
 const r = clamp(throwT||0, 0, 1);
 const r = useCard(world, ui.sel, row, col);
@@ -575,6 +582,7 @@ const scale = dpr === undefined ? DPR : dpr;
 const seed = init.seed === undefined ? randomSeed() : (init.seed >>> 0);
 const selType = world.slots[ui.sel].type;
 const selected = ui.sel === i;
+const sg = ctx.createRadialGradient(0, -20, 1, 0, -20, 20);
 const silver = '#d9dee6', silverHi = '#f6f9fc', silverDk = '#98a2ae', line = '#3f4652';
 const skin='#ffd9ae', skinD='#eeb183', line='#6e4218';
 const slotW = 72, slotH = 100;
@@ -676,12 +684,16 @@ continue;
 ctx = canvas.getContext('2d');
 ctx = next;
 ctx.arc(Math.cos(a)*17, -62+Math.sin(a*1.3)*26, 1.9, 0, TAU);
+ctx.arc(Math.cos(a)*r, -20 + Math.sin(a)*r*0.7, 1.3 + (1-k)*1.2, 0, TAU);
 ctx.arc(x+26*s,y+6*s,20*s,0,TAU);
 ctx.arc(x,y,18*s,0,TAU); ctx.arc(x+24*s,y-9*s,23*s,0,TAU); ctx.arc(x+50*s,y,17*s,0,TAU);
 ctx.arcTo(x+w,y+h,x,y+h,r);
 ctx.arcTo(x+w,y,x+w,y+h,r);
 ctx.arcTo(x,y+h,x,y,r);
 ctx.arcTo(x,y,x+w,y,r);
+ctx.beginPath();
+ctx.beginPath();
+ctx.beginPath();
 ctx.beginPath();
 ctx.beginPath();
 ctx.beginPath();
@@ -761,6 +773,7 @@ ctx.beginPath(); ctx.arc(-8,-33,2.2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-9,-3,2.1,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-9,-31,2.2,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(-9.4,-2.7,0.9,0,TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(0, -20, 20, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(0, 2.5, 19.5, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(0, ey+8, 3.2, 0.25, Math.PI-0.25); ctx.stroke();
 ctx.beginPath(); ctx.arc(0, ey+9, 2.6, Math.PI+0.3, TAU-0.3); ctx.stroke();
@@ -845,6 +858,7 @@ ctx.beginPath(); ctx.arc(mx, my, 6.6, 0, TAU);
 ctx.beginPath(); ctx.arc(mx-2.2, my-1.8, 1.5, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(ox+36,oy,14,0,TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, TAU); ctx.fill();
+ctx.beginPath(); ctx.arc(rx, ry, 1.6, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(s[0], s[1], s[2], 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(sx, BANK_Y+13, 3.2, 0, TAU); ctx.fill();
 ctx.beginPath(); ctx.arc(sx, BANK_Y+BANK_H-13, 3.2, 0, TAU); ctx.fill();
@@ -967,6 +981,7 @@ ctx.beginPath(); ctx.moveTo(-14,-9); ctx.lineTo(-4,-5); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-14.5,-17); ctx.lineTo(12.5,-18.8); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-16,11); ctx.lineTo(16,-24); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-16,11); ctx.lineTo(16,-24); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(-16.5,-11); ctx.quadraticCurveTo(0,-6, 15.5,-11);
 ctx.beginPath(); ctx.moveTo(-18,-74); ctx.quadraticCurveTo((px-18)/2-6,(py-74)/2, px, py);
 ctx.beginPath(); ctx.moveTo(-19,-54); ctx.lineTo(-13,-43); ctx.lineTo(-18,-33); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(-20,-10); ctx.quadraticCurveTo(-14,-4,-19,-1); ctx.quadraticCurveTo(-23,-5,-20,-10); ctx.fill();
@@ -1047,6 +1062,8 @@ ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + 3 + R()*9); ctx.stroke(
 ctx.beginPath(); ctx.moveTo(hipX,-38); ctx.quadraticCurveTo(kneeX,-22, footX,-4-lift);
 ctx.beginPath(); ctx.moveTo(hx-7,hy-7); ctx.lineTo(hx-1,hy-7); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(px+14, py+k*66); ctx.lineTo(px+pw-14, py+k*66); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(rx, -32 + Math.abs(rx)*0.4); ctx.lineTo(rx, -9); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(rx, -40 + Math.abs(rx)*0.35); ctx.lineTo(rx, -12); ctx.stroke();
 ctx.beginPath(); ctx.moveTo(wx+Math.cos(wa)*(r-2.5), 10+Math.sin(wa)*(r-2.5));
 ctx.beginPath(); ctx.moveTo(wx+Math.cos(wa+1.57)*(r-2.5), 10+Math.sin(wa+1.57)*(r-2.5));
 ctx.beginPath(); ctx.moveTo(x*0.92+dy*0.3,-22); ctx.lineTo(x*0.86+dy*0.5,-10);
@@ -1126,6 +1143,8 @@ ctx.closePath();
 ctx.closePath();
 ctx.closePath();
 ctx.closePath();
+ctx.closePath();
+ctx.closePath();
 ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill();
 ctx.closePath(); ctx.fill();
@@ -1138,6 +1157,7 @@ ctx.drawImage(sprite, -ICON_BOX.w / 2, -ICON_BASE_Y, ICON_BOX.w, ICON_BOX.h);
 ctx.drawImage(sprite, x - half, y - half, SUN_SPRITE*s, SUN_SPRITE*s);
 ctx.ellipse(208+R()*50, LY+r*CH+14+R()*70, 4+R()*4, 2.5+R()*2, R(), 0, TAU);
 ctx.ellipse(bx, by, br, br*(0.20 + R()*0.16), R()*0.5-0.25, 0, TAU);
+ctx.fill();
 ctx.fill();
 ctx.fill();
 ctx.fill();
@@ -1230,6 +1250,7 @@ ctx.fillStyle = '#4d8a3a';
 ctx.fillStyle = '#5a5245';
 ctx.fillStyle = '#5a5245'; ctx.fillRect(-9,-7,18,2.4);
 ctx.fillStyle = '#5c6247';
+ctx.fillStyle = '#5d656b';
 ctx.fillStyle = '#5f9e46';
 ctx.fillStyle = '#5f9e46';
 ctx.fillStyle = '#6b4522';
@@ -1263,6 +1284,7 @@ ctx.fillStyle = '#ffc82e';
 ctx.fillStyle = '#ffd23e';
 ctx.fillStyle = '#ffd23e';
 ctx.fillStyle = '#ffd23e';
+ctx.fillStyle = '#ffd76a';
 ctx.fillStyle = '#ffd83d';
 ctx.fillStyle = '#ffe89a';
 ctx.fillStyle = '#fff';
@@ -1404,6 +1426,7 @@ ctx.fillStyle = long ? '#ffd83d' : '#ffc32e';
 ctx.fillStyle = ok ? 'rgba(255,255,220,0.32)' : 'rgba(200,40,30,0.32)';
 ctx.fillStyle = p.color;
 ctx.fillStyle = p.slowed ? '#3f5a68' : '#5c6247';
+ctx.fillStyle = sg;
 ctx.fillStyle = sill;
 ctx.fillStyle = spots;
 ctx.fillStyle = tg;
@@ -1458,6 +1481,7 @@ ctx.globalAlpha = clamp(flash/0.4, 0, 1);
 ctx.globalAlpha = clamp(muzzle,0,1);
 ctx.globalAlpha = clamp(p.life/p.max, 0, 1);
 ctx.globalAlpha = flash/0.09;
+ctx.globalAlpha = k;
 ctx.globalCompositeOperation = 'multiply';
 ctx.lineCap = 'round';
 ctx.lineCap = 'round';
@@ -1497,10 +1521,12 @@ ctx.moveTo(-11,-73); ctx.quadraticCurveTo(0,-64, 11,-73);
 ctx.moveTo(-11.5,-19); ctx.lineTo(9.5,-20.5); ctx.lineTo(8,-26); ctx.lineTo(-9.5,-24.5);
 ctx.moveTo(-12,-47); ctx.quadraticCurveTo(0,-41, 12,-47);
 ctx.moveTo(-13,-44);
+ctx.moveTo(-13,-8);
 ctx.moveTo(-14+off, -49);
 ctx.moveTo(-150,-1.2); ctx.lineTo(6,-7.5); ctx.lineTo(13,0); ctx.lineTo(6,7.5); ctx.lineTo(-150,1.2);
 ctx.moveTo(-16,-9);
 ctx.moveTo(-16,-9); ctx.lineTo(14,-11); ctx.lineTo(10.5,-40); ctx.lineTo(-13,-38);
+ctx.moveTo(-17,-10);
 ctx.moveTo(-17,-74);
 ctx.moveTo(-23,-6);
 ctx.moveTo(-32,-132);
@@ -1532,8 +1558,10 @@ ctx.moveTo(x+r,y);
 ctx.moveTo(x, y);
 ctx.moveTo(x,y);
 ctx.quadraticCurveTo(
+ctx.quadraticCurveTo(-14,-32, 0,-34);
 ctx.quadraticCurveTo(-16,-63,-11,-74);
 ctx.quadraticCurveTo(-17+off+w1, -49-h*0.45, w2*0.5+off, -49-h);
+ctx.quadraticCurveTo(-18,-40, 0,-42);
 ctx.quadraticCurveTo(-18,-79,-12,-79);
 ctx.quadraticCurveTo(-2+tieWave,-60,-1.5,-76);
 ctx.quadraticCurveTo(-2,-13, 13,-11);
@@ -1545,8 +1573,10 @@ ctx.quadraticCurveTo(0,-38,-13,-44);
 ctx.quadraticCurveTo(0,28,-8,20);
 ctx.quadraticCurveTo(0,3,-7,-1); ctx.closePath();
 ctx.quadraticCurveTo(1,-46, -2,-44);
+ctx.quadraticCurveTo(14,-32, 13,-8);
 ctx.quadraticCurveTo(16,-63,13,-44);
 ctx.quadraticCurveTo(17+off+w1, -49-h*0.42, 14+off, -49);
+ctx.quadraticCurveTo(18,-40, 16,-10);
 ctx.quadraticCurveTo(18,-79,12,-79);
 ctx.quadraticCurveTo(180, 400, 380, 462);
 ctx.quadraticCurveTo(20,-27, 23,-6);
@@ -1560,6 +1590,8 @@ ctx.quadraticCurveTo(7,-22, hx, hy+16);
 ctx.quadraticCurveTo(900, 430, 1024, 468);
 ctx.quadraticCurveTo(x+dir*15*s, y+8*s, x, y);
 ctx.quadraticCurveTo(x+dir*15*s, y-9*s, x+dir*27*s, y-2*s);
+ctx.restore();
+ctx.restore();
 ctx.restore();
 ctx.restore();
 ctx.restore();
@@ -1697,6 +1729,7 @@ ctx.save();
 ctx.save();
 ctx.save();
 ctx.save();
+ctx.save();
 ctx.save(); ctx.rotate(Math.sin(t+ph)*0.05 + TAU/24);
 ctx.save(); ctx.rotate(Math.sin(t+ph)*0.05);
 ctx.save(); ctx.rotate(k*TAU/12);
@@ -1708,6 +1741,7 @@ ctx.save(); ctx.translate(110, H-36); ctx.scale(1.55,1.55); drawSunflower(t, 0);
 ctx.save(); ctx.translate(225, H-28); ctx.scale(1.35,1.35); drawShooter(t, 2, 'pea', 0, 0); ctx.restore();
 ctx.save(); ctx.translate(315, H-24); ctx.scale(1.15,1.15); drawWallnut(1, t, 4); ctx.restore();
 ctx.save(); ctx.translate(465, H-14); ctx.scale(1.12,1.12); drawQiuqiu(t, 5, 0); ctx.restore();
+ctx.save(); ctx.translate(612, H-12); ctx.scale(1.04,1.04);
 ctx.save(); ctx.translate(W-140, H-26); ctx.scale(1.55,1.55);
 ctx.save(); ctx.translate(W-262, H-18); ctx.scale(1.3,1.3);
 ctx.save(); ctx.translate(W-372, H-14); ctx.scale(1.12,1.12);
@@ -1803,6 +1837,8 @@ ctx.strokeStyle = 'rgba(50,32,14,0.55)'; ctx.lineWidth = 2; ctx.lineCap='round';
 ctx.strokeStyle = 'rgba(50,95,28,0.6)'; ctx.lineWidth = 1.5;
 ctx.strokeStyle = 'rgba(58,34,12,0.25)'; ctx.lineWidth = 1.6;
 ctx.strokeStyle = 'rgba(58,34,12,0.3)'; ctx.lineWidth = 2;
+ctx.strokeStyle = 'rgba(60,68,73,0.45)'; ctx.lineWidth = 1.4;
+ctx.strokeStyle = 'rgba(60,68,73,0.5)'; ctx.lineWidth = 1.2;
 ctx.strokeStyle = 'rgba(60,95,30,0.25)'; ctx.lineWidth = 1.5;
 ctx.strokeStyle = 'rgba(63,71,77,0.6)'; ctx.lineWidth = 1.6;
 ctx.strokeStyle = 'rgba(90,50,10,0.45)'; ctx.lineWidth = 1.4;
@@ -1850,6 +1886,7 @@ ctx.textBaseline = 'middle';
 ctx.translate(-34, -78);
 ctx.translate(-4, -4);
 ctx.translate(-7, -96);
+ctx.translate(-7, -96);
 ctx.translate(-7, 6); ctx.rotate(-0.2);
 ctx.translate(-lunge*0.35, -bob);
 ctx.translate(0, -bob);
@@ -1878,12 +1915,12 @@ ctx.translate(x,y); ctx.scale(s,s);
 ctx.translate(z.x, fy);
 ctx:null, master:null, musicGain:null, musicTimer:null, loopStart:0,
 cx: cellCX(col), fy: cellFY(row),
-damageZombie(world, z, 1800);
-damageZombie(world, z, 90);
-damageZombie(world, z, 9999);
+damageZombie(world, z, 1800, true);
+damageZombie(world, z, 90, true);
+damageZombie(world, z, 9999, true);
 damageZombie(world, z, pea.dmg);
-damageZombie(world, z, pea.dmg);
-damageZombie(world, z2, 20);
+damageZombie(world, z, pea.dmg, true);
+damageZombie(world, z2, 20, true);
 dig(){ this.noise(0.12, 0.13, 1600); this.tone(320, 150, 0.09, 'triangle', 0.07); },
 document.addEventListener('gesturestart', e=> e.preventDefault());
 draw(-14,-30,17); draw(14,-38,20);
@@ -1924,6 +1961,7 @@ drawPlantIcon(t, s.type, x+slotW/2, y+slotH-26, 0.6);
 drawPlantIcon(t, type, x+cw/2, y+ch-24, 0.42);
 drawPole(z);
 drawProgressBar(world);
+drawScreenSpark(z, pose);
 drawSeedBank(t, world, ui);
 drawShovelIcon(sx+32, sy+34, hoverS||active ? 1.08 : 1);
 drawShovelIcon(ui.mouse.x, ui.mouse.y - 10, 1.1);
@@ -1987,6 +2025,7 @@ drawZombieEntity(t, { type:'bucket', row:0, x:0, vy:0, state:'walk', animT:t+4, 
 drawZombieEntity(t, { type:'cone', row:0, x:0, vy:0, state:'walk', animT:t+2, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
 drawZombieEntity(t, { type:'newspaper', row:0, x:0, vy:0, state:'walk', animT:t+1.2, eatT:0, slowT:0, deathT:0, dustT:0, paper:400, angry:false }, 0);
 drawZombieEntity(t, { type:'normal', row:0, x:0, vy:0, state:'walk', animT:t, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
+drawZombieEntity(t, { type:'screen', row:0, x:0, vy:0, state:'walk', animT:t+3, eatT:0, slowT:0, deathT:0, dustT:0 }, 0);
 drawZombieHeadIcon(hx, y+h/2, 0.64, null);
 drawZombieHeadIcon(izx0+k*62, zy+44, 1.1, acc);
 drawZombieHeadIcon(zx0+k*42, y+80, 0.86, acc);
@@ -2034,6 +2073,7 @@ flagAt(0.5); flagAt(1.0);
 flame(16+Math.sin(t*10+ph)*3.5, '#fff3b0', 0);
 flame(29+Math.cos(t*8+ph)*5, '#ffc23e', 0);
 flame(40+Math.sin(t*7+ph)*6, '#ff7a1e', 0);
+for(const [rx, ry] of [[-11,-30],[-4,-36],[3,-36],[10,-30]]){
 for(const [t,w] of pool){ if((r-=w) <= 0) return t; }
 for(const b of btns){
 for(const d of world.visual.decals){
@@ -2048,6 +2088,8 @@ for(const p of world.plants) if(p.row===r) drawPlantEntity(t, p);
 for(const p of world.plants){
 for(const p of world.visual.parts){
 for(const row of zombiesByRow) row.sort((a, b) => a.x - b.x);
+for(const rx of [-6, 0, 6]){
+for(const rx of [-8, 0, 8]){
 for(const s of [[-6,-step],[6,step]]){
 for(const s of [[8,-36,2.6],[-11.5,-30,2.1],[2.5,-24.5,1.8]]){
 for(const s of world.slots) if(s.cool > 0) s.cool = Math.max(0, s.cool - dt);
@@ -2077,6 +2119,7 @@ for(let i=0;i<30;i++){
 for(let i=0;i<3;i++){
 for(let i=0;i<46;i++){
 for(let i=0;i<4;i++){
+for(let i=0;i<5;i++){
 for(let i=0;i<PLANT_ORDER.length;i++){
 for(let i=0;i<lines.length;i++){
 for(let i=0;i<lv.slots;i++){
@@ -2176,7 +2219,7 @@ function createGame({ world, ui, frameState, audio, render, now, requestFrame })
 function createPorts(overrides){
 function createUI(){
 function createWorld(init = {}){
-function damageZombie(world, z, d){
+function damageZombie(world, z, d, pierce){
 function dispatch(action){
 function drawAngryOverlay(t, p){
 function drawBackArm(p){
@@ -2204,6 +2247,7 @@ function drawPotato(armed, t, ph){
 function drawProgressBar(world){
 function drawPuff(t, ph, asleep){
 function drawQiuqiu(t, ph, throwT){
+function drawScreenSpark(z, p){
 function drawSeedBank(t, world, ui){
 function drawShooter(t, ph, kind, recoil, flash){
 function drawShovelIcon(x,y,s){
@@ -2301,6 +2345,7 @@ fxRng: init.fxRng || mulberry32((seed ^ FX_SEED_XOR) >>> 0),
 g = ctx.createLinearGradient(-10,-30,10,-10);
 g = ctx.createLinearGradient(-11,-9,11,8);
 g = ctx.createLinearGradient(-12,-28,11,-8);
+g = ctx.createLinearGradient(-12,-32, 11,-8);
 g = ctx.createLinearGradient(-14,-40,12,-12);
 g = ctx.createLinearGradient(-15,-38,13,-10);
 g = ctx.createLinearGradient(-19,0,19,0);
@@ -2364,6 +2409,7 @@ g.addColorStop(0,'#96652f'); g.addColorStop(1,'#6b4520');
 g.addColorStop(0,'#96683c'); g.addColorStop(0.5,'#77502c'); g.addColorStop(1,'#5a3a1c');
 g.addColorStop(0,'#a5875a'); g.addColorStop(1,'#7c6038');
 g.addColorStop(0,'#bcc7a0'); g.addColorStop(1,'#a3b187');
+g.addColorStop(0,'#c8ced4'); g.addColorStop(1,'#6d757b');
 g.addColorStop(0,'#c8f08a'); g.addColorStop(1,'#6fa83e');
 g.addColorStop(0,'#c9903f'); g.addColorStop(1,'#8a5220');
 g.addColorStop(0,'#c9a76e'); g.addColorStop(1,'#b28f58');
@@ -2495,6 +2541,7 @@ if(!txt) return;
 if(!world.slots[slotIndex]) return { ok:false, reason:'no-slot' };
 if(!world.unlockAll && li+1 > world.unlocked) return { ok:false, reason:'locked' };
 if(!world.visual.waveText) return;
+if(!z.screenHitT || z.screenHitT <= 0) return;
 if(Math.abs(z.row - row) <= 1 && Math.abs(zc - c) <= 1){
 if(Math.abs(z.row-row) <= (big?1:0) && Math.abs(z.x-x) < (big?132:58)){
 if(Math.floor(z.eatT/0.62) !== Math.floor((z.eatT-dt)/0.62)) world.ports.sound('chomp');
@@ -2714,6 +2761,8 @@ if(z.row===m.row && z.state!=='dying' && z.x < m.x+52 && z.x > m.x-70){
 if(z.row===p.row && z.state!=='dying' && Math.abs(z.x - p.cx) < 34){
 if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < W+50){ has = true; break; }
 if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < reach){ has = true; break; }
+if(z.screen && !pierce && z.acc > 0){
+if(z.screenHitT > 0) z.screenHitT = Math.max(0, z.screenHitT - dt);
 if(z.slowT > 0) z.slowT -= dt;
 if(z.state!=='dying' && z.x < LX + 14){
 if(z.state==='dying') continue;
@@ -2797,6 +2846,7 @@ let lost = false;
 let ng = ctx.createLinearGradient(0,by,0,by+bh);
 let row = randi(world.rng,0,ROWS-1);
 let s = 1;
+let sg = ctx.createLinearGradient(-16,-36, 14,-10);
 let sill = ctx.createLinearGradient(0, wy+105, 0, wy+117);
 let size = 1;
 let sum = pool.reduce((a,p)=>a+p[1],0), r = rng()*sum;
@@ -2929,12 +2979,14 @@ return check;
 return ctx;
 return false;
 return false;
+return false;
 return g;
 return hover;
 return null;
 return qs;
 return r;
 return row>=0 && row<ROWS && col>=0 && col<COLS;
+return true;
 return true;
 return true;
 return true;
@@ -2998,10 +3050,16 @@ saveProgress: value => saveUnlocked(value),
 saveUnlockAll(){},
 saveUnlockAll: on => saveUnlockAll(on),
 scale = 1 - s.ft*0.4;
+screen: !!def.screen, screenHitT: 0,
+screen:{ name:'铁门僵尸', hp:200, acc:900, speed:16, screen:true },
 seed,
 sel:-1, shovel:false,
 select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },
 setPointer(ui, p, world.state);
+sg.addColorStop(0, 'rgba(255,246,200,0.95)');
+sg.addColorStop(0,'#c8ced4'); sg.addColorStop(0.45,'#8f979e'); sg.addColorStop(1,'#5d656b');
+sg.addColorStop(0.45, 'rgba(255,190,70,0.55)');
+sg.addColorStop(1, 'rgba(255,150,40,0)');
 shirt: slowed ? '#9db4c2' : '#b3ac98',
 shoot(){ this.tone(760, 320, 0.09, 'square', 0.08); },
 shuffle(opts, rng);
@@ -3238,6 +3296,7 @@ z.dustT = (z.dustT||0) + dt;
 z.dustT = 0;
 z.eatT += dt;
 z.hp -= d;
+z.screenHitT = 0.12;
 z.slowT = 0;
 z.speed = 34 * rand(world.rng,0.94,1.08);
 z.speed = ZTYPES.normal.speed * rand(world.rng,0.92,1.08);
@@ -3259,9 +3318,15 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { id:'pause', label: world.paused ? '继续' : '暂停', action:{ type:'pause' } },
 { name:'第 1 关 · 前院草坪', count:20, slots:6, types:[['normal',8],['cone',2]] },
 { name:'第 2 关 · 来者不善', count:27, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
-{ name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2]] },
-{ name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3]] },
+{ name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',1]] },
+{ name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',1]] },
 { type:'startQuiz' },
+}
+}
+}
+}
+}
+}
 }
 }
 }
@@ -3626,6 +3691,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 } else if(acc==='bucket'){
 } else if(acc==='flag'){
 } else if(acc==='newspaper'){
+} else if(acc==='screen'){
 } else if(acc==='vault'){
 } else if(check.reason === 'cooling' || check.reason === 'occupied' || check.reason === 'invalid-target'){
 } else if(hover && afford){
@@ -3638,6 +3704,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 } else if(z.state==='eat'){
 } else if(z.state==='vault'){
 } else if(z.type==='bucket'){
+} else if(z.type==='screen'){
 } else if(z.type==='vault' && !z.poleLost){
 } else spawnZombie(world, e.type);
 } else {

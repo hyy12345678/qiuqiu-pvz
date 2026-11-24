@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 4bf5aab0 */
+/* build: v0.1.0 pretty · src d576882a */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -314,10 +314,12 @@
     // E20：32 → 27。L1→L2 的等效总血量原来是 1.0× → 3.0×，断崖太陡；
     // 削到 27 后约 2.5×，配合铁桶权重不变，是"明显的台阶"而不是"墙"。
     { name: "第 2 关 · 来者不善", count: 27, slots: 7, types: [["normal", 5], ["cone", 3], ["bucket", 1], ["vault", 1], ["newspaper", 1]] },
-    { name: "第 3 关 · 最终决战", count: 44, slots: 8, types: [["normal", 4], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 2]] },
+    // E22：L3 起加入铁门僵尸（权重 1，稀客）。它是第一个"改变火力配置"的敌人，
+    // 放在最终决战才出现，让玩家先熟悉其他机制。
+    { name: "第 3 关 · 最终决战", count: 44, slots: 8, types: [["normal", 4], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 2], ["screen", 1]] },
     // E20：52 → 46。原曲线是 1.0 → 3.0 → 4.6 → 5.6，L3→L4 的台阶最陡且时长 385s（6.4 分钟）偏长。
     // 削到 46 后约 5.0×，时长降到约 340s。
-    { name: "第 4 关 · 月夜突袭", count: 46, slots: 8, night: true, types: [["normal", 3], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 3]] }
+    { name: "第 4 关 · 月夜突袭", count: 46, slots: 8, night: true, types: [["normal", 3], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 3], ["screen", 1]] }
   ];
 
   // src/core/ports.js
@@ -2031,6 +2033,7 @@
     drawNewspaper(t, pose);
     drawAngryOverlay(t, pose);
     drawFrost(t, pose);
+    drawScreenSpark(z, pose);
     ctx.restore();
   }
   function drawBackArm(p) {
@@ -2354,6 +2357,35 @@
       ctx.lineTo(17, -9);
       ctx.closePath();
       O("#c03028", "#6e1810", 1.4);
+    } else if (z.type === "screen") {
+      let sg = ctx.createLinearGradient(-16, -36, 14, -10);
+      sg.addColorStop(0, "#c8ced4");
+      sg.addColorStop(0.45, "#8f979e");
+      sg.addColorStop(1, "#5d656b");
+      ctx.beginPath();
+      ctx.moveTo(-17, -10);
+      ctx.quadraticCurveTo(-18, -40, 0, -42);
+      ctx.quadraticCurveTo(18, -40, 16, -10);
+      ctx.closePath();
+      O(sg, "#333a3f", 2.4);
+      ctx.beginPath();
+      ctx.moveTo(-16.5, -11);
+      ctx.quadraticCurveTo(0, -6, 15.5, -11);
+      O("#a9b1b7", "#333a3f", 1.6);
+      ctx.fillStyle = "#5d656b";
+      for (const [rx, ry] of [[-11, -30], [-4, -36], [3, -36], [10, -30]]) {
+        ctx.beginPath();
+        ctx.arc(rx, ry, 1.6, 0, TAU);
+        ctx.fill();
+      }
+      ctx.strokeStyle = "rgba(60,68,73,0.45)";
+      ctx.lineWidth = 1.4;
+      for (const rx of [-8, 0, 8]) {
+        ctx.beginPath();
+        ctx.moveTo(rx, -40 + Math.abs(rx) * 0.35);
+        ctx.lineTo(rx, -12);
+        ctx.stroke();
+      }
     }
     ctx.restore();
   }
@@ -2489,6 +2521,30 @@
       }
     }
   }
+  function drawScreenSpark(z, p) {
+    if (!z.screenHitT || z.screenHitT <= 0) return;
+    const k = z.screenHitT / 0.12;
+    ctx.save();
+    ctx.translate(-7, -96);
+    ctx.globalAlpha = k;
+    const sg = ctx.createRadialGradient(0, -20, 1, 0, -20, 20);
+    sg.addColorStop(0, "rgba(255,246,200,0.95)");
+    sg.addColorStop(0.45, "rgba(255,190,70,0.55)");
+    sg.addColorStop(1, "rgba(255,150,40,0)");
+    ctx.fillStyle = sg;
+    ctx.beginPath();
+    ctx.arc(0, -20, 20, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "#ffd76a";
+    for (let i = 0; i < 5; i++) {
+      const a = -1.9 + i * 0.75 + (1 - k) * 0.6;
+      const r = 10 + (1 - k) * 12;
+      ctx.beginPath();
+      ctx.arc(Math.cos(a) * r, -20 + Math.sin(a) * r * 0.7, 1.3 + (1 - k) * 1.2, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
   function drawFrost(t, p) {
     if (!p.slowed) return;
     ctx.fillStyle = "rgba(170,225,255,0.65)";
@@ -2585,6 +2641,24 @@
       ctx.moveTo(-16, 11);
       ctx.lineTo(16, -24);
       ctx.stroke();
+    } else if (acc === "screen") {
+      ctx.beginPath();
+      ctx.moveTo(-13, -8);
+      ctx.quadraticCurveTo(-14, -32, 0, -34);
+      ctx.quadraticCurveTo(14, -32, 13, -8);
+      ctx.closePath();
+      g = ctx.createLinearGradient(-12, -32, 11, -8);
+      g.addColorStop(0, "#c8ced4");
+      g.addColorStop(1, "#6d757b");
+      O(g, "#333a3f", 2);
+      ctx.strokeStyle = "rgba(60,68,73,0.5)";
+      ctx.lineWidth = 1.2;
+      for (const rx of [-6, 0, 6]) {
+        ctx.beginPath();
+        ctx.moveTo(rx, -32 + Math.abs(rx) * 0.4);
+        ctx.lineTo(rx, -9);
+        ctx.stroke();
+      }
     } else if (acc === "newspaper") {
       ctx.save();
       ctx.translate(-7, 6);
@@ -3135,6 +3209,11 @@
     ctx.scale(1.2, 1.2);
     drawZombieEntity(t, { type: "newspaper", row: 0, x: 0, vy: 0, state: "walk", animT: t + 1.2, eatT: 0, slowT: 0, deathT: 0, dustT: 0, paper: 400, angry: false }, 0);
     ctx.restore();
+    ctx.save();
+    ctx.translate(612, H - 12);
+    ctx.scale(1.04, 1.04);
+    drawZombieEntity(t, { type: "screen", row: 0, x: 0, vy: 0, state: "walk", animT: t + 3, eatT: 0, slowT: 0, deathT: 0, dustT: 0 }, 0);
+    ctx.restore();
   }
   function renderMenu(t, world, ui, musicOn) {
     drawMenuScene(t);
@@ -3461,6 +3540,8 @@
       "路障 / 铁桶僵尸：头戴护具，非常耐打。",
       "撑杆僵尸：跑得快，还会跳过第一株植物！",
       "报纸僵尸：看报时很慢，报纸被打掉会暴怒加速！",
+      // E22：铁门只吃非弹道伤害，必须明说——否则玩家会以为子弹"没生效"而不是"被挡住"。
+      "铁门僵尸：铁门挡豌豆！用樱桃炸弹 / 土豆雷 / 火豌豆破门。",
       "旗帜僵尸：出现在总攻的最前线。",
       lv.night ? "夜战：天上不掉太阳，靠向日葵与阳光菇。" : "消灭全部僵尸即可过关，小心小推车。",
       "白天蘑菇会打盹，用咖啡豆点它唤醒。"
@@ -3546,8 +3627,11 @@
     bucket: { name: "铁桶僵尸", hp: 200, acc: 1100, speed: 17 },
     flag: { name: "旗帜僵尸", hp: 200, acc: 0, speed: 21 },
     vault: { name: "撑杆僵尸", hp: 500, acc: 0, speed: 36 },
-    newspaper: { name: "报纸僵尸", hp: 200, acc: 400, speed: 13 }
+    newspaper: { name: "报纸僵尸", hp: 200, acc: 400, speed: 13 },
     // 报纸是护盾，被打掉会狂暴加速
+    // E22：铁门僵尸。铁门只吃「非弹道」伤害——豌豆、小喷菇、寒冰、球球子弹、双发全被挡住，
+    // 樱桃/土豆雷/球球导弹/迪迦光线/小推车照常生效。它不改变血量，改变的是「你得换一套火力」。
+    screen: { name: "铁门僵尸", hp: 200, acc: 900, speed: 16, screen: true }
   };
 
   // src/core/particles.js
@@ -3675,7 +3759,7 @@
     for (const z of world.zombies) {
       if (z.state === "dying") continue;
       if (Math.abs(z.row - row) <= (big ? 1 : 0) && Math.abs(z.x - x) < (big ? 132 : 58)) {
-        damageZombie(world, z, 1800);
+        damageZombie(world, z, 1800, true);
       }
     }
   }
@@ -3703,11 +3787,15 @@
       if (z.state === "dying") continue;
       const zc = Math.floor((z.x - LX) / CW);
       if (Math.abs(z.row - row) <= 1 && Math.abs(zc - c) <= 1) {
-        damageZombie(world, z, 90);
+        damageZombie(world, z, 90, true);
       }
     }
   }
-  function damageZombie(world, z, d) {
+  function damageZombie(world, z, d, pierce) {
+    if (z.screen && !pierce && z.acc > 0) {
+      z.screenHitT = 0.12;
+      return false;
+    }
     if (z.acc > 0) {
       z.acc -= d;
       if (z.acc < 0) {
@@ -3731,6 +3819,7 @@
       world.killed++;
       world.ports.sound("groan");
     }
+    return true;
   }
   function spawnZombie(world, type) {
     const def = ZTYPES[type];
@@ -3761,7 +3850,9 @@
       eatPlant: null,
       dustT: 0,
       paper: type === "newspaper" ? ZTYPES.newspaper.acc : 0,
-      angry: false
+      angry: false,
+      screen: !!def.screen,
+      screenHitT: 0
     });
   }
   function findEatTarget(world, z) {
@@ -5228,7 +5319,7 @@
         if (beam) {
           const front = z.x - 24;
           if (pea.prevX < front && pea.x >= front) {
-            damageZombie(world, z, pea.dmg);
+            damageZombie(world, z, pea.dmg, true);
             addPeaSplat(world, pea.x, pea.y, "beam");
           }
           continue;
@@ -5246,7 +5337,7 @@
         if (pea.type === "fire") {
           for (const z2 of world.zombies) {
             if (z2 !== z && z2.row === pea.row && z2.state !== "dying" && Math.abs(z2.x - z.x) < 45) {
-              damageZombie(world, z2, 20);
+              damageZombie(world, z2, 20, true);
             }
           }
         }
@@ -5271,6 +5362,7 @@
         continue;
       }
       if (z.slowT > 0) z.slowT -= dt;
+      if (z.screenHitT > 0) z.screenHitT = Math.max(0, z.screenHitT - dt);
       const slowMul = z.slowT > 0 ? 0.45 : 1;
       if (t <= 0) continue;
       if (z.state === "walk") {
@@ -5364,7 +5456,7 @@
         }
         for (const z of world.zombies) {
           if (z.row === m.row && z.state !== "dying" && z.x < m.x + 52 && z.x > m.x - 70) {
-            damageZombie(world, z, 9999);
+            damageZombie(world, z, 9999, true);
           }
         }
         if (m.x > W + 80) m.state = "gone";

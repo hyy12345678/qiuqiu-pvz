@@ -127,7 +127,11 @@
     {
       "path": "tests/world-isolation.test.mjs",
       "count": 8
+    },
+    {
+      "path": "tests/zombie-screen.test.mjs",
+      "count": 4
     }
   ],
-  "total": 194
+  "total": 198
 }

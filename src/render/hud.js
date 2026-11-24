@@ -270,7 +270,9 @@ export function drawTopRightButtons(world, ui, musicOn){
 
 export function drawWaveText(at, world){
   if(!world.visual.waveText) return;
-  const t = world.visual.waveText.t;
+  const wv = world.visual.waveText;
+  const t = wv.t;
+  const size = wv.size || 46;          // E24：僵尸首见提示用小字，大波提示保持 46
   let alpha = 1, scale = 1;
   if(t < 0.35) scale = 0.4 + easeOut(t/0.35)*0.7;
   if(t > 2.1) alpha = clamp((2.6-t)/0.5, 0, 1);
@@ -278,8 +280,8 @@ export function drawWaveText(at, world){
   ctx.globalAlpha = alpha;
   ctx.translate(W/2, H/2 - 40);
   ctx.scale(scale, scale);
-  ctx.rotate(Math.sin(at*14)*0.012);
-  drawText(world.visual.waveText.text, 0, 0, 46, '#d02818', '#3a0a04', 9);
+  if(size >= 40) ctx.rotate(Math.sin(at*14)*0.012);   // 只有大波提示做抖动
+  drawText(wv.text, 0, 0, size, '#d02818', '#3a0a04', Math.round(size/5));
   ctx.restore();
 }
 

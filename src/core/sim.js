@@ -10,6 +10,12 @@ import { damageZombie, explode, explodeMissile, findEatTarget, removePlant, spaw
 import { addDirtPuff, addFlamePuff, addLeafBurst, addPeaSplat } from './particles.js';
 
 // 出怪 → 植物 → 弹丸 → 僵尸（可能判负并中断本帧）→ 小推车 → 阳光 → 表现 → 结算。
+// E24：首次登场的提示语。只对"玩家需要改变打法"的僵尸有意义——
+// 普通/路障/铁桶不需要解释，玩家一看就懂。
+const FIRST_SPAWN_HINT = {
+  screen: '铁门僵尸来了！豌豆打不动，换火豌豆或炸弹！',
+};
+
 export function updatePlay(world, dt){
   world.t += dt;
   if(world.visual.nightHint > 0) world.visual.nightHint -= dt;
@@ -35,7 +41,20 @@ function stepSpawns(world, dt){
       if(e.announce){
         v.waveText = { text:'一大波僵尸正在接近！', t:0 };
         world.ports.sound('horn');
-      } else spawnZombie(world, e.type);
+      } else {
+        // E24：某种僵尸第一次在场上出现时给一句提示。
+        // 铁门僵尸原来是"莫名其妙就杀穿"——玩家既不知道它来了，也不知道为什么豌豆打不动。
+        // 首次登场明确喊一声，比让玩家事后在失败里悟要友好得多。
+        const firstSeen = !world.seenTypes.has(e.type);
+        spawnZombie(world, e.type);
+        if(firstSeen) world.seenTypes.add(e.type);
+        const hint = FIRST_SPAWN_HINT[e.type];
+        if(firstSeen && hint && !v.waveText){
+          // 28px：整句约 20 字 × 28 ≈ 560px，在 1024 宽里放得下，也不会盖住战场。
+          v.waveText = { text: hint, t:0, size: 28 };
+          world.ports.sound('horn');
+        }
+      }
     }
     // 夜间关卡：天上不会掉太阳，只能靠向日葵
     if(!lv.night){

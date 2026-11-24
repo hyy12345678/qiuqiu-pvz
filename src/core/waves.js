@@ -1,11 +1,30 @@
 // 波次生成：出怪时刻表。rng 可注入（默认 Math.random），便于用固定种子断言总数守恒等不变量。
 
+// E24：某些僵尸要等关卡进度过半才登场。
+//
+// 起因：铁门僵尸原实现最早就 66 秒出现，而每局平均只有 2.1 只——
+// 既是「突然袭击」（玩家刚铺好防线，没有心理准备），又不是「反复出现的威胁」（没机会学会）。
+// 两个问题合起来，玩家只会觉得"莫名其妙就杀穿了"，而不是"我该换个打法"。
+//
+// 解法：给它一个进度门槛（前半场不出现），同时把权重放大（后半场更常见）。
+// 这样它先"明确登场"、再"反复出现"，玩家有时间反应，也有机会试错。
+const SPAWN_GATE = {
+  // 类型: [首次出现的进度下限, 权重加成]
+  screen: [0.55, +2],
+};
+
 function pickType(lv, prog, rng){
   const pool = lv.types.map(([t,w])=>{
     let ww = w;
     if(t==='bucket'||t==='vault') ww += prog*3;
     if(t==='cone') ww += prog*1.5;
     if(t==='newspaper') ww += prog*2;
+    const gate = SPAWN_GATE[t];
+    if(gate){
+      // 未到门槛：权重归零，但保留一个极小值，避免"如果这是唯一类型"时选出 undefined
+      if(prog < gate[0]) return [t, 0.001];
+      ww += gate[1];
+    }
     return [t, ww];
   });
   let sum = pool.reduce((a,p)=>a+p[1],0), r = rng()*sum;

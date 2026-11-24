@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 257c3bed */
+/* build: v0.1.0 pretty · src fb78ab43 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -316,10 +316,12 @@
     { name: "第 2 关 · 来者不善", count: 27, slots: 7, types: [["normal", 5], ["cone", 3], ["bucket", 1], ["vault", 1], ["newspaper", 1]] },
     // E22：L3 起加入铁门僵尸（权重 1，稀客）。它是第一个"改变火力配置"的敌人，
     // 放在最终决战才出现，让玩家先熟悉其他机制。
-    { name: "第 3 关 · 最终决战", count: 44, slots: 8, types: [["normal", 4], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 2], ["screen", 1]] },
+    // E24：铁门权重 1 → 2。原权重下每局只有 2.1 只，玩家既被突然袭击又没机会学会。
+    // 配合 waves.js 的进度门槛（前半场不出），现在是"后半场常见"而不是"偶尔来个怪东西"。
+    { name: "第 3 关 · 最终决战", count: 44, slots: 8, types: [["normal", 4], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 2], ["screen", 2]] },
     // E20：52 → 46。原曲线是 1.0 → 3.0 → 4.6 → 5.6，L3→L4 的台阶最陡且时长 385s（6.4 分钟）偏长。
     // 削到 46 后约 5.0×，时长降到约 340s。
-    { name: "第 4 关 · 月夜突袭", count: 46, slots: 8, night: true, types: [["normal", 3], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 3], ["screen", 1]] }
+    { name: "第 4 关 · 月夜突袭", count: 46, slots: 8, night: true, types: [["normal", 3], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 3], ["screen", 2]] }
   ];
 
   // src/core/ports.js
@@ -367,12 +369,21 @@
   }
 
   // src/core/waves.js
+  var SPAWN_GATE = {
+    // 类型: [首次出现的进度下限, 权重加成]
+    screen: [0.55, 2]
+  };
   function pickType(lv, prog, rng) {
     const pool = lv.types.map(([t, w]) => {
       let ww = w;
       if (t === "bucket" || t === "vault") ww += prog * 3;
       if (t === "cone") ww += prog * 1.5;
       if (t === "newspaper") ww += prog * 2;
+      const gate = SPAWN_GATE[t];
+      if (gate) {
+        if (prog < gate[0]) return [t, 1e-3];
+        ww += gate[1];
+      }
       return [t, ww];
     });
     let sum = pool.reduce((a, p) => a + p[1], 0), r = rng() * sum;
@@ -444,6 +455,8 @@
       evIdx: 0,
       total: 0,
       killed: 0,
+      seenTypes: /* @__PURE__ */ new Set(),
+      // E24：本局已登场过的僵尸类型，用于首次提示
       skyTimer: 5,
       lastRows: [],
       visual: {
@@ -498,6 +511,7 @@
     world.total = built.total;
     world.evIdx = 0;
     world.killed = 0;
+    world.seenTypes = /* @__PURE__ */ new Set();
     world.skyTimer = 2;
     world.visual.groanTimer = 4;
     world.visual.waveText = null;
@@ -3013,7 +3027,9 @@
   }
   function drawWaveText(at, world) {
     if (!world.visual.waveText) return;
-    const t = world.visual.waveText.t;
+    const wv = world.visual.waveText;
+    const t = wv.t;
+    const size = wv.size || 46;
     let alpha = 1, scale = 1;
     if (t < 0.35) scale = 0.4 + easeOut(t / 0.35) * 0.7;
     if (t > 2.1) alpha = clamp((2.6 - t) / 0.5, 0, 1);
@@ -3021,8 +3037,8 @@
     ctx.globalAlpha = alpha;
     ctx.translate(W / 2, H / 2 - 40);
     ctx.scale(scale, scale);
-    ctx.rotate(Math.sin(at * 14) * 0.012);
-    drawText(world.visual.waveText.text, 0, 0, 46, "#d02818", "#3a0a04", 9);
+    if (size >= 40) ctx.rotate(Math.sin(at * 14) * 0.012);
+    drawText(wv.text, 0, 0, size, "#d02818", "#3a0a04", Math.round(size / 5));
     ctx.restore();
   }
   function drawIntro(at, world) {
@@ -5117,6 +5133,9 @@
   }
 
   // src/core/sim.js
+  var FIRST_SPAWN_HINT = {
+    screen: "铁门僵尸来了！豌豆打不动，换火豌豆或炸弹！"
+  };
   function updatePlay(world, dt) {
     world.t += dt;
     if (world.visual.nightHint > 0) world.visual.nightHint -= dt;
@@ -5139,7 +5158,16 @@
         if (e.announce) {
           v.waveText = { text: "一大波僵尸正在接近！", t: 0 };
           world.ports.sound("horn");
-        } else spawnZombie(world, e.type);
+        } else {
+          const firstSeen = !world.seenTypes.has(e.type);
+          spawnZombie(world, e.type);
+          if (firstSeen) world.seenTypes.add(e.type);
+          const hint = FIRST_SPAWN_HINT[e.type];
+          if (firstSeen && hint && !v.waveText) {
+            v.waveText = { text: hint, t: 0, size: 28 };
+            world.ports.sound("horn");
+          }
+        }
       }
       if (!lv.night) {
         world.skyTimer -= dt;

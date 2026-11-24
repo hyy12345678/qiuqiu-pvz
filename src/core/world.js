@@ -27,6 +27,7 @@ export function createWorld(init = {}){
     slots:[],
     grid:null, plants:[], zombies:[], peas:[], suns:[], mowers:[],
     events:[], evIdx:0, total:0, killed:0,
+    seenTypes: new Set(),          // E24：本局已登场过的僵尸类型，用于首次提示
     skyTimer:5, lastRows:[],
     visual:{
       parts:[], decals:[], shake:0, flash:0,
@@ -71,6 +72,7 @@ export function beginPlay(world, startSun){
   const built = buildSpawns(lv, world.rng);
   world.events = built.events; world.total = built.total;
   world.evIdx = 0; world.killed = 0;
+  world.seenTypes = new Set();
   world.skyTimer = 2; world.visual.groanTimer = 4;
   world.visual.waveText = null; world.winT = 0; world.loseZombie = null;
   world.visual.nightHint = lv.night ? 8 : 0;

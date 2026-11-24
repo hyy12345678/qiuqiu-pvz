@@ -109,6 +109,10 @@
       "count": 7
     },
     {
+      "path": "tests/screen-spawn-rhythm.test.mjs",
+      "count": 4
+    },
+    {
       "path": "tests/sim-invariants.test.mjs",
       "count": 12
     },
@@ -133,5 +137,5 @@
       "count": 5
     }
   ],
-  "total": 199
+  "total": 203
 }

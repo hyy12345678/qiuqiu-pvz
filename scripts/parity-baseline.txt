@@ -280,6 +280,7 @@ const CARD_X0 = 148, CARD_W = 60, CARD_H = 84, CARD_GAP = 6;
 const COLS = 9, ROWS = 5;
 const CW = 80, CH = 96;
 const DRAW_SEED_XOR = 0x51ED270B;
+const FIRST_SPAWN_HINT = {
 const FX_SEED_XOR = 0x9E3779B9;
 const G = createWorld({ seed: SEED, ports, unlocked: loadUnlocked(), unlockAll: loadUnlockAll() });
 const HOUSE_Y0 = LY-34;
@@ -306,6 +307,7 @@ const SCREEN_BALLISTIC_MULT = 0.25;
 const SEED = randomSeed();
 const SFX = {
 const SILENT = {
+const SPAWN_GATE = {
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
 const SUN_EARLY = [4.5, 6.5];
 const SUN_LATE = [10, 13];
@@ -418,6 +420,7 @@ const f = this.ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value = f
 const finalCount = Math.max(4, Math.round(n*0.33));
 const finalT = Math.max(t+7, 90);
 const fire = (recoil || 0) > 0.55 || (flash || 0) > 0;
+const firstSeen = !world.seenTypes.has(e.type);
 const fit = ICON_FIT[s.type] || 1;
 const fit = ICON_FIT[s.type] || 1;
 const fit = ICON_FIT[type] || 1;
@@ -439,6 +442,7 @@ const g = ctx.createLinearGradient(x0, y0, x1, y1);
 const g = ctx.createRadialGradient(mx, my, 1, mx, my, 12);
 const g = this.ctx.createGain(); g.gain.setValueAtTime(vol, t0);
 const game = createGame({
+const gate = SPAWN_GATE[t];
 const ge = ctx.createLinearGradient(0,-4, 0,4);
 const ghost = { type:selType, cx:cellCX(hc.col), fy:cellFY(hc.row), phase:0, armed:true, fuse:0.9, hp:1, maxHp:1, recoil:0, flash:0,
 const gridW = COLS*cw + (COLS-1)*GAP_X;
@@ -450,6 +454,7 @@ const h = ui.hotspots[i];
 const half = (SUN_SPRITE/2) * s;
 const hc = ui.hoverCell;
 const hi = SUN_EARLY[1] + (SUN_LATE[1] - SUN_EARLY[1]) * k;
+const hint = FIRST_SPAWN_HINT[e.type];
 const hop = Math.abs(Math.sin(t*2+ph))*2.5;
 const hop = Math.abs(Math.sin(t*2.6+ph))*2.4;
 const hover = !locked && ui.mouse.x>=x && ui.mouse.x<=x+cardW && ui.mouse.y>=y && ui.mouse.y<=y+cardH;
@@ -585,6 +590,7 @@ const selType = world.slots[ui.sel].type;
 const selected = ui.sel === i;
 const sg = ctx.createRadialGradient(0, -20, 1, 0, -20, 20);
 const silver = '#d9dee6', silverHi = '#f6f9fc', silverDk = '#98a2ae', line = '#3f4652';
+const size = wv.size || 46;
 const skin='#ffd9ae', skinD='#eeb183', line='#6e4218';
 const slotW = 72, slotH = 100;
 const slowMul = z.slowT > 0 ? 0.45 : 1;
@@ -611,7 +617,7 @@ const t = world.t;
 const t = world.t;
 const t = world.t;
 const t = world.t;
-const t = world.visual.waveText.t;
+const t = wv.t;
 const t0 = this.ctx.currentTime + (delay||0);
 const t0 = this.ctx.currentTime + (delay||0);
 const t0 = this.ctx.currentTime + (when||0);
@@ -647,6 +653,7 @@ const when = Math.max(0, (m[0]-curBeat)*MUSIC_BEAT);
 const wob = Math.sin(p.at*2.6)*0.05 + (p.walk ? p.swing*0.03 : 0);
 const won = world.state==='won';
 const worried = dmg > 0.55;
+const wv = world.visual.waveText;
 const x = ((t*(6+k*1.4) + k*163) % (W+80)) - 40;
 const x = ((t*14 + k*197) % (W+60)) - 30;
 const x = CARD_X0 + i*(CARD_W+CARD_GAP);
@@ -1666,7 +1673,6 @@ ctx.restore();
 ctx.restore();
 ctx.restore();
 ctx.rotate(-0.22 + wob);
-ctx.rotate(Math.sin(at*14)*0.012);
 ctx.rotate(Math.sin(t*0.9 + ph)*0.02);
 ctx.rotate(Math.sin(t*1.8+ph)*0.03);
 ctx.rotate(TAU/10);
@@ -2019,7 +2025,7 @@ drawText(lv.name, x+cardW/2, y+28, 18, locked ? '#8a8a80' : '#42280f', locked?nu
 drawText(sub, W/2, 206, 21, '#fff4d8', '#6e2408', 3.5, 'center', '800');
 drawText(tips[i2], zx+22, zy+88+i2*20, 12.5, '#d8c090', null, 0, 'left', '600');
 drawText(txt, 0, 0, 64, inPhase ? '#ffe86e' : '#f5f0d8', '#3a2c10', 10);
-drawText(world.visual.waveText.text, 0, 0, 46, '#d02818', '#3a0a04', 9);
+drawText(wv.text, 0, 0, size, '#d02818', '#3a0a04', Math.round(size/5));
 drawTopRightButtons(world, ui, musicOn);
 drawTorso(pose);
 drawWaveText(t, world);
@@ -2584,11 +2590,14 @@ if(f1 && f1!==f0) o.frequency.exponentialRampToValueAtTime(Math.max(f1,20), t0+d
 if(fill){ ctx.fillStyle = fill; ctx.fill(); }
 if(fire){
 if(fire){
+if(firstSeen && hint && !v.waveText){
+if(firstSeen) world.seenTypes.add(e.type);
 if(flash > 0){
 if(flash > 0){
 if(food){
 if(fuse < 0.4) s = 1 + Math.abs(Math.sin(fuse*38))*0.24*(0.4-fuse)/0.4 + 0.06;
 if(fuse < 0.7){
+if(gate){
 if(h){ dispatch(h.action); return; }
 if(has && p.fireT <= 0 && t > 0){
 if(has && p.fireT <= 0 && t > 0){
@@ -2656,6 +2665,7 @@ if(pea.type==='fire' && world.fxRng()<0.6){
 if(pea.type==='fire'){
 if(pea.type==='missile'){
 if(pea.type==='snow'){ z.slowT = 6; }
+if(prog < gate[0]) return [t, 0.001];
 if(progress > 0.15) size += (rng() < 0.26 + 0.3*progress ? 1 : 0);
 if(progress > 0.55) size += (rng() < 0.35 ? 1 : 0);
 if(q.correct && q.idx < 2){ q.idx++; q.feedback = 0; }
@@ -2682,6 +2692,7 @@ if(s.type === 'coffee'){
 if(s.y >= s.ty){ s.y = s.ty; s.state='idle'; s.t=0; }
 if(selected) ctx.translate(0,-4);
 if(selected){
+if(size >= 40) ctx.rotate(Math.sin(at*14)*0.012);
 if(state === 'play'){
 if(stepZombies(world, dt)) return;
 if(stroke){ ctx.lineWidth = sw||4; ctx.strokeStyle = stroke; ctx.lineJoin='round'; ctx.strokeText(text, x, y); }
@@ -3053,8 +3064,11 @@ saveUnlockAll(){},
 saveUnlockAll: on => saveUnlockAll(on),
 scale = 1 - s.ft*0.4;
 screen: !!def.screen, screenHitT: 0,
+screen: '铁门僵尸来了！豌豆打不动，换火豌豆或炸弹！',
+screen: [0.55, +2],
 screen:{ name:'铁门僵尸', hp:200, acc:600, speed:16, screen:true },
 seed,
+seenTypes: new Set(),
 sel:-1, shovel:false,
 select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },
 setPointer(ui, p, world.state);
@@ -3079,6 +3093,7 @@ sound(){},
 sound: name => SFX[name](),
 spawnSun(world, p.cx + rand(world.rng,-14,14), p.fy - (small ? 46 : 88), p.fy-30, false, small ? 25 : 50);
 spawnSun(world, rand(world.rng,LX+30, LX+COLS*CW-30), -30, rand(world.rng,LY+60, LY+ROWS*CH-40), true);
+spawnZombie(world, e.type);
 spawned++;
 speed: def.speed * rand(world.rng,0.92,1.08),
 splat(){ this.noise(0.07, 0.13, 900); this.tone(190, 90, 0.07, 'sine', 0.1); },
@@ -3161,6 +3176,7 @@ v.parts.push({ x:p.cx+rand(world.fxRng,-16,16), y:p.fy-rand(world.fxRng,6,84),
 v.parts.push({ x:pea.x-8, y:pea.y+rand(world.fxRng,-3,3), vx:rand(world.fxRng,-30,-10), vy:rand(world.fxRng,-25,5), g:-60, life:rand(world.fxRng,0.15,0.3), max:0.3, size:rand(world.fxRng,2,4), color:'#ffb347' });
 v.parts.push({ x:z.x+rand(world.fxRng,-6,10), y:LY+(z.row+1)*CH-6, vx:rand(world.fxRng,-14,6), vy:rand(world.fxRng,-22,-8), g:30, life:rand(world.fxRng,0.3,0.55), max:0.55, size:rand(world.fxRng,2,4), color:'rgba(150,140,110,0.4)' });
 v.shake = Math.max(v.shake, 0.22);
+v.waveText = { text: hint, t:0, size: 28 };
 v.waveText = { text:'一大波僵尸正在接近！', t:0 };
 v.waveText.t += dt;
 vault: { name:'撑杆僵尸', hp:500, acc:0, speed:36 },
@@ -3230,6 +3246,7 @@ world.ports.sound('groan');
 world.ports.sound('hop');
 world.ports.sound('hop');
 world.ports.sound('horn');
+world.ports.sound('horn');
 world.ports.sound('lose');
 world.ports.sound('missile');
 world.ports.sound('paperTear');
@@ -3242,6 +3259,7 @@ world.ports.sound('shoot');
 world.ports.sound('sun');
 world.ports.sound('win');
 world.quiz = { idx: 0, energy: 50, questions: makeQuiz(world.rng), feedback: 0, correct: true };
+world.seenTypes = new Set();
 world.skyTimer -= dt;
 world.skyTimer = 2; world.visual.groanTimer = 4;
 world.skyTimer = rand(world.rng, lo, hi);
@@ -3283,6 +3301,7 @@ world.visual.waveText = null; world.winT = 0; world.loseZombie = null;
 world.winT += dt;
 world.zombies.push({
 world: G, ui: UI, frameState, audio: SFX, render,
+ww += gate[1];
 x + Math.sin(a)*len*0.42,
 x + Math.sin(a)*len,
 x -= w + 8;
@@ -3320,9 +3339,12 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { id:'pause', label: world.paused ? '继续' : '暂停', action:{ type:'pause' } },
 { name:'第 1 关 · 前院草坪', count:20, slots:6, types:[['normal',8],['cone',2]] },
 { name:'第 2 关 · 来者不善', count:27, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
-{ name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',1]] },
-{ name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',1]] },
+{ name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',2]] },
+{ name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',2]] },
 { type:'startQuiz' },
+}
+}
+}
 }
 }
 }
@@ -3708,7 +3730,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 } else if(z.type==='bucket'){
 } else if(z.type==='screen'){
 } else if(z.type==='vault' && !z.poleLost){
-} else spawnZombie(world, e.type);
+} else {
 } else {
 } else {
 } else {
@@ -3751,6 +3773,8 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 },
 }, {passive:false});
 }, {passive:false});
+};
+};
 };
 };
 };

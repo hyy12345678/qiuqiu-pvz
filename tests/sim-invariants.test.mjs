@@ -122,6 +122,17 @@ test('不变量2 报纸僵尸：acc 归零那一击触发狂暴，加速并清�
   damageZombie(G, dying, 9999);
   assert.strictEqual(dying.angry, false, '濒死状态不应触发狂暴');
   assert.strictEqual(dying.speed, speed, '濒死状态不应改速度');
+
+  // 已判死的僵尸不再吃伤害：死亡动画那 0.95 秒里尸体还在场上，
+  // 爆炸与小推车仍会扫到它，伤害必须整笔丢弃，否则 hp 会被扣成负数（hp 的含义随时刻漂移）。
+  const corpse = zombie('normal', 600, 0);
+  corpse.state = 'dying';
+  const { hp: corpseHp, acc: corpseAcc } = corpse;
+  const killedBefore = G.killed;
+  assert.strictEqual(damageZombie(G, corpse, 1200), false, '对尸体的伤害应返回 false 表示未生效');
+  assert.strictEqual(corpse.hp, corpseHp, '尸体 hp 不得变化');
+  assert.strictEqual(corpse.acc, corpseAcc, '尸体护盾不得变化');
+  assert.strictEqual(G.killed, killedBefore, '尸体不得再次计入击杀数');
 });
 
 // ---- 3. 土豆雷：不可啃食，且只有武装机才算撑杆跳点 ----

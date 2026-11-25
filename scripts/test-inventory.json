@@ -2,11 +2,11 @@
   "files": [
     {
       "path": "tests/actions.test.mjs",
-      "count": 14
+      "count": 15
     },
     {
       "path": "tests/browser/release-smoke.test.mjs",
-      "count": 2
+      "count": 3
     },
     {
       "path": "tests/browser/render-baseline.test.mjs",
@@ -30,7 +30,7 @@
     },
     {
       "path": "tests/input.test.mjs",
-      "count": 9
+      "count": 11
     },
     {
       "path": "tests/live-binding.test.mjs",
@@ -62,7 +62,7 @@
     },
     {
       "path": "tests/render-background.test.mjs",
-      "count": 4
+      "count": 5
     },
     {
       "path": "tests/render-boundaries.test.mjs",
@@ -126,7 +126,7 @@
     },
     {
       "path": "tests/waves.test.mjs",
-      "count": 6
+      "count": 7
     },
     {
       "path": "tests/world-isolation.test.mjs",
@@ -137,5 +137,48 @@
       "count": 5
     }
   ],
-  "total": 203
+  "total": 209,
+  "covered": [
+    "tests/actions.test.mjs",
+    "tests/fingerprint.test.mjs",
+    "tests/game.test.mjs",
+    "tests/guardrail-gates.test.mjs",
+    "tests/inline.test.mjs",
+    "tests/input.test.mjs",
+    "tests/live-binding.test.mjs",
+    "tests/parity-tool.test.mjs",
+    "tests/plant-tiga.test.mjs",
+    "tests/ports.test.mjs",
+    "tests/quiz.test.mjs",
+    "tests/random-streams.test.mjs",
+    "tests/render-background-trace.test.mjs",
+    "tests/render-background.test.mjs",
+    "tests/render-boundaries.test.mjs",
+    "tests/render-plant-table.test.mjs",
+    "tests/render-readonly.test.mjs",
+    "tests/render-target.test.mjs",
+    "tests/scenario-flow.test.mjs",
+    "tests/scenario-harness.test.mjs",
+    "tests/scenario-mechanics.test.mjs",
+    "tests/scenario-outcome.test.mjs",
+    "tests/scenario-plant-input.test.mjs",
+    "tests/scenario-progress.test.mjs",
+    "tests/scenario-scenes.test.mjs",
+    "tests/screen-spawn-rhythm.test.mjs",
+    "tests/sim-invariants.test.mjs",
+    "tests/sky-sun-rhythm.test.mjs",
+    "tests/test-inventory.test.mjs",
+    "tests/waves.test.mjs",
+    "tests/world-isolation.test.mjs",
+    "tests/zombie-screen.test.mjs"
+  ],
+  "browser": [
+    "tests/browser/release-smoke.test.mjs",
+    "tests/browser/render-baseline.test.mjs"
+  ],
+  "browserBaselines": [
+    "menu.trace.txt",
+    "play-day-l1.trace.txt",
+    "play-night-l4.trace.txt"
+  ]
 }

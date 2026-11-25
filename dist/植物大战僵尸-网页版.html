@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src fb78ab43 */
+/* build: v0.1.0 pretty · src 546dd9b5 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -602,15 +602,19 @@
     return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
   }
   function bindInput({ canvas, document: document2, window: window2, world, ui, onPress, onKey }) {
+    function syncCursor() {
+      const pointer = !!hitHotspot(ui, ui.mouse);
+      canvas.style.cursor = pointer ? "pointer" : ui.shovel || ui.sel >= 0 ? "crosshair" : "default";
+    }
     function handleMove(p) {
       setPointer(ui, p, world.state);
-      const pointer = !!hitHotspot(ui, p);
-      canvas.style.cursor = pointer ? "pointer" : ui.shovel || ui.sel >= 0 ? "crosshair" : "default";
+      syncCursor();
     }
     canvas.addEventListener("mousemove", (e) => handleMove(toCanvas(canvas, e)));
     canvas.addEventListener("mousedown", (e) => {
       if (e.button === 2) return;
       onPress(toCanvas(canvas, e));
+      syncCursor();
     });
     canvas.addEventListener("touchstart", (e) => {
       e.preventDefault();
@@ -628,6 +632,7 @@
     canvas.addEventListener("contextmenu", (e) => {
       e.preventDefault();
       clearSelection(ui);
+      syncCursor();
     });
     window2.addEventListener("keydown", (e) => onKey(e.key));
   }
@@ -2814,7 +2819,8 @@
     drawSunIcon(t, SUN_BOX.x + 30, SUN_BOX.y + 32, 0.85);
     drawText(String(world.sun), SUN_BOX.x + 78, SUN_BOX.y + 33, 26, "#3a2c10", "rgba(255,250,230,0.7)", 3, "center");
     drawText("阳光", SUN_BOX.x + SUN_BOX.w / 2, SUN_BOX.y + 66, 13, "#7a5c28", null, 0, "center", "600");
-    for (let i = 0; i < world.slots.length; i++) {
+    const cards = Math.min(world.slots.length, MAX_CARDS);
+    for (let i = 0; i < cards; i++) {
       const s = world.slots[i];
       const def = PLANTS[s.type];
       const x = CARD_X0 + i * (CARD_W + CARD_GAP);
@@ -3811,6 +3817,7 @@
   }
   var SCREEN_BALLISTIC_MULT = 0.25;
   function damageZombie(world, z, d, pierce) {
+    if (z.state === "dying") return false;
     if (z.screen && !pierce && z.acc > 0) {
       z.screenHitT = 0.12;
       d = d * SCREEN_BALLISTIC_MULT;
@@ -3907,13 +3914,13 @@
     if (!s) return { ok: false, reason: "no-slot" };
     const def = PLANTS[s.type];
     if (s.cool > 0) return { ok: false, reason: "cooling", def };
+    if (world.sun < def.cost) return { ok: false, reason: "not-enough-sun", def };
     const target = world.grid[row][col];
     if (s.type === "coffee") {
       if (!(target && target.asleep)) return { ok: false, reason: "invalid-target", def };
       return { ok: true, kind: "coffee", def };
     }
     if (target) return { ok: false, reason: "occupied", def };
-    if (world.sun < def.cost) return { ok: false, reason: "not-enough-sun", def };
     return { ok: true, kind: "plant", def };
   }
   function useCard(world, slotIndex, row, col) {
@@ -4050,11 +4057,11 @@
 
   // src/render/background.js
   function createBackgroundCache({ createCanvas = () => document.createElement("canvas"), dpr } = {}) {
-    let canvas = null, theme = null;
+    let canvas = null, theme = null, cachedScale = null;
     return {
       ensure(nextTheme, paint) {
-        if (canvas && theme === nextTheme) return canvas;
         const scale = dpr === void 0 ? DPR : dpr;
+        if (canvas && theme === nextTheme && cachedScale === scale) return canvas;
         const c = createCanvas();
         c.width = W * scale;
         c.height = H * scale;
@@ -4063,6 +4070,7 @@
         withTarget(cctx, paint);
         canvas = c;
         theme = nextTheme;
+        cachedScale = scale;
         return c;
       },
       get canvas() {
@@ -4070,6 +4078,9 @@
       },
       get theme() {
         return theme;
+      },
+      get scale() {
+        return cachedScale;
       }
     };
   }

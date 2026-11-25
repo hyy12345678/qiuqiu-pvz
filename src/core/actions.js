@@ -14,24 +14,23 @@ function inBounds(row, col){
 
 // 只读判断：悬停提示与提交动作共用。
 //
-// 咖啡豆分支不校验阳光，这是有意保留的旧规则，且当前**不可达**：
-// 选卡入口 pickSlot 已经要求 world.sun >= def.cost，而一次只能选中一张卡，
-// 从选中到点格子之间没有任何路径能让阳光减少。因此这里少一道检查不会把阳光扣成负数。
-// 若将来出现「同时选中多张卡」或「选卡后仍可消费阳光」的机制，必须在这里补上校验——
-// 否则 useCard 的 coffee 分支会绕过 pickSlot 的门直接扣费。
+// 冷却与阳光对所有卡一视同仁，挡在分支之前：咖啡豆同样要花阳光，没有任何玩法理由让它豁免。
+// 曾经的写法是「咖啡豆分支不校验阳光」并注释为「当前不可达」——不可达只是这一版的巧合
+// （pickSlot 已经先挡过一次），代价却是一个在悬停层看起来合法、在提交层却会扣成负数的缺口。
+// 悬停高亮与提交共用本函数，豁免在这里就等于同时放行了「看起来能种」和「真的扣费」。
 export function inspectUseCard(world, slotIndex, row, col){
   if(!inBounds(row, col)) return { ok:false, reason:'out-of-bounds' };
   const s = world.slots[slotIndex];
   if(!s) return { ok:false, reason:'no-slot' };
   const def = PLANTS[s.type];
   if(s.cool > 0) return { ok:false, reason:'cooling', def };
+  if(world.sun < def.cost) return { ok:false, reason:'not-enough-sun', def };
   const target = world.grid[row][col];
   if(s.type === 'coffee'){
     if(!(target && target.asleep)) return { ok:false, reason:'invalid-target', def };
     return { ok:true, kind:'coffee', def };
   }
   if(target) return { ok:false, reason:'occupied', def };
-  if(world.sun < def.cost) return { ok:false, reason:'not-enough-sun', def };
   return { ok:true, kind:'plant', def };
 }
 

@@ -192,7 +192,10 @@ test('输入5 mousedown 仅忽略右键，左键、中键及其他按钮按下�
   f.ui.sel = 0;
   f.ui.shovel = true;
   f.canvas.emit('mousemove', client(f.canvas, cell));
+  // 本用例只管「按下不改 ui 状态」；光标由输入10/输入11 单独覆盖，
+  // 这里在热点建立后把光标可以合法变化的差异排除掉，避免两个关注点互相绑死。
   const before = view(f);
+  before.cursor = undefined;
   const p = { x: 35, y: 45 };
   cellHotspot(f.ui);
   before.ui.hotspots = structuredClone(f.ui.hotspots);
@@ -204,12 +207,61 @@ test('输入5 mousedown 仅忽略右键，左键、中键及其他按钮按下�
     assert.equal(f.presses.length, count + (button === 2 ? 0 : 1));
     assert.deepEqual(f.trace, button === 2 ? [] : ['rect', 'press']);
     if (button !== 2){
+      // 光标的重算发生在 onPress 返回之后，所以 press 记录里读到的是「按下前」的光标。
+      // 首次左键前 ui.hotspots 刚建立、指针尚未再次重算，记录到的仍是选卡态的 crosshair；
+      // 之后指针落在格子热点内被重算为 pointer，此后保持 pointer。
+      // 光标本身的正确性由输入10/11 覆盖。
       assert.deepEqual(f.presses.at(-1), {
-        point: p, mouse: cell, hoverCell, cursor: 'crosshair',
+        point: p, mouse: cell, hoverCell,
+        cursor: f.presses.length === 1 ? 'crosshair' : 'pointer',
       });
     }
-    assert.deepEqual(view(f), before);
+    assert.deepEqual({ ui: view(f).ui }, { ui: before.ui });
   }
+});
+
+test('输入10 按下后按当前指针重算光标：onPress 清选中时准星立即退回，不必等下一次移动', () => {
+  for (const [sel, shovel, expected] of [
+    [0, false, 'default'], [2, false, 'default'],
+    [-1, true, 'default'],
+    [0, true, 'default'],
+    [-1, false, 'default'],
+  ]){
+    const f = fixture();
+    // 模拟真实动作入口：按下就清除选中，与 pressCell / collectSun 成功后的效果一致
+    f.options.onPress = () => { f.ui.sel = -1; f.ui.shovel = false; };
+    bindInput(f.options);
+    f.ui.sel = sel;
+    f.ui.shovel = shovel;
+    const p = { x: 400, y: 400 };
+    f.canvas.emit('mousemove', client(f.canvas, p));
+    assert.equal(f.canvas.style.cursor, (sel >= 0 || shovel) ? 'crosshair' : 'default');
+    f.canvas.emit('mousedown', { ...client(f.canvas, p), button: 0 });
+    assert.equal(f.canvas.style.cursor, expected);
+  }
+  // 指针悬在热点上时，清除选中后仍然是 pointer（热点优先于选择态）
+  const g = fixture();
+  g.options.onPress = () => { g.ui.sel = -1; };
+  bindInput(g.options);
+  g.ui.sel = 0;
+  cellHotspot(g.ui);
+  g.canvas.emit('mousemove', client(g.canvas, cell));
+  assert.equal(g.canvas.style.cursor, 'pointer');
+  g.canvas.emit('mousedown', { ...client(g.canvas, cell), button: 0 });
+  assert.equal(g.canvas.style.cursor, 'pointer');
+});
+
+test('输入11 右键取消选中后光标立即退回 default，不留在 crosshair', () => {
+  const f = fixture();
+  bindInput(f.options);
+  f.ui.sel = 3;
+  const p = { x: 400, y: 400 };
+  f.canvas.emit('mousemove', client(f.canvas, p));
+  assert.equal(f.canvas.style.cursor, 'crosshair');
+  f.canvas.emit('contextmenu', client(f.canvas, p));
+  assert.equal(f.ui.sel, -1);
+  assert.equal(f.ui.shovel, false);
+  assert.equal(f.canvas.style.cursor, 'default');
 });
 
 test('输入6 touchstart 先取消再移动再按下，采用首个 changedTouch，鼠标触屏同点相同', () => {

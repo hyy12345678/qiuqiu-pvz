@@ -131,6 +131,32 @@ test('动作4 咖啡豆点睡眠蘑菇：唤醒、扣费、冷却、取消选卡
   assert.deepStrictEqual(sounds, ['select'], '唤醒反馈只发一次');
 });
 
+test('动作14 咖啡豆同样受阳光门槛约束：阳光不足时既不唤醒也不扣成负数', () => {
+  const { w, ui, sounds } = makeWorld({ slots:['puff', 'coffee'], sun:100 });
+  placePlant(w, 'puff', 3, 5);
+  const mushroom = w.grid[3][5];
+  w.sun = 24;                       // 差 1 点阳光
+  sounds.length = 0;                // placePlant 的 plant 反馈不算本用例
+  ui.sel = 1;
+  const before = combatState(w, ui);
+  assert.strictEqual(inspectUseCard(w, 1, 3, 5).reason, 'not-enough-sun',
+    '悬停判断与提交必须给出同一结论');
+  assert.strictEqual(pressCell(w, ui, 3, 5).reason, 'not-enough-sun');
+  assert.deepStrictEqual(combatState(w, ui), before, '失败不得唤醒、扣费或推进冷却');
+  assert.strictEqual(mushroom.asleep, true);
+  assert.strictEqual(w.sun, 24, '阳光不得被扣成负数，也不得部分扣费');
+  assert.deepStrictEqual(sounds, ['error']);
+
+  // 阳光刚好够：同样的调用必须放行
+  w.sun = 25;
+  ui.sel = 1;
+  sounds.length = 0;
+  assert.strictEqual(useCard(w, 1, 3, 5).ok, true);
+  assert.strictEqual(mushroom.asleep, false);
+  assert.strictEqual(w.sun, 0);
+  assert.deepStrictEqual(sounds, ['select']);
+});
+
 test('动作5 inspectUseCard 是只读判断：各类输入前后状态一致', () => {
   const { w, ui } = makeWorld({ slots:['sunflower', 'coffee'], sun:60 });
   placePlant(w, 'puff', 3, 3);

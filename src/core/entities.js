@@ -100,6 +100,10 @@ export function explodeMissile(world, x, row, col){
 export const SCREEN_BALLISTIC_MULT = 0.25;
 
 export function damageZombie(world, z, d, pierce){
+  // 已判死的僵尸不再吃伤害。没有这道门时，死亡后仍在场的 0.95 秒里爆照会把 hp 扣成负数：
+  // 目前无害（渲染只按 state==='dying' 播死亡动画），但等于让 hp 的含义随时刻漂移，
+  // 任何将来"按剩余血量做表现"的改动都会踩到。返回 false 表示这次伤害没有实际生效。
+  if(z.state === 'dying') return false;
   if(z.screen && !pierce && z.acc > 0){
     // 铁门吃四分之一弹道伤害，并给火花反馈（渲染层根据 screenHitT 画）
     z.screenHitT = 0.12;

@@ -14,7 +14,9 @@ const BANK_Y = 8, BANK_H = 88;
 const CARD_X0 = 148, CARD_W = 60, CARD_H = 84, CARD_GAP = 6;
 // 卡槽按最宽的关卡（8 卡）预留宽度，铲子按钮固定在它右侧。
 // 这是布局常量而非"当前关卡卡数"：若改成读 world.slots.length，6/7 卡关卡里铲子会左右跳。
-const MAX_CARDS = 8;
+// 它与 data/levels.js 的 slots 是同一个数字的两份写法，由 tests/waves.test.mjs 的
+// 「关卡卡数不超过 HUD 布局上限」用例守住：改关卡卡数必须一起改这里，否则测试会红。
+export const MAX_CARDS = 8;
 const SUN_BOX = { x:14, y:BANK_Y, w:120, h:BANK_H };
 // E19：HUD 的静态件离屏缓存。
 // E18 之后 drawSeedBank 每帧还有 1466 次调用，其中 738 次是两个太阳图标（单个 82 次），
@@ -103,7 +105,10 @@ export function drawSeedBank(t, world, ui){
   drawText(String(world.sun), SUN_BOX.x+78, SUN_BOX.y+33, 26, '#3a2c10', 'rgba(255,250,230,0.7)', 3, 'center');
   drawText('阳光', SUN_BOX.x+SUN_BOX.w/2, SUN_BOX.y+66, 13, '#7a5c28', null, 0, 'center', '600');
 
-  for(let i=0;i<world.slots.length;i++){
+  // 只画布局容纳得下的卡：超出 MAX_CARDS 的张数会画到铲子按钮上并被它的热点压住，
+  // 看起来"有卡却点不到"。卡数上限本身由 data/levels.js 的 slots 决定，测试保证不超过这里。
+  const cards = Math.min(world.slots.length, MAX_CARDS);
+  for(let i=0;i<cards;i++){
     const s = world.slots[i];
     const def = PLANTS[s.type];
     const x = CARD_X0 + i*(CARD_W+CARD_GAP);

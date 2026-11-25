@@ -220,7 +220,7 @@ c.height = Math.round(ICON_BOX.h * k);
 c.width = Math.round(ICON_BOX.w * k);
 c.width = Math.round(w * k); c.height = Math.round(h * k);
 c.width = W*scale; c.height = H*scale;
-canvas = c; theme = nextTheme;
+canvas = c; theme = nextTheme; cachedScale = scale;
 canvas.addEventListener('contextmenu', e=>{
 canvas.addEventListener('mousedown', e=>{
 canvas.addEventListener('mousemove', e=> handleMove(toCanvas(canvas, e)));
@@ -375,6 +375,7 @@ const c = document.createElement('canvas');
 const cached = HUD_SPRITES.get(key);
 const cached = ICON_SPRITES.get(type);
 const cardW = 214, cardH = 150, gap = 22;
+const cards = Math.min(world.slots.length, MAX_CARDS);
 const cc = c.getContext('2d');
 const cctx = c.getContext('2d');
 const cctx = c.getContext('2d');
@@ -534,7 +535,7 @@ const p = {
 const pal = kind==='snow'
 const pea = world.peas[i];
 const ph = at*5.2;
-const pointer = !!hitHotspot(ui, p);
+const pointer = !!hitHotspot(ui, ui.mouse);
 const pool = lv.types.map(([t,w])=>{
 const ports = {
 const pos = ((now - this.loopStart) % MUSIC_LOOP + MUSIC_LOOP) % MUSIC_LOOP;
@@ -2129,13 +2130,13 @@ for(let i=0;i<46;i++){
 for(let i=0;i<4;i++){
 for(let i=0;i<5;i++){
 for(let i=0;i<PLANT_ORDER.length;i++){
+for(let i=0;i<cards;i++){
 for(let i=0;i<lines.length;i++){
 for(let i=0;i<lv.slots;i++){
 for(let i=0;i<n;i++) d[i] = (Math.random()*2-1) * (1-i/n);
 for(let i=0;i<nLv;i++){
 for(let i=0;i<title.length;i++){
 for(let i=0;i<title.length;i++){
-for(let i=0;i<world.slots.length;i++){
 for(let i=arr.length-1;i>0;i--){
 for(let i=ui.hotspots.length-1;i>=0;i--){
 for(let i=v.decals.length-1;i>=0;i--){
@@ -2340,6 +2341,7 @@ function stepSpawns(world, dt){
 function stepSuns(world, dt){
 function stepVisual(world, dt){
 function stepZombies(world, dt){
+function syncCursor(){
 function toCanvas(canvas, e){
 function togglePause(world){
 function toggleShovel(world, ui){
@@ -2497,6 +2499,7 @@ game.start();
 gatling(){ this.tone(240, 120, 0.06, 'square', 0.07); this.noise(0.05, 0.06, 2200); },
 ge.addColorStop(0,'#fff8d0'); ge.addColorStop(1,'#ffc93e');
 get canvas(){ return canvas; },
+get scale(){ return cachedScale; },
 get theme(){ return theme; },
 gi.addColorStop(0,'#4a3418'); gi.addColorStop(1,'#33220e');
 grid:null, plants:[], zombies:[], peas:[], suns:[], mowers:[],
@@ -2571,7 +2574,7 @@ if(blink){
 if(c%2){ g.addColorStop(0,'#98cf54'); g.addColorStop(1,'#84bd44'); }
 if(c>=0 && c<COLS && r>=0 && r<ROWS) pressCell(world, ui, r, c);
 if(c>=0 && c<COLS && r>=0 && r<ROWS) ui.hoverCell = { row:r, col:c };
-if(canvas && theme === nextTheme) return canvas;
+if(canvas && theme === nextTheme && cachedScale === scale) return canvas;
 if(check.kind === 'coffee'){
 if(check.reason === 'not-enough-sun'){
 if(collectSun(world, p.x, p.y).ok) return;
@@ -2778,6 +2781,7 @@ if(z.row===p.row && z.state!=='dying' && z.x > p.cx-8 && z.x < reach){ has = tru
 if(z.screen && !pierce && z.acc > 0){
 if(z.screenHitT > 0) z.screenHitT = Math.max(0, z.screenHitT - dt);
 if(z.slowT > 0) z.slowT -= dt;
+if(z.state === 'dying') return false;
 if(z.state!=='dying' && z.x < LX + 14){
 if(z.state==='dying') continue;
 if(z.state==='dying') continue;
@@ -2805,7 +2809,7 @@ let bg = ctx.createLinearGradient(0,by,0,by+bh);
 let bg = ctx.createLinearGradient(0,y,0,y+cardH);
 let bg = ctx.createLinearGradient(0,y,0,y+ch);
 let bg = ctx.createLinearGradient(0,y,0,y+slotH);
-let canvas = null, theme = null;
+let canvas = null, theme = null, cachedScale = null;
 let ctx = null;
 let d = ans + randi(-9, 9);
 let dt = (timestamp-last)/1000; last = timestamp;
@@ -3122,6 +3126,9 @@ sunshroom: { name:'阳光菇', cost:25, hp:300, cool:7.5, mushroom:true, desc:'�
 sunshroom: { phase:10, asleep:false },
 switch(action.type){
 switch(p.type){
+syncCursor();
+syncCursor();
+syncCursor();
 t += rand(12,21) * (1 - 0.38*progress);
 t:0,
 text = a + ' + ' + b + ' = ?';
@@ -3342,6 +3349,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',2]] },
 { name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',2]] },
 { type:'startQuiz' },
+}
 }
 }
 }

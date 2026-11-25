@@ -18,16 +18,16 @@
 | 命令 | 作用 |
 |---|---|
 | `npm run dev` | esbuild watch + 本地服务（默认 `http://localhost:8787/`）。**会把 `/* dev build */` 写进 `dist/` 同名文件**，验收或提交前必须重新 `npm run build`。 |
-| `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 172 KB）。 |
+| `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 188 KB）。 |
 | `npm run build:min` | 等价验证构建 → `dist/植物大战僵尸-网页版.min.html`（约 103 KB）。只用于验证，`.gitignore` 已排除，不提交。 |
 | `npm run verify` | 全链护栏，依次跑 `parity` → `fingerprint` → `test` → `test:inventory` → `parity:dist` → `build` → `test:smoke` → `test:browser`。注意 `parity:dist` 在 `build` **之前**：它检查的是仓库里已提交的那份 dist，不是刚构建出来的自己。 |
 | `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试 + 2 条背景绘制轨迹（白天/夜间两张整幅战斗背景的唯一防护）+ `scripts/inline.js` 的转义测试。 |
 | `npm run test:smoke` | `headless_test.js` 的 A–I 源码冒烟（打包后在 vm 里跑），保留为第二条独立验证路径。 |
-| `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面与触屏冒烟 + 5 条受控绘制轨迹基线。 |
+| `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面 / 触屏 / 分数 DPR 三条冒烟 + 3 条受控绘制轨迹基线。`verify` 只用其中的轨迹基线（`test:browser:baselines`）。 |
 | `npm run parity` / `parity:dist` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对。 |
 | `npm run parity:legacy` | **考古工具，不是绿灯护栏**：与重构前基线的行级溯源对照，按设计非绿、不在 `verify` 链里。见文末「考古附录」。 |
 | `npm run fingerprint` | 两份 SHA-256 清单：`src/**`（源码）与 `scripts/**`（护栏工具，排除 `*.txt` 基线）。任何未登记的变化都会变红——**包括改护栏工具本身**。 |
-| `npm run test:inventory` | 测试清单下限：每个测试文件里 `test(` 声明的条数只允许增、不允许减。防「删测试换绿」。下限写在 `scripts/test-inventory.json`，因此它自己被护栏工具指纹保护。 |
+| `npm run test:inventory` | 测试清单下限：每个测试文件里 `test(` 声明的条数只允许增、不允许减，防「删测试换绿」。同时记录**单测套件实际吃到的文件集合**与**浏览器轨迹基线集合**，任何测试文件整个脱离执行链（用例数不变但不再被跑）同样会红。下限写在 `scripts/test-inventory.json`，因此它自己被护栏工具指纹保护。 |
 | `npm run parity:rebase:dry` / `fingerprint:update:dry` | **先看**：只打印「这次会吸收哪些差异」，不写任何文件，退出码 1。 |
 | `npm run parity:rebase` / `fingerprint:update` / `test:browser:update` | 重新盖章工具。**会先跑 `npm test`，全绿才写基线**（E1 D4）；绘制轨迹基线尤其需要单独批准。 |
 | `npm run dist:fresh` | `git diff --exit-code -- dist/`：产物是否已随源码一并提交。**只进 CI**，不进 `verify`——提交前跑它必然红。 |
@@ -58,7 +58,7 @@
 | minified | `dist/植物大战僵尸-网页版.min.html` | 同一入口、同一 target，只多开 `minify`；用于证明压缩形态与 pretty 等价 | 否 |
 
 min 的等价验证方式：`npm run parity:dist:min` 证明它对应同一份源码构建；
-`PVZ_DIST=dist/植物大战僵尸-网页版.min.html npm run test:browser` 用同一套冒烟与 5 条绘制轨迹跑它。
+`PVZ_DIST=dist/植物大战僵尸-网页版.min.html npm run test:browser` 用同一套冒烟与 3 条绘制轨迹跑它。
 浏览器套件还会断言产物首部是发布戳，dev 产物冒充发布页会直接判红。
 
 ## 构建戳与「产物是否最新」
@@ -78,7 +78,7 @@ min 的等价验证方式：`npm run parity:dist:min` 证明它对应同一份�
 `.github/workflows/verify.yml` 在 push / PR 上跑：Node 22、按 lock 安装依赖与 Chromium，
 然后**直接执行 `npm run verify`**，最后补一步 `dist:fresh`。
 
-**已在 GitHub 上实测通过**（2026-11-20，`verify` job 1m8s；5 条绘制轨迹在 ubuntu-latest 上与 macOS 逐行一致）。
+**已在 GitHub 上实测通过**（2026-11-20，`verify` job 1m8s；当时 5 条绘制轨迹在 ubuntu-latest 上与 macOS 逐行一致。E25 之后收敛为 3 条，CI 尚未在新场景集上复跑）。
 
 这里坚持「一条命令」而不是手抄一份步骤序列，原因是漂移已经真的发生过一次：
 E9 往 `verify` 里加了 `test:inventory`，而 CI 里手写的步骤列表不会自动跟着变，
@@ -102,7 +102,7 @@ E1、E3–E12 这一系列工程轮次（共 11 轮）**只在 Node v22.23.2（m
 |---|---|
 | `src/` | 源码：`core/`（世界、战斗、动作、数据）、`render/`（绘制与场景）、`ui/`（界面状态与设备输入）、`audio/`、`platform/`、`shell.html`、`main.js`（只做装配） |
 | `dist/` | 发布产物（见上表） |
-| `tests/` | 规则单测、`scenario-*.test.mjs` 场景测试、`inline.test.mjs`（产物内联转义）、`baselines/`（背景绘制轨迹）、`browser/`（真实产物冒烟与 5 条绘制轨迹基线）、`helpers/`、`fixtures/` |
+| `tests/` | 规则单测、`scenario-*.test.mjs` 场景测试、`inline.test.mjs`（产物内联转义）、`baselines/`（背景绘制轨迹）、`browser/`（真实产物冒烟与 3 条绘制轨迹基线）、`helpers/`、`fixtures/` |
 | `scripts/` | 构建与护栏工具（CommonJS）：`build.js`/`dev.js`/`inline.js`/`esbuild-opts.js` 构建侧；`check-parity.js`/`check-fingerprint.js`/`check-test-inventory.js` 护栏侧；`legacy-source.js` 从 tag 现取历史基线。三份基线：`parity-baseline.txt`/`source-fingerprint.txt`/`tool-fingerprint.txt`，外加 `test-inventory.json` |
 | `headless_test.js` | 历史 A–I 冒烟驱动，仍留在 `verify` 链里（目标固定 `src/main.js`） |
 | `docs/项目分析-2026-11-20.md` | 接手时的项目分析：架构、领域模型、代码质量、护栏体系评估、风险与建议；§11 起是 E1–E12 的逐轮实施进展 |

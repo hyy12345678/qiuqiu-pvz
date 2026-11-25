@@ -101,6 +101,46 @@ test('发布冒烟：真实 dist HTML 可启动、交互并持续运行', { time
   }
 });
 
+// 分数 DPR 是真实存在的：Windows 150%、macOS「更多空间」缩放、Linux 分数缩放。
+// 背景是整幅离屏预渲染再 drawImage 贴上去的，缓存若只按主题失效，换屏后会一直用旧分辨率。
+test('发布冒烟：分数 DPR 下 backing 尺寸正确，且每一档 DPR 的画面都是按该 DPR 重绘的', { timeout: 180000 }, async () => {
+  assert.ok(fs.existsSync(DIST), '缺少发布产物，请先 npm run build');
+  const browser = await launch();
+  const shots = [];
+  try {
+    for (const dsf of [1.25, 1.5]) {
+      const { context, page, errors } = await openRelease(browser, { deviceScaleFactor: dsf });
+      await wait(600);
+
+      // 1) 画布 backing 尺寸按 DPR 放大，且不超过 2 倍上限
+      const backing = await page.evaluate(() => {
+        const c = document.getElementById('game');
+        return { w: c.width, h: c.height, dpr: devicePixelRatio };
+      });
+      assert.strictEqual(backing.dpr, dsf);
+      assert.strictEqual(backing.w, Math.round(1024 * dsf), '背板宽度应随 DPR 放大');
+      assert.strictEqual(backing.h, Math.round(640 * dsf), '背板高度应随 DPR 放大');
+
+      // 2) 画面完整，且像素按该 DPR 真实重绘：
+      //    同一个逻辑区域在不同 DPR 下渲染出的采样结果不应完全相同。
+      const shot = await digest(page);
+      assert.ok(shot.ratio > 0.9, '画面不应变空白，实际非透明比例 ' + shot.ratio.toFixed(2));
+      shots.push(shot);
+
+      // 3) 已知边界：运行期 devicePixelRatio 变化需要重建背板并重新 bindCanvas，这是另一件事，
+      //    本用例不覆盖（否则会写成一条永远通过的空断言）。
+      //    本用例守住的是「boot 在分数 DPR 上正确」——历史风险正是这一档没人测过。
+
+      assertClean(errors, '分数 DPR ' + dsf);
+      await context.close();
+    }
+    assert.notStrictEqual(shots[0].hash, shots[1].hash,
+      '1.25 与 1.5 两档 DPR 的同一区域采样不应完全相同，否则说明没有真正按 DPR 重绘');
+  } finally {
+    await browser.close();
+  }
+});
+
 test('发布冒烟：触屏入口可完成选卡、开局与种植', { timeout: 180000 }, async () => {
   assert.ok(fs.existsSync(DIST), '缺少发布产物，请先 npm run build');
   const browser = await launch();

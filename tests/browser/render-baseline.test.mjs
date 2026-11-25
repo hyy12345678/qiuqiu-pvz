@@ -1,9 +1,15 @@
 // 受控绘制轨迹基线：固定时间、随机源、存储、视口与 DPR，记录 Canvas 调用顺序与参数。
 //
 // 验证与更新分离：
-//   npm run test:browser                  # 只比较
+//   npm run test:browser:baselines        # 只比较（verify 链用的就是这一条）
 //   npm run test:browser:update           # 审查差异后重写基线
 // 音频在这里是替身（无 AudioContext），所以这条路径不构成真实音频验收。
+//
+// E25 减负：从 5 个场景收敛到 3 个。删掉的是 select-l3 与 quiz-l3——
+// 这两个界面没有随时间变化的绘制，逐帧轨迹里绝大部分是同一段静态面板的重复；
+// 它们的分支仍由 tests/scenario-scenes.test.mjs 与 render-boundary 断言覆盖。
+// 留下的三条各守一个不同的东西：menu=持续动画与热点排版，play-day-l1=白天战斗全场，
+// play-night-l4=夜间分支与贴图路径。改绘制时少盖两扇门，回归面几乎不变。
 
 import test, { after } from 'node:test';
 import assert from 'node:assert';
@@ -22,8 +28,8 @@ const BASE_DIR = path.join(ROOT, 'tests/browser/baselines');
 const ART_DIR = path.join(ROOT, 'tests/browser/artifacts');
 const UPDATE = process.env.UPDATE_TRACE === '1';
 
-// 逻辑坐标：菜单三张关卡卡（第 1/3/4 关）、图鉴前四张、开始按钮、答题按钮。
-const LV1 = [158, 333], LV3 = [630, 333], LV4 = [866, 333];
+// 逻辑坐标：菜单关卡卡（第 1 / 4 关）、图鉴前四张、开始按钮、答题按钮。
+const LV1 = [158, 333], LV4 = [866, 333];
 const PICKS = [[250, 300], [370, 300], [490, 300], [250, 400]];
 const START = [837, 575];
 const ANSWER = [380, 409];
@@ -35,18 +41,14 @@ async function click(page, x, y) {
   await clickLogical(page, x, y);
   await advance(page, 1);
 }
-async function toSelect(page, card) {
+// 菜单 → 卡（选关）→ 图鉴 → 开始 → 答题 → 战斗。中间两步不再单独出场景，
+// 但仍是到达战斗的必经之路，因此留在到达函数里而不是各自成例。
+async function toPlay(page, card) {
   await click(page, ...card);
   await advance(page, 1);
-}
-async function toQuiz(page, card) {
-  await toSelect(page, card);
   for (const p of PICKS) await click(page, ...p);
   await click(page, ...START);
   await advance(page, 1);
-}
-async function toPlay(page, card) {
-  await toQuiz(page, card);
   for (let i = 0; i < 3; i++) {
     await click(page, ...ANSWER);
     await advance(page, 60);
@@ -56,8 +58,6 @@ async function toPlay(page, card) {
 
 const SCENES = [
   { name: 'menu', prepare: page => advance(page, 5) },
-  { name: 'select-l3', prepare: page => toSelect(page, LV3) },
-  { name: 'quiz-l3', prepare: page => toQuiz(page, LV3) },
   { name: 'play-day-l1', prepare: page => toPlay(page, LV1) },
   { name: 'play-night-l4', prepare: page => toPlay(page, LV4) },
 ];

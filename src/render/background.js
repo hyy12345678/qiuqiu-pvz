@@ -9,22 +9,26 @@ import { ctx, DPR, withTarget } from './target.js';
 import { rr, O } from './paint.js';
 
 export function createBackgroundCache({ createCanvas = () => document.createElement('canvas'), dpr } = {}){
-  let canvas = null, theme = null;
+  let canvas = null, theme = null, cachedScale = null;
   return {
     ensure(nextTheme, paint){
-      if(canvas && theme === nextTheme) return canvas;
       // dpr 未显式给定时就地读取：bgCache 在 import 时创建，而画布在装配阶段才绑定。
       const scale = dpr === undefined ? DPR : dpr;
+      // 缓存键是 (主题, DPR)。只按主题失效时，往后把窗口拖到另一块屏幕（DPR 变化）
+      // 仍然会拿到按旧 DPR 预渲染的整幅位图，被 drawImage 缩放着贴上去——画面发糊，
+      // 而且要等到昼夜切换才恢复。代价是一次重绘，而 DPR 变化本身是低频事件。
+      if(canvas && theme === nextTheme && cachedScale === scale) return canvas;
       const c = createCanvas();
       c.width = W*scale; c.height = H*scale;
       const cctx = c.getContext('2d');
       cctx.scale(scale, scale);
       withTarget(cctx, paint);
-      canvas = c; theme = nextTheme;
+      canvas = c; theme = nextTheme; cachedScale = scale;
       return c;
     },
     get canvas(){ return canvas; },
     get theme(){ return theme; },
+    get scale(){ return cachedScale; },
   };
 }
 

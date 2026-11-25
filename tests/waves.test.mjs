@@ -6,6 +6,7 @@ import assert from 'node:assert';
 const { buildSpawns } = await import('../src/core/waves.js');
 const { mulberry32 } = await import('../src/core/rng.js');
 const { LEVELS } = await import('../src/core/data/levels.js');
+const { MAX_CARDS } = await import('../src/render/hud.js');
 
 // 每个 seed 跑一遍全部关卡；断言只依赖不变量，不依赖具体随机数
 function eachLevel(fn) {
@@ -57,6 +58,17 @@ test('只出关卡表里登记的僵尸类型', () => {
       if (e.type) assert.ok(allowed.has(e.type), `第${li + 1}关出现未登记的类型 ${e.type}`);
     }
   });
+});
+
+test('关卡卡数不超过 HUD 布局上限：slots 与 MAX_CARDS 是同一个数字的两份写法', () => {
+  // HUD 只按 MAX_CARDS 预留卡槽宽度，铲子按钮固定在它右侧。关卡 slots 一旦超过它，
+  // 多出来的卡会画到铲子上面并被铲子的热点压住——「有卡却点不到」。
+  // 渲染层用 Math.min 兜底不画越界卡，但正确做法是让这个数字根本对不上就红。
+  for (const [li, lv] of LEVELS.entries()){
+    assert.ok(lv.slots <= MAX_CARDS,
+      `第${li + 1}关 slots=${lv.slots} 超过 HUD 布局上限 MAX_CARDS=${MAX_CARDS}：` +
+      '请同步修改 src/render/hud.js 的卡槽布局与铲子位置，而不是只改关卡表');
+  }
 });
 
 test('同一 seed 必得同一张时刻表（可复现性是确定性重放的前提）', () => {

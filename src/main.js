@@ -11,7 +11,7 @@ import { createWorld } from './core/world.js';
 import { createUI } from './ui/state.js';
 import { bindInput } from './ui/input.js';
 import { loadUnlocked, loadUnlockAll, saveUnlocked, saveUnlockAll } from './platform/persist.js';
-import { bindCanvas } from './render/target.js';
+import { bindCanvas, syncCanvasDPR } from './render/target.js';
 import { render } from './render/scenes/index.js';
 import { createGame } from './game.js';
 
@@ -31,6 +31,9 @@ const game = createGame({
   world: G, ui: UI, frameState, audio: SFX, render,
   now: () => performance.now(),
   requestFrame: cb => requestAnimationFrame(cb),
+  // E26：换屏 / 浏览器缩放会改变 devicePixelRatio 而不触发 resize。
+  // 重建发生在每帧绘制之前，重建后本帧照常绘制即可覆盖新背板。
+  beforeFrame: () => syncCanvasDPR(cv),
 });
 bindInput({
   canvas: cv, document, window, world: G, ui: UI,

@@ -7,7 +7,7 @@
 
 双击 `dist/植物大战僵尸-网页版.html`（拷到U盘、发给自己都行）。
 
-- 逻辑分辨率 1024×640，按窗口与 DPR 自适应（DPR 上限 2）。
+- 逻辑分辨率 1024×640，按窗口与 DPR 自适应（DPR 上限 2）。运行期换屏（把窗口拖到另一块像素密度不同的屏幕）会每帧比对 `devicePixelRatio` 并自动重建背板与背景缓存——`resize` 事件在这种场景下不会触发。
 - 鼠标与触屏皆可；数字键 1–8 选卡，`P` 暂停，`Esc` 取消选择，`M` 切音乐。
 - 进度与「解锁全关」开关存在浏览器 `localStorage`，无服务端、无在线存档。
 - 玩法细节（蘑菇打盹与咖啡豆、报纸僵尸护盾与暴怒、夜关没有天降太阳、小推车）见游戏内「操作说明」。
@@ -23,7 +23,7 @@
 | `npm run verify` | 全链护栏，依次跑 `parity` → `fingerprint` → `test` → `test:inventory` → `parity:dist` → `build` → `test:smoke` → `test:browser`。注意 `parity:dist` 在 `build` **之前**：它检查的是仓库里已提交的那份 dist，不是刚构建出来的自己。 |
 | `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试 + 2 条背景绘制轨迹（白天/夜间两张整幅战斗背景的唯一防护）+ `scripts/inline.js` 的转义测试。 |
 | `npm run test:smoke` | `headless_test.js` 的 A–I 源码冒烟（打包后在 vm 里跑），保留为第二条独立验证路径。 |
-| `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面 / 触屏 / 分数 DPR 三条冒烟 + 3 条受控绘制轨迹基线。`verify` 只用其中的轨迹基线（`test:browser:baselines`）。 |
+| `npm run test:browser` | Playwright 打开真实 `dist` 产物：桌面 / 触屏 / DPR（分数启动 + 运行期换屏）三条冒烟 + 3 条受控绘制轨迹基线。`verify` 只用其中的轨迹基线（`test:browser:baselines`）。 |
 | `npm run parity` / `parity:dist` | 源码规范化行快照 / 产物内联脚本与源码 bundle 逐字节比对。 |
 | `npm run parity:legacy` | **考古工具，不是绿灯护栏**：与重构前基线的行级溯源对照，按设计非绿、不在 `verify` 链里。见文末「考古附录」。 |
 | `npm run fingerprint` | 两份 SHA-256 清单：`src/**`（源码）与 `scripts/**`（护栏工具，排除 `*.txt` 基线）。任何未登记的变化都会变红——**包括改护栏工具本身**。 |

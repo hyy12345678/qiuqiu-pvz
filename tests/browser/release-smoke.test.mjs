@@ -103,7 +103,7 @@ test('发布冒烟：真实 dist HTML 可启动、交互并持续运行', { time
 
 // 分数 DPR 是真实存在的：Windows 150%、macOS「更多空间」缩放、Linux 分数缩放。
 // 背景是整幅离屏预渲染再 drawImage 贴上去的，缓存若只按主题失效，换屏后会一直用旧分辨率。
-test('发布冒烟：分数 DPR 下 backing 尺寸正确，且每一档 DPR 的画面都是按该 DPR 重绘的', { timeout: 180000 }, async () => {
+test('发布冒烟：分数 DPR 启动正确，且运行期换屏（DPR 变化）后背板与变换都按新 DPR 重建', { timeout: 180000 }, async () => {
   assert.ok(fs.existsSync(DIST), '缺少发布产物，请先 npm run build');
   const browser = await launch();
   const shots = [];
@@ -127,9 +127,23 @@ test('发布冒烟：分数 DPR 下 backing 尺寸正确，且每一档 DPR 的�
       assert.ok(shot.ratio > 0.9, '画面不应变空白，实际非透明比例 ' + shot.ratio.toFixed(2));
       shots.push(shot);
 
-      // 3) 已知边界：运行期 devicePixelRatio 变化需要重建背板并重新 bindCanvas，这是另一件事，
-      //    本用例不覆盖（否则会写成一条永远通过的空断言）。
-      //    本用例守住的是「boot 在分数 DPR 上正确」——历史风险正是这一档没人测过。
+      // 3) 运行期 DPR 变化（E26）：换屏 / 浏览器缩放会改 devicePixelRatio 而不触发 resize。
+      //    背板必须按新 DPR 重建，ctx 变换也要跟着重设——否则内容被浏览器放大，整幅发糊。
+      const cdp = await context.newCDPSession(page);
+      await cdp.send('Emulation.setDeviceMetricsOverride', {
+        width: 1024, height: 640, deviceScaleFactor: 2, mobile: false,
+      });
+      await wait(900);
+      const live = await page.evaluate(() => {
+        const c = document.getElementById('game');
+        return { dpr: devicePixelRatio, w: c.width, h: c.height, scale: c.getContext('2d').getTransform().a };
+      });
+      assert.strictEqual(live.dpr, 2);
+      assert.strictEqual(live.w, 2048, '运行期改 DPR 后背板宽度应重建');
+      assert.strictEqual(live.h, 1280, '运行期改 DPR 后背板高度应重建');
+      assert.strictEqual(live.scale, 2, 'ctx 变换必须跟随新 DPR，否则坐标系统错位');
+      const rebuilt = await digest(page);
+      assert.ok(rebuilt.ratio > 0.9, '重建后画面不应变空白，实际非透明比例 ' + rebuilt.ratio.toFixed(2));
 
       assertClean(errors, '分数 DPR ' + dsf);
       await context.close();

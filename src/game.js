@@ -5,7 +5,7 @@ import { updatePlay } from './core/sim.js';
 import { clearSelection } from './ui/state.js';
 import { hitHotspot } from './ui/hotspots.js';
 
-export function createGame({ world, ui, frameState, audio, render, now, requestFrame }){
+export function createGame({ world, ui, frameState, audio, render, now, requestFrame, beforeFrame }){
   function dispatch(action){
     switch(action.type){
       case 'nav': world.state = action.state; audio.click(); return;
@@ -53,6 +53,9 @@ export function createGame({ world, ui, frameState, audio, render, now, requestF
   let last;
   function frame(timestamp){
     try {
+      // E26：背板检查必须在绘制之前、且独立于模拟是否异常——换屏后画面发糊不是游戏逻辑
+      // 的问题，不该因为一次 updatePlay 抛错就永远停在旧 DPR 上。
+      if(beforeFrame) beforeFrame();
       let dt = (timestamp-last)/1000; last = timestamp;
       dt = Math.min(dt, 0.05);
       frameState.t += dt;

@@ -105,6 +105,38 @@ test('createGame 不自动启动；start 先取 now，再排帧，首次帧使�
   assert.deepEqual(h.calls, ['now', 'requestFrame', 'render', 'requestFrame']);
 });
 
+test('beforeFrame 每帧先于模拟与绘制执行，且模拟抛错时仍然执行', () => {
+  // E26：换屏后重建背板必须独立于「这一帧游戏逻辑有没有出错」，
+  // 否则一次 updatePlay 异常会让画面永远停在旧 DPR 上。
+  const h = harness();
+  const seen = [];
+  let throwOnce = false;
+  h.game = createGame({
+    world: h.world, ui: h.ui, frameState: h.frameState, audio: h.audio,
+    now: () => 1000,
+    requestFrame(cb){ h.queue.push(cb); },
+    beforeFrame(){ seen.push('beforeFrame'); },
+    render(){ seen.push('render'); },
+  });
+  h.game.start();
+  const run = ts => { const cb = h.queue.shift(); cb(ts); };
+
+  run(1010);
+  assert.deepStrictEqual(seen, ['beforeFrame', 'render'], '先重建背板，再绘制');
+
+  // 让模拟抛错：钩子仍须执行，且 rAF 链不能断
+  seen.length = 0;
+  h.world.state = 'play';
+  h.world.slots = [{ type:'sunflower', cool:0 }];
+  beginPlay(h.world, 500);
+  h.world.grid = null;              // stepPlants 读 world.plants 不炸，stepProgress 读 events 也不炸
+  h.world.events = null;            // 这里制造一次真实异常
+  try { run(1020); } catch(e) { throwOnce = true; }
+  assert.ok(throwOnce, '本用例需要一个抛错帧');
+  assert.ok(seen.includes('beforeFrame'), '模拟抛错时 beforeFrame 仍应已执行');
+  assert.equal(h.queue.length, 1, '抛错后仍须排下一帧');
+});
+
 test('play 使用真实模拟，last 每帧更新，长帧截断且渲染看到更新后的状态', () => {
   const h = playing(harness());
   h.world.t = 1;

@@ -18,7 +18,7 @@
     },
     {
       "path": "tests/game.test.mjs",
-      "count": 13
+      "count": 14
     },
     {
       "path": "tests/guardrail-gates.test.mjs",
@@ -78,7 +78,7 @@
     },
     {
       "path": "tests/render-target.test.mjs",
-      "count": 5
+      "count": 7
     },
     {
       "path": "tests/scenario-flow.test.mjs",
@@ -137,7 +137,7 @@
       "count": 5
     }
   ],
-  "total": 209,
+  "total": 212,
   "covered": [
     "tests/actions.test.mjs",
     "tests/fingerprint.test.mjs",

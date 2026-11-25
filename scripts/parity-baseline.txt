@@ -200,8 +200,10 @@ audio.musicOn = !audio.musicOn;
 b = randi(10, a - 1);
 b = randi(11, 99 - a);
 bankShade.addColorStop(0,'rgba(30,16,4,0)'); bankShade.addColorStop(1,'rgba(30,16,4,0.45)');
+beforeFrame: () => syncCanvasDPR(cv),
 bg.addColorStop(0, hover ? '#96c862' : '#7aa848'); bg.addColorStop(1, hover ? '#649838' : '#4e7a2a');
 bg.addColorStop(0,'#4a3418'); bg.addColorStop(1,'#33220e');
+bindCanvas(canvas, want);
 bindCanvas(cv);
 bindInput({
 boom(){ this.noise(0.6, 0.5, 320); this.tone(120, 32, 0.5, 'sine', 0.4); },
@@ -295,6 +297,7 @@ const ICON_SPRITE_SCALE = 2;
 const LEVELS = [
 const LX = 265, LY = 112;
 const MAX_CARDS = 8;
+const MAX_DPR = 2;
 const MELODY = [
 const MUSIC_BEAT = 0.4, MUSIC_LOOP = 24 * MUSIC_BEAT;
 const NOTE = { A2:110, C3:130.81, D3:146.83, E3:164.81, F3:174.61, G3:196,
@@ -568,6 +571,7 @@ const r = useCard(world, ui.sel, row, col);
 const rand = (a, b) => a + rng() * (b - a);
 const randi = (a, b) => Math.floor(a + rng() * (b - a + 1));
 const ratio = clamp(lifeRatio == null ? 1 : lifeRatio, 0, 1);
+const raw = (windowLike && windowLike.devicePixelRatio) || 1;
 const reach = p.type==='puff' ? p.cx + CW*2 : W + 50;
 const reading = z.type==='newspaper' && !angry;
 const rec = (recoil||0)*7;
@@ -649,6 +653,7 @@ const vx = isMissile ? 300 : 520;
 const w = 74;
 const w1 = Math.sin(t*9+ph)*3.4, w2 = Math.cos(t*11+ph)*3.2;
 const wa = run ? t*24 : 0;
+const want = preferredDPR(windowLike);
 const wheel = (wx, r)=>{
 const when = Math.max(0, (m[0]-curBeat)*MUSIC_BEAT);
 const wob = Math.sin(p.at*2.6)*0.05 + (p.walk ? p.swing*0.03 : 0);
@@ -2213,7 +2218,7 @@ function addPeaSplat(world,x,y,type){
 function answerQuiz(world, a){
 function applyCoffee(world, p){
 function beginPlay(world, startSun){
-function bindCanvas(canvas, dpr = Math.min(2, (globalThis.window && globalThis.window.devicePixelRatio) || 1)){
+function bindCanvas(canvas, dpr = preferredDPR()){
 function bindInput({ canvas, document, window, world, ui, onPress, onKey }){
 function buildSpawns(lv, rng = Math.random){
 function cellCX(c){ return LX + c*CW + CW/2; }
@@ -2224,7 +2229,7 @@ function clearHotspots(ui){
 function clearSelection(ui){
 function collectSun(world, x, y){
 function createBackgroundCache({ createCanvas = () => document.createElement('canvas'), dpr } = {}){
-function createGame({ world, ui, frameState, audio, render, now, requestFrame }){
+function createGame({ world, ui, frameState, audio, render, now, requestFrame, beforeFrame }){
 function createPorts(overrides){
 function createUI(){
 function createWorld(init = {}){
@@ -2310,6 +2315,7 @@ function pickSlot(world, ui, slotIndex){
 function pickTeamPlant(world, ui, type){
 function pickType(lv, prog, rng){
 function placePlant(world, type, row, col){
+function preferredDPR(windowLike = globalThis.window){
 function pressCell(world, ui, row, col){
 function rand(rng,a,b){ return a + rng()*(b-a); }
 function randi(rng,a,b){ return Math.floor(rand(rng,a,b+1)); }
@@ -2341,6 +2347,7 @@ function stepSpawns(world, dt){
 function stepSuns(world, dt){
 function stepVisual(world, dt){
 function stepZombies(world, dt){
+function syncCanvasDPR(canvas, windowLike = globalThis.window){
 function syncCursor(){
 function toCanvas(canvas, e){
 function togglePause(world){
@@ -2566,6 +2573,7 @@ if(angry && walk) ctx.rotate(-0.11);
 if(asleep){
 if(b > this.lastBeat && b <= ahead){
 if(beam){
+if(beforeFrame) beforeFrame();
 if(blink > -0.6){
 if(blink){
 if(blink){
@@ -2727,6 +2735,7 @@ if(v.groanTimer <= 0){ v.groanTimer = rand(world.fxRng,4,9); world.ports.sound('
 if(v.shake > 0) v.shake -= dt;
 if(v.waveText){
 if(v.waveText.t > 2.6) v.waveText = null;
+if(want === DPR) return false;
 if(won){
 if(won){ g.addColorStop(0,'#f0e2bc'); g.addColorStop(1,'#d8c090'); }
 if(world.evIdx >= world.events.length && world.zombies.length === 0 && world.t > 0){
@@ -2986,6 +2995,7 @@ requestFrame(frame);
 requestFrame: cb => requestAnimationFrame(cb),
 resume(){ if(this.ctx && this.ctx.state==='suspended') this.ctx.resume(); },
 return 'normal';
+return Math.min(MAX_DPR, raw);
 return Object.assign({}, SILENT, overrides);
 return [t, ww];
 return arr;
@@ -3003,6 +3013,7 @@ return null;
 return qs;
 return r;
 return row>=0 && row<ROWS && col>=0 && col<COLS;
+return true;
 return true;
 return true;
 return true;
@@ -3349,6 +3360,8 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',2]] },
 { name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',2]] },
 { type:'startQuiz' },
+}
+}
 }
 }
 }

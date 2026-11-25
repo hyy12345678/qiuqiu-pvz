@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 546dd9b5 */
+/* build: v0.1.0 pretty · src e551e4ae */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -669,13 +669,24 @@
   // src/render/target.js
   var ctx = null;
   var DPR = 1;
-  function bindCanvas(canvas, dpr = Math.min(2, globalThis.window && globalThis.window.devicePixelRatio || 1)) {
+  var MAX_DPR = 2;
+  function preferredDPR(windowLike = globalThis.window) {
+    const raw = windowLike && windowLike.devicePixelRatio || 1;
+    return Math.min(MAX_DPR, raw);
+  }
+  function bindCanvas(canvas, dpr = preferredDPR()) {
     DPR = dpr;
     canvas.width = W * dpr;
     canvas.height = H * dpr;
     ctx = canvas.getContext("2d");
     ctx.scale(dpr, dpr);
     return ctx;
+  }
+  function syncCanvasDPR(canvas, windowLike = globalThis.window) {
+    const want = preferredDPR(windowLike);
+    if (want === DPR) return false;
+    bindCanvas(canvas, want);
+    return true;
   }
   function withTarget(next, fn) {
     const prev = ctx;
@@ -5583,7 +5594,7 @@
   }
 
   // src/game.js
-  function createGame({ world, ui, frameState: frameState2, audio, render: render2, now, requestFrame }) {
+  function createGame({ world, ui, frameState: frameState2, audio, render: render2, now, requestFrame, beforeFrame }) {
     function dispatch(action) {
       switch (action.type) {
         case "nav":
@@ -5656,6 +5667,7 @@
     let last;
     function frame(timestamp) {
       try {
+        if (beforeFrame) beforeFrame();
         let dt = (timestamp - last) / 1e3;
         last = timestamp;
         dt = Math.min(dt, 0.05);
@@ -5695,7 +5707,10 @@
     audio: SFX,
     render,
     now: () => performance.now(),
-    requestFrame: (cb) => requestAnimationFrame(cb)
+    requestFrame: (cb) => requestAnimationFrame(cb),
+    // E26：换屏 / 浏览器缩放会改变 devicePixelRatio 而不触发 resize。
+    // 重建发生在每帧绘制之前，重建后本帧照常绘制即可覆盖新背板。
+    beforeFrame: () => syncCanvasDPR(cv)
   });
   bindInput({
     canvas: cv,

@@ -3,6 +3,7 @@
 import { W, H, TAU } from '../../core/constants.js';
 import { LEVELS } from '../../core/data/levels.js';
 import { addHotspot } from '../../ui/hotspots.js';
+import { hotRect } from './common.js';
 import { ctx } from '../target.js';
 import { rr, O, drawText } from '../paint.js';
 import { drawSunflower, drawShooter, drawWallnut, drawQiuqiu } from '../plant.js';
@@ -153,8 +154,10 @@ export function renderMenu(t, world, ui, musicOn){
     const lv = LEVELS[i];
     const locked = !world.unlockAll && i+1 > world.unlocked;
     const x = x0 + i*(cardW+gap), y = 258;
-    const hover = !locked && ui.mouse.x>=x && ui.mouse.x<=x+cardW && ui.mouse.y>=y && ui.mouse.y<=y+cardH;
-    addHotspot(ui, x, y, cardW, cardH, 'lv'+i, { type:'level', index:i });
+    // 注意顺序：热点必须无条件注册（锁住的关卡也要能被点到，由 chooseLevel 判锁并给出反馈），
+    // 所以不能写成 `!locked && hotRect(...)`——短路求值会让锁定关卡连热点都不注册。
+    const hit = hotRect(ui, x, y, cardW, cardH, 'lv'+i, { type:'level', index:i });
+    const hover = !locked && hit;
     ctx.save();
     if(hover) ctx.translate(0,-4);
     ctx.fillStyle = 'rgba(20,35,10,0.35)';

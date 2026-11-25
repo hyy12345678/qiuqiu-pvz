@@ -4,7 +4,7 @@
 import { W, H, TAU } from '../core/constants.js';
 import { clamp, easeOut } from '../core/util.js';
 import { PLANTS } from '../core/data/plants.js';
-import { addHotspot } from '../ui/hotspots.js';
+import { hotRect } from './scenes/common.js';
 import { ctx, withTarget } from './target.js';
 import { rr, O, drawText } from './paint.js';
 import { drawPlantIcon, ICON_FIT } from './plant.js';
@@ -115,8 +115,9 @@ export function drawSeedBank(t, world, ui){
     const y = BANK_Y + 2;
     const afford = world.sun >= def.cost && s.cool <= 0;
     const selected = ui.sel === i;
-    const hover = ui.mouse.x>=x && ui.mouse.x<=x+CARD_W && ui.mouse.y>=y && ui.mouse.y<=y+CARD_H;
-    addHotspot(ui, x, y-4, CARD_W, CARD_H+4, 'card'+i, { type:'pickSlot', index:i });
+    // 热点原本向上多留 4px 给选中态上浮，但悬停判断没留——顶部 4px 变成「点得动却不高亮」的死区。
+    // 现在两者共用同一个矩形：上浮余量改由绘制自己处理，不再混进命中区域。
+    const hover = hotRect(ui, x, y, CARD_W, CARD_H, 'card'+i, { type:'pickSlot', index:i });
     ctx.save();
     if(selected) ctx.translate(0,-4);
     ctx.fillStyle = 'rgba(30,18,6,0.35)';
@@ -165,8 +166,7 @@ export function drawSeedBank(t, world, ui){
 
   const sx = CARD_X0 + MAX_CARDS*(CARD_W+CARD_GAP) + 8, sy = BANK_Y+8;
   const active = ui.shovel;
-  const hoverS = ui.mouse.x>=sx && ui.mouse.x<=sx+64 && ui.mouse.y>=sy && ui.mouse.y<=sy+72;
-  addHotspot(ui, sx, sy, 64, 72, 'shovel', { type:'shovel' });
+  const hoverS = hotRect(ui, sx, sy, 64, 72, 'shovel', { type:'shovel' });
   let g2 = ctx.createLinearGradient(0,sy,0,sy+72);
   g2.addColorStop(0, active ? '#efd28a' : '#b8946a'); g2.addColorStop(1, active ? '#c8a24e' : '#8a6b42');
   ctx.beginPath(); rr(sx, sy, 64, 72, 8);
@@ -261,8 +261,7 @@ export function drawTopRightButtons(world, ui, musicOn){
     const w = 74;
     x -= w + 8;
     const y = 12, h = 30;
-    const hover = ui.mouse.x>=x && ui.mouse.x<=x+w && ui.mouse.y>=y && ui.mouse.y<=y+h;
-    addHotspot(ui, x, y, w, h, b.id, b.action);
+    const hover = hotRect(ui, x, y, w, h, b.id, b.action);
     let g = ctx.createLinearGradient(0,y,0,y+h);
     g.addColorStop(0, hover ? '#9a6b38' : '#7a4c22'); g.addColorStop(1, hover ? '#7a4c22' : '#5f3a18');
     ctx.beginPath(); rr(x, y, w, h, 8);

@@ -4,10 +4,24 @@ import { addHotspot } from '../../ui/hotspots.js';
 import { ctx } from '../target.js';
 import { rr, O, drawText } from '../paint.js';
 
+// 点是否落在矩形内（含边界）。悬停高亮与热点命中必须用同一套判定：
+// 两处各写一份时，只要有一处手滑（比如热点给选中态上浮留了 4px 余量、悬停没留），
+// 就会出现「点得动但不高亮」或「高亮却点不动」的死区。
+export function pointInRect(ui, x, y, w, h){
+  const m = ui.mouse;
+  return m.x>=x && m.x<=x+w && m.y>=y && m.y<=y+h;
+}
+
+// 注册热点并返回同一个矩形上的悬停状态。凡是「可点的矩形区域」都用它，
+// 不要自己再写一遍 addHotspot + 悬停判断。
+export function hotRect(ui, x, y, w, h, id, action){
+  addHotspot(ui, x, y, w, h, id, action);
+  return pointInRect(ui, x, y, w, h);
+}
+
 export function drawButton(ui, x, y, w, h, label, id, action, opts){
   opts = opts || {};
-  const hover = ui.mouse.x>=x && ui.mouse.x<=x+w && ui.mouse.y>=y && ui.mouse.y<=y+h;
-  addHotspot(ui, x, y, w, h, id, action);
+  const hover = hotRect(ui, x, y, w, h, id, action);
   const disabled = opts.disabled;
   let g = ctx.createLinearGradient(0,y,0,y+h);
   if(disabled){

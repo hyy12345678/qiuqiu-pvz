@@ -176,13 +176,8 @@ addDirtPuff(world, p.cx, p.fy);
 addDirtPuff(world, z.x, LY+(z.row+1)*CH-6);
 addFlamePuff(world, p.cx, pea.y);
 addHotspot(ui, bx, by, bw, bh, 'ans'+i, { type:'answer', value:cur.options[i] });
-addHotspot(ui, sx, sy, 64, 72, 'shovel', { type:'shovel' });
-addHotspot(ui, x, y, cardW, cardH, 'lv'+i, { type:'level', index:i });
-addHotspot(ui, x, y, cw, ch, 'pick'+type, { type:'plantPick', plant:type });
 addHotspot(ui, x, y, slotW, slotH, 'slot'+i, { type:'slot', index:i });
-addHotspot(ui, x, y, w, h, b.id, b.action);
 addHotspot(ui, x, y, w, h, id, action);
-addHotspot(ui, x, y-4, CARD_W, CARD_H+4, 'card'+i, { type:'pickSlot', index:i });
 addLeafBurst(world, p.cx, p.fy-30);
 addLeafBurst(world, p.cx, p.fy-30);
 addPaperShreds(world, z.x, LY + (z.row+1)*CH - 76);
@@ -459,15 +454,16 @@ const half = (SUN_SPRITE/2) * s;
 const hc = ui.hoverCell;
 const hi = SUN_EARLY[1] + (SUN_LATE[1] - SUN_EARLY[1]) * k;
 const hint = FIRST_SPAWN_HINT[e.type];
+const hit = hotRect(ui, x, y, cardW, cardH, 'lv'+i, { type:'level', index:i });
 const hop = Math.abs(Math.sin(t*2+ph))*2.5;
 const hop = Math.abs(Math.sin(t*2.6+ph))*2.4;
-const hover = !locked && ui.mouse.x>=x && ui.mouse.x<=x+cardW && ui.mouse.y>=y && ui.mouse.y<=y+cardH;
-const hover = ui.mouse.x>=bx && ui.mouse.x<=bx+bw && ui.mouse.y>=by && ui.mouse.y<=by+bh;
-const hover = ui.mouse.x>=x && ui.mouse.x<=x+CARD_W && ui.mouse.y>=y && ui.mouse.y<=y+CARD_H;
-const hover = ui.mouse.x>=x && ui.mouse.x<=x+cw && ui.mouse.y>=y && ui.mouse.y<=y+ch;
-const hover = ui.mouse.x>=x && ui.mouse.x<=x+w && ui.mouse.y>=y && ui.mouse.y<=y+h;
-const hover = ui.mouse.x>=x && ui.mouse.x<=x+w && ui.mouse.y>=y && ui.mouse.y<=y+h;
-const hoverS = ui.mouse.x>=sx && ui.mouse.x<=sx+64 && ui.mouse.y>=sy && ui.mouse.y<=sy+72;
+const hover = !locked && hit;
+const hover = hotRect(ui, x, y, CARD_W, CARD_H, 'card'+i, { type:'pickSlot', index:i });
+const hover = hotRect(ui, x, y, cw, ch, 'pick'+type, { type:'plantPick', plant:type });
+const hover = hotRect(ui, x, y, w, h, b.id, b.action);
+const hover = hotRect(ui, x, y, w, h, id, action);
+const hover = pointInRect(ui, bx, by, bw, bh);
+const hoverS = hotRect(ui, sx, sy, 64, 72, 'shovel', { type:'shovel' });
 const hx = -2 - rec, hy = -54 + bob;
 const hx = -7, hy = -96;
 const hx = inner.x + inner.w*(1-p);
@@ -510,6 +506,7 @@ const lv = LEVELS[world.level];
 const lv = LEVELS[world.level];
 const lv = LEVELS[world.level];
 const lv = LEVELS[world.level];
+const m = ui.mouse;
 const m = world.mowers.find(m=>m.row===row && m.state==='idle');
 const m = world.mowers.find(m=>m.row===z.row && m.state==='idle');
 const mouth = eat ? Math.abs(Math.sin(z.eatT*9))*7 : 2;
@@ -2290,6 +2287,7 @@ function handleKey(key){
 function handleMove(p){
 function handlePress(p){
 function hitHotspot(ui, p){
+function hotRect(ui, x, y, w, h, id, action){
 function hudSprite(key, w, h, paint, k = 2){
 function iconSprite(type){
 function inBounds(row, col){
@@ -2315,6 +2313,7 @@ function pickSlot(world, ui, slotIndex){
 function pickTeamPlant(world, ui, type){
 function pickType(lv, prog, rng){
 function placePlant(world, type, row, col){
+function pointInRect(ui, x, y, w, h){
 function preferredDPR(windowLike = globalThis.window){
 function pressCell(world, ui, row, col){
 function rand(rng,a,b){ return a + rng()*(b-a); }
@@ -3009,7 +3008,9 @@ return false;
 return false;
 return g;
 return hover;
+return m.x>=x && m.x<=x+w && m.y>=y && m.y<=y+h;
 return null;
+return pointInRect(ui, x, y, w, h);
 return qs;
 return r;
 return row>=0 && row<ROWS && col>=0 && col<COLS;
@@ -3360,6 +3361,8 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',2]] },
 { name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',2]] },
 { type:'startQuiz' },
+}
+}
 }
 }
 }

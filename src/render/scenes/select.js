@@ -4,6 +4,7 @@ import { W, H, TAU } from '../../core/constants.js';
 import { PLANTS, PLANT_ORDER } from '../../core/data/plants.js';
 import { LEVELS } from '../../core/data/levels.js';
 import { addHotspot } from '../../ui/hotspots.js';
+import { hotRect } from './common.js';
 import { ctx } from '../target.js';
 import { rr, O, drawText } from '../paint.js';
 import { drawPlantIcon, ICON_FIT } from '../plant.js';
@@ -74,8 +75,7 @@ export function renderSelect(t, world, ui){
     const rowW = inRow*cw + (inRow-1)*GAP_X;
     const x = GRID_X + (gridW - rowW)/2 + rowIdx*(cw+GAP_X), y = 254 + row*(ch+6);
     const inTeam = world.slots.some(s=>s.type===type);
-    const hover = ui.mouse.x>=x && ui.mouse.x<=x+cw && ui.mouse.y>=y && ui.mouse.y<=y+ch;
-    addHotspot(ui, x, y, cw, ch, 'pick'+type, { type:'plantPick', plant:type });
+    const hover = hotRect(ui, x, y, cw, ch, 'pick'+type, { type:'plantPick', plant:type });
     ctx.save();
     if(hover && !inTeam) ctx.translate(0,-3);
     ctx.fillStyle = 'rgba(20,12,4,0.35)';

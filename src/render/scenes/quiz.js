@@ -2,6 +2,7 @@
 
 import { W, H } from '../../core/constants.js';
 import { addHotspot } from '../../ui/hotspots.js';
+import { pointInRect } from './common.js';
 import { ctx } from '../target.js';
 import { rr, O, drawText } from '../paint.js';
 import { drawMenuScene } from './menu.js';
@@ -30,7 +31,7 @@ export function renderQuiz(t, world, ui){
   for(let i=0;i<4;i++){
     const bx = (i%2===0)?bx0:bx1;
     const by = (i<2)?by0:by1;
-    const hover = ui.mouse.x>=bx && ui.mouse.x<=bx+bw && ui.mouse.y>=by && ui.mouse.y<=by+bh;
+    const hover = pointInRect(ui, bx, by, bw, bh);
     let bg = ctx.createLinearGradient(0,by,0,by+bh);
     bg.addColorStop(0, hover ? '#96c862' : '#7aa848'); bg.addColorStop(1, hover ? '#649838' : '#4e7a2a');
     ctx.fillStyle='rgba(15,25,8,0.35)'; ctx.beginPath(); rr(bx+2, by+3, bw, bh, 10); ctx.fill();

@@ -61,6 +61,22 @@ function filled(delta){
 }
 
 describe('场景 D：各界面用真实 render 各画一帧', () => {
+  test('D0：锁住的关卡也必须注册热点——只是不高亮，点下去由 chooseLevel 给出 locked 反馈', () => {
+    // 回归：把热点注册写进 `!locked && hotRect(...)` 会因短路求值让锁定关卡连热点都没有，
+    // 玩家点上去毫无反应（连错误音都没有）。D1 只数总数 7，穿透不到这一层，所以单独钉住。
+    const sc = scenario({ seed: 7 });
+    sc.world.unlocked = 1;                 // 只解锁第 1 关
+    sc.world.unlockAll = false;
+    oneFrame(sc);
+    const levelHotspots = sc.ui.hotspots.filter(h => h.action && h.action.type === 'level');
+    assert.equal(levelHotspots.length, LEVELS.length, '每一关都应注册热点，锁住的也不例外');
+    // 锁定关卡：热点在、但悬停不高亮（hover 为 false 时不会触发上浮动效）
+    const lockedIdx = LEVELS.length - 1;
+    assert.ok(sc.world.unlocked < lockedIdx + 1, '本用例需要至少一个锁定关卡');
+    const hit = levelHotspots.find(h => h.action.index === lockedIdx);
+    assert.ok(hit, '锁定关卡必须有热点');
+  });
+
   test('D1：菜单 / 说明 / 选关 / 算术 / 战斗 / 结算都能画，热点表随界面切换', () => {
     const sc = scenario({ seed: 7, trace: true });
     const themeBeforeMenu = bgCache.theme;

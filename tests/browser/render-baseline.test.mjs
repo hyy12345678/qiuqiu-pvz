@@ -41,6 +41,12 @@ const ANSWER = [380, 409];
 async function advance(page, frames) {
   await page.evaluate(n => { window.__advance(n); }, frames);
 }
+// 粗帧推进：每帧 50ms（游戏单帧 dt 的上限），同样的游戏时长只需三分之一的帧数。
+// 3D 版每帧都要真渲染一次，CI 的软件光栅比本机慢约 3 倍，逐 16.7ms 推进会超时（E28 首次 CI 实跑）。
+// 只用于「到达」被测画面的路上；被记录的那一帧仍是标准 16.7ms。
+async function coarse(page, seconds) {
+  await page.evaluate(n => { for (let i = 0; i < n; i++) window.__step(50); }, Math.round(seconds / 0.05));
+}
 async function click(page, x, y) {
   await clickLogical(page, x, y);
   await advance(page, 1);
@@ -55,9 +61,9 @@ async function toPlay(page, card) {
   await advance(page, 1);
   for (let i = 0; i < 3; i++) {
     await click(page, ...ANSWER);
-    await advance(page, 60);
+    await coarse(page, 1);
   }
-  await advance(page, 240);
+  await coarse(page, 4);
 }
 
 // lawn：战场中央的画面统计断言（白天草坪明亮偏绿，夜里整体压暗）
@@ -113,7 +119,7 @@ async function checkScene(page, name, lines) {
 }
 
 for (const scene of SCENES) {
-  test('绘制基线：' + scene.name, { timeout: 120000 }, async () => {
+  test('绘制基线：' + scene.name, { timeout: 360000 }, async () => {
     const browser = await launch();
     chromiumVersion = browser.version();
     try {

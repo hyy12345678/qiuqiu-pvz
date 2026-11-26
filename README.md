@@ -8,7 +8,12 @@ three.js 随产物一起内联，界面层仍是 2D Canvas。需要支持 WebGL2
 
 ## 怎么玩
 
-双击 `dist/植物大战僵尸-网页版.html`（拷到U盘、发给自己都行）。
+**在线试玩**：<https://hyy12345678.github.io/qiuqiu-pvz/dist/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8-%E7%BD%91%E9%A1%B5%E7%89%88.html>
+（GitHub Pages 直接发布 `main` 分支上的 `dist/`，推送后约一分钟生效）
+
+或者离线玩：双击 `dist/植物大战僵尸-网页版.html`（拷到U盘、发给自己都行）。
+
+原来的 2D 版归档在 [`archive/2d`](https://github.com/hyy12345678/qiuqiu-pvz/tree/archive/2d) 分支，产物同样在该分支的 `dist/` 下。
 
 - 逻辑分辨率 1024×640，按窗口与 DPR 自适应（DPR 上限 2）。运行期换屏（把窗口拖到另一块像素密度不同的屏幕）会每帧比对 `devicePixelRatio` 并自动重建 2D 背板与 3D 渲染尺寸——`resize` 事件在这种场景下不会触发。
 - 画质自动调节：持续掉帧（90 帧平均低于约 38fps）就降一档分辨率；识别到软件光栅（SwiftShader / llvmpipe）直接用低配（关泛光与多重采样）。地址后加 `?gfx=low` 或 `?gfx=high` 可手动指定。

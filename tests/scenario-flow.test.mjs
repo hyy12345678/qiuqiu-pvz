@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { scenario } from './helpers/scenario.mjs';
 import { startLevel, beginPlay } from '../src/core/world.js';
-import { bgCache } from '../src/render/background.js';
 import { LEVELS } from '../src/core/data/levels.js';
 
 function battle(seed){
@@ -57,7 +56,7 @@ test('场景H2–H5 夜战开局补偿 100 阳光、提示生效、28 秒无天�
   h.world.t = 1;
   h.pump(28);
   assert.equal(h.world.suns.filter(sun => sun.fromSky).length, 0, 'H3: 夜关不应出现天降太阳');
-  assert.equal(bgCache.theme, 'night', 'H5: 夜战背景主题未切换');
+  assert.equal(h.view3d.view.env.night, true, 'H5: 夜战场景主题未切换');
 });
 
 test('场景H6–H8 白关无夜战补偿、20 秒内产出天降太阳且主题回到 day', () => {
@@ -66,5 +65,5 @@ test('场景H6–H8 白关无夜战补偿、20 秒内产出天降太阳且主题
   h.world.t = 1;
   h.pump(20);
   assert.ok(h.world.suns.some(sun => sun.fromSky), 'H7: 白关应产出天降太阳');
-  assert.equal(bgCache.theme, 'day', 'H8: 白关背景主题未还原');
+  assert.equal(h.view3d.view.env.night, false, 'H8: 白关场景主题未还原');
 });

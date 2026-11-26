@@ -1,71 +1,51 @@
-// 背景绘制轨迹基线：day 与 night 两张整幅背景，逐行比对 Canvas 调用与参数。
+// 3D 战场环境的结构基线：逐行记录场景树里每个网格（几何顶点数、材质类型、投影开关）与灯光参数。
 //
-// 这是背景唯一的回归防护。E7 拆分 paintBattleBG 时先拿**拆分前**的代码生成基线，
-// 再要求拆分后的代码逐行一致——所以它证明的不是"看起来差不多"，而是"一个像素都不会变"。
+// 2D 时代这里逐行比对背景的 Canvas 调用；3D 版的等价物是「场景里有什么、怎么打光」。
+// 它挡住的是无意的布景变化：改了树、栅栏、房子或灯光，这里一定会红。
 //
-// 更新基线（只在有意改画面、且已人工看图之后）：
+// 更新基线（只在有意改布景、且已人工看图之后）：
 //   UPDATE_BG_TRACE=1 node --test tests/render-background-trace.test.mjs
-
 import test from 'node:test';
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { paintBattleBG } from '../src/render/background.js';
-import { recordBackground } from './helpers/bg-trace.mjs';
+import { Scene } from 'three';
+import { createEnvironment } from '../src/render/scene3d/environment.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const BASELINE_DIR = path.join(HERE, 'baselines');
+const FILE = path.join(HERE, 'baselines', 'background-3d.trace.txt');
 const UPDATE = process.env.UPDATE_BG_TRACE === '1';
+const f = v => (Math.round(v * 1000) / 1000).toString();
 
-const CASES = [
-  { name: '白天', theme: 'day', night: false },
-  { name: '夜间', theme: 'night', night: true },
-];
-
-function baselineFile(theme){
-  return path.join(BASELINE_DIR, 'background-' + theme + '.trace.txt');
+function record(){
+  const lines = [];
+  for(const night of [false, true]){
+    const env = createEnvironment(), scene = new Scene();
+    env.setTheme(night, scene);
+    lines.push('# ' + (night ? 'night' : 'day') + ' fog ' + scene.fog.color.getHexString() + ' ' + f(scene.fog.near) + '-' + f(scene.fog.far) + ' env ' + f(scene.environmentIntensity));
+    env.group.traverse(o => {
+      if(o.isLight) lines.push('light ' + o.type + ' ' + o.color.getHexString() + ' ' + f(o.intensity) + (o.castShadow ? ' shadow' : ''));
+      else if(o.isInstancedMesh) lines.push('instanced ' + o.count + ' x ' + o.geometry.attributes.position.count);
+      else if(o.isMesh) lines.push('mesh ' + o.geometry.type + ' ' + o.geometry.attributes.position.count + ' ' + o.material.type + (o.userData.key ? '/' + o.userData.key : '') + (o.castShadow ? ' cast' : '') + (o.receiveShadow ? ' recv' : '') + (o.visible ? '' : ' hidden') + ' @' + f(o.position.x) + ',' + f(o.position.y) + ',' + f(o.position.z));
+      else if(o.isPoints) lines.push('points ' + o.geometry.attributes.position.count + (o.visible ? '' : ' hidden'));
+    });
+  }
+  return lines;
 }
 
-function readBaseline(file){
-  return fs.readFileSync(file, 'utf8').split('\n').filter(l => l.length > 0);
-}
-
-for(const c of CASES){
-  test('背景绘制轨迹：' + c.name + '与基线逐行一致', () => {
-    const actual = recordBackground(paintBattleBG, c.night);
-    const file = baselineFile(c.theme);
-
-    if (UPDATE) {
-      // E8：重盖之前先把「这次会吸收什么」打印出来。
-      // 与 parity/fingerprint 的 dry-run 对齐——盖章是吸收差异，不等于验证通过，
-      // 至少要让操作者看见吸收了多少行、第一处不同在哪。
-      const prev = fs.existsSync(file) ? readBaseline(file) : [];
-      let firstDiff = -1;
-      const n = Math.min(prev.length, actual.length);
-      for(let i = 0; i < n; i++){
-        if (prev[i] !== actual[i]) { firstDiff = i; break; }
-      }
-      if (firstDiff < 0 && prev.length !== actual.length) firstDiff = n;
-      fs.mkdirSync(BASELINE_DIR, { recursive: true });
-      fs.writeFileSync(file, actual.join('\n') + '\n');
-      console.log('已重写 ' + path.relative(process.cwd(), file) + '：' + actual.length + ' 行'
-        + '（原 ' + prev.length + ' 行，行数差 ' + (actual.length - prev.length) + '）');
-      if (firstDiff >= 0) {
-        console.log('  首个差异在第 ' + (firstDiff + 1) + ' 行');
-        console.log('    原: ' + (prev[firstDiff] === undefined ? '(无)' : prev[firstDiff]));
-        console.log('    新: ' + (actual[firstDiff] === undefined ? '(无)' : actual[firstDiff]));
-      }
-      return;
-    }
-
-    assert.ok(fs.existsSync(file), '缺少背景基线 ' + file + '，先跑 UPDATE_BG_TRACE=1');
-    const expected = readBaseline(file);
-    assert.ok(actual.length > 100, c.name + '轨迹行数异常偏少：' + actual.length);
-    assert.strictEqual(actual.length, expected.length,
-      c.name + '绘制行数变了（基线 ' + expected.length + ' / 当前 ' + actual.length + '）');
-    for(let i = 0; i < expected.length; i++){
-      assert.strictEqual(actual[i], expected[i], c.name + '第 ' + (i + 1) + ' 行不同');
-    }
-  });
-}
+test('3D 战场环境结构与基线逐行一致', () => {
+  const actual = record();
+  if(UPDATE){
+    const prev = fs.existsSync(FILE) ? fs.readFileSync(FILE, 'utf8').split('\n').filter(Boolean) : [];
+    fs.mkdirSync(path.dirname(FILE), { recursive: true });
+    fs.writeFileSync(FILE, actual.join('\n') + '\n');
+    console.log('已重写 ' + path.relative(process.cwd(), FILE) + '：' + actual.length + ' 行（原 ' + prev.length + ' 行）');
+    return;
+  }
+  assert.ok(fs.existsSync(FILE), '缺少环境基线，先跑 UPDATE_BG_TRACE=1');
+  const expected = fs.readFileSync(FILE, 'utf8').split('\n').filter(Boolean);
+  assert.ok(actual.length > 30, '环境结构行数异常偏少：' + actual.length);
+  assert.strictEqual(actual.length, expected.length, '环境结构行数变了（基线 ' + expected.length + ' / 当前 ' + actual.length + '）');
+  for(let i = 0; i < expected.length; i++) assert.strictEqual(actual[i], expected[i], '第 ' + (i + 1) + ' 行不同');
+});

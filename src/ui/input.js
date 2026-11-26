@@ -1,5 +1,5 @@
 import { W, H } from '../core/constants.js';
-import { setPointer, clearSelection } from './state.js';
+import { setPointer, clearSelection, logicalPicker } from './state.js';
 import { hitHotspot } from './hotspots.js';
 
 export function toCanvas(canvas, e){
@@ -7,7 +7,7 @@ export function toCanvas(canvas, e){
   return { x:(e.clientX - r.left) * W / r.width, y:(e.clientY - r.top) * H / r.height };
 }
 
-export function bindInput({ canvas, document, window, world, ui, onPress, onKey }){
+export function bindInput({ canvas, document, window, world, ui, onPress, onKey, picker = logicalPicker }){
   // 光标是 ui.sel / ui.shovel 的派生显示，只在 mousemove 里算会漏掉三条不经过移动的清除路径：
   // 右键、点空地失败（pressCell 返回 no-selection）、以及种完/铲完/阳光不足后由动作自己清的选中。
   // 漏掉时指针停在上一次的 crosshair，玩家会以为还处在「待放置」状态。
@@ -18,7 +18,7 @@ export function bindInput({ canvas, document, window, world, ui, onPress, onKey 
   }
 
   function handleMove(p){
-    setPointer(ui, p, world.state);
+    setPointer(ui, p, world.state, picker);
     syncCursor();
   }
 

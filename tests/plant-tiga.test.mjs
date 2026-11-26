@@ -6,8 +6,6 @@ import assert from 'node:assert';
 import { PLANTS } from '../src/core/data/plants.js';
 import { beginPlay, startLevel } from '../src/core/world.js';
 import { cellCX, damageZombie, placePlant, spawnZombie } from '../src/core/entities.js';
-import { drawPlantEntity } from '../src/render/plant.js';
-import { drawPea } from '../src/render/projectile.js';
 import { scenario } from './helpers/scenario.mjs';
 
 const LIFE = PLANTS.tiga.life;
@@ -113,17 +111,26 @@ test('蓄力节奏：相邻两发光线约隔 6.5 秒', () => {
   assert.ok(gap > 6.3 && gap < 6.8, `两发光线间隔应约 6.5 秒，实际 ${gap.toFixed(2)}`);
 });
 
-test('绘制只走白名单 API：巨人与光线都不碰 Canvas 桩的未知方法', () => {
-  const h = scenario({ seed: 36 });
-  h.activate();
-  drawPlantEntity(3.2, {
-    type: 'tiga', cx: 300, fy: 400, phase: 1.1, recoil: 1, flash: 0.35,
-    hp: PLANTS.tiga.hp, maxHp: PLANTS.tiga.hp, lifeT: 4, maxLifeT: PLANTS.tiga.life,
-  });
-  drawPea({ type: 'beam', x: 500, y: 342, row: 2, dmg: 400, vx: 720, prevX: 490 });
-  assert.ok((h.paint.counts.get('fill') || 0) > 10, '巨人与光线都应有多次填充');
-  assert.ok(h.paint.counts.get('createLinearGradient'), '光带需要线性渐变');
-  assert.ok(h.paint.counts.get('createRadialGradient'), '计时器与光晕需要径向渐变');
+test('3D 视图：巨人登场后光线成束，最后几秒计时器红闪', () => {
+  const h = battle({ seed: 36 });
+  const { world } = h;
+  placePlant(world, 'tiga', 2, 3);
+  march(world, 'bucket', 2, cellCX(8));
+  const beams = () => { let n = 0; h.view3d.view.scene.traverse(o => { if(o.isMesh && o.geometry.type === 'CylinderGeometry' && o.material.blending === 2) n++; }); return n; };
+  let sawBeam = false;
+  for(let i = 0; i < 60 * 3 && !sawBeam; i++){ h.pump(1 / 60); if(world.peas.some(p => p.type === 'beam')) sawBeam = beams() > 0; }
+  assert.ok(sawBeam, '光线在场时场景里应有发光光束');
+  // 剩 8 秒起计时器变红：跳到最后几秒，计时器材质应与开场时不同
+  const tiga = world.plants.find(p => p.type === 'tiga');
+  let timer = null;
+  h.view3d.view.scene.traverse(o => { if(o.name === 'timer') timer = o; });
+  assert.ok(timer, '巨人应有彩色计时器节点');
+  const mat = () => timer.children.find(c => c.isMesh && c.userData.key === 'e').material;
+  assert.ok(mat().color.b > mat().color.r, '时间充裕时计时器是蓝色');
+  tiga.lifeT = 3;
+  let red = 0;
+  for(let i = 0; i < 30; i++){ h.pump(1 / 60); if(mat().color.r > mat().color.b) red++; }
+  assert.ok(red > 0 && red < 30, '最后几秒计时器应红蓝交替闪烁，实际红帧 ' + red + '/30');
 });
 
 test('伤害结算仍走 damageZombie：护盾先掉、本体后掉', () => {

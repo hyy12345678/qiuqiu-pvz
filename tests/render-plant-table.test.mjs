@@ -1,76 +1,49 @@
-// E4：绘制表与植物数值表必须一一对应。
+// 模型表与数值表必须一一对应。
 //
-// 拆分前 plant.js 里是两个必须手工同步的 switch：漏登记一个 case 时，实体「种下去不画」、
-// 图标「图鉴/卡槽空白」，而且不抛错、不告警。合并成一张表之后，这笔债由这里兜住。
-
+// 漏登记一个模型时，实体「种下去不画」、图鉴「卡片空白」，而且不抛错——这笔债由这里兜住。
+// 3D 版：PLANT_MODELS / ZOMBIE_MODELS 取代了原来的 2D 绘制表。
 import test from 'node:test';
 import assert from 'node:assert';
 import { PLANTS, PLANT_ORDER } from '../src/core/data/plants.js';
-import { PLANT_DRAWERS, ICON_POSE, drawPlantIcon } from '../src/render/plant.js';
-import { bindCanvas } from '../src/render/target.js';
+import { ZTYPES } from '../src/core/data/zombies.js';
+import { PLANT_MODELS } from '../src/render/scene3d/plants.js';
+import { ZOMBIE_MODELS } from '../src/render/scene3d/zombies.js';
+import { template } from '../src/render/scene3d/world-view.js';
+import { portrait } from '../src/render/skin.js';
+import { withTarget } from '../src/render/target.js';
+import { makeContext } from './helpers/scenario.mjs';
 
-// E18：图标改成离屏精灵后，需要 document 来创建缓存画布。
-if (!globalThis.document) {
-  globalThis.document = {
-    createElement: () => ({ width: 0, height: 0, style: {}, getContext: () => makeCanvasCtx() }),
-  };
-}
-function makeCanvasCtx(){
-  const t = {};
-  return new Proxy(t, {
-    get(o, k){ if (typeof k !== 'string') return undefined; if (k in o) return o[k]; const f = () => (k === 'createLinearGradient' || k === 'createRadialGradient' ? { addColorStop(){} } : undefined); o[k] = f; return f; },
-    set(o, k, v){ o[k] = v; return true; },
-  });
-}
-
-function countingCanvas(){
-  const counts = new Map();
-  const target = {};
-  const ctx = new Proxy(target, {
-    get(t, k){
-      if (typeof k !== 'string') return undefined;
-      if (k in t) return t[k];
-      const fn = (...args) => {
-        counts.set(k, (counts.get(k) || 0) + 1);
-        if (k === 'createLinearGradient' || k === 'createRadialGradient') return { addColorStop(){} };
-        return undefined;
-      };
-      t[k] = fn;
-      return fn;
-    },
-    set(t, k, v){ t[k] = v; return true; },
-  });
-  return { canvas: { width: 0, height: 0, getContext: () => ctx }, counts };
-}
-
-test('E4：每个植物都有绘制入口与图鉴姿态', () => {
+test('每个植物都有 3D 模型与动画，且没有表外死条目', () => {
   for(const type of Object.keys(PLANTS)){
-    assert.strictEqual(typeof PLANT_DRAWERS[type], 'function', type + ' 缺少绘制入口');
-    assert.ok(ICON_POSE[type], type + ' 缺少图鉴姿态');
+    assert.ok(PLANT_MODELS[type], type + ' 缺少 3D 模型');
+    assert.strictEqual(typeof PLANT_MODELS[type].build, 'function');
+    assert.strictEqual(typeof PLANT_MODELS[type].animate, 'function');
   }
+  for(const type of Object.keys(PLANT_MODELS)) assert.ok(PLANTS[type], '模型表里出现了未知植物 ' + type);
 });
 
-test('E4：绘制表里没有植物表之外的死条目', () => {
-  for(const type of Object.keys(PLANT_DRAWERS)){
-    assert.ok(PLANTS[type], '绘制表里出现了未知植物 ' + type);
-  }
-  for(const type of Object.keys(ICON_POSE)){
-    assert.ok(PLANTS[type], '图鉴姿态里出现了未知植物 ' + type);
-  }
+test('每种僵尸都有 3D 模型，且没有表外死条目', () => {
+  assert.deepStrictEqual(Object.keys(ZOMBIE_MODELS).sort(), Object.keys(ZTYPES).sort());
 });
 
-test('E4：PLANT_ORDER 与植物表同集合', () => {
+test('PLANT_ORDER 与植物表同集合', () => {
   assert.deepStrictEqual([...PLANT_ORDER].sort(), Object.keys(PLANTS).sort());
   assert.strictEqual(PLANT_ORDER.length, Object.keys(PLANTS).length);
 });
 
-test('E4：每个植物图标都真的落了笔', () => {
-  for(const type of Object.keys(PLANTS)){
-    const { canvas, counts } = countingCanvas();
-    bindCanvas(canvas, 1);
-    drawPlantIcon(1.7, type, 100, 100, 1);
-    // E18 起图标走 drawImage 贴精灵；"有没有落笔"的语义改为"有没有贴出精灵"。
-    const ink = counts.get('drawImage') || 0;
-    assert.ok(ink > 0, type + ' 的图鉴图标没有贴出任何精灵');
+test('每个模型都建得出网格，且按「节点 × 材质类」合并后绘制调用保持在少数', () => {
+  for(const [kind, table] of [['plant', PLANTS], ['zombie', ZTYPES]]){
+    for(const type of Object.keys(table)){
+      const root = template(kind, type);
+      let meshes = 0, verts = 0;
+      root.traverse(o => { if(o.isMesh){ meshes++; verts += o.geometry.attributes.position.count; } });
+      assert.ok(meshes >= 2, kind + ':' + type + ' 网格过少（' + meshes + '）');
+      assert.ok(meshes <= 40, kind + ':' + type + ' 网格过多（' + meshes + '），合并失效会拖垮帧率');
+      assert.ok(verts > 300, kind + ':' + type + ' 顶点过少，模型可能没建出来');
+    }
   }
+  // 没有 WebGL 时卡片肖像退回圆章，必须落笔，不能留白
+  const paint = makeContext({ label: '肖像' });
+  withTarget(paint.ctx, () => portrait(null, '豌豆射手', 0, 0, 60, 60));
+  assert.ok(paint.counts.get('arc') >= 1 && paint.counts.get('fillText') >= 1, '无肖像时应画占位圆章');
 });

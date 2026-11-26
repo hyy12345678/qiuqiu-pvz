@@ -13,7 +13,9 @@ import { addDirtPuff, addFlamePuff, addLeafBurst, addPeaSplat } from './particle
 // E24：首次登场的提示语。只对"玩家需要改变打法"的僵尸有意义——
 // 普通/路障/铁桶不需要解释，玩家一看就懂。
 const FIRST_SPAWN_HINT = {
-  screen: '铁门僵尸来了！豌豆打不动，换火豌豆或炸弹！',
+  // E28：原文「豌豆打不动，换火豌豆或炸弹」与规则不符——E23 起弹道是削到 1/4 而不是无效，
+  // 火豌豆直击同样是弹道（只有溅射穿门）。提示必须和 SCREEN_BALLISTIC_MULT 说同一件事。
+  screen: '铁门僵尸来了！豌豆伤害只剩 1/4，快用炸弹！',
 };
 
 export function updatePlay(world, dt){

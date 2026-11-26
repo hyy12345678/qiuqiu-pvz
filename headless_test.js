@@ -53,6 +53,8 @@ const CTX_METHODS = new Set([
 const CTX_PROPS = new Set([
   'fillStyle', 'strokeStyle', 'lineWidth', 'lineJoin', 'lineCap', 'font',
   'textAlign', 'textBaseline', 'globalAlpha', 'globalCompositeOperation',
+  // 3D 版界面层：面板与按钮的投影
+  'shadowColor', 'shadowBlur', 'shadowOffsetX', 'shadowOffsetY',
 ]);
 function makeGradient() { return { addColorStop() {} }; }
 function makeCtx(label) {
@@ -289,12 +291,14 @@ pump(1);                        // 渲染暴怒状态
 damageZombie(G, nz, 150);
 if(nz.state !== 'dying') throw new Error('G7: enraged zombie did not die');
 pump(1);
-// G-b: 两种姿态绘制不报错
+// G-b: 两种姿态在 3D 场景树里同步不报错（无 WebGL：真实世界视图，不调渲染器）
+const WV = createWorldView();
 const nzDraw = makeZombie('newspaper', 2, cellCX(3));
-drawZombieEntity(0, nzDraw);                       // 看报
+G.zombies.push(nzDraw);
+WV.update('battle', G, UI, 0, 400);                 // 看报
 nzDraw.angry = true; nzDraw.acc = 0; nzDraw.speed = 34;
-drawZombieEntity(0, nzDraw);                       // 暴怒
-drawZombieHeadIcon(100, 100, 1, 'newspaper');   // 图鉴头像
+WV.update('battle', G, UI, 0.1, 400);               // 暴怒
+G.zombies.splice(G.zombies.indexOf(nzDraw), 1);
 
 // ===== 场景 H：夜间关卡（无天降太阳、开局补偿阳光） =====
 if(LEVELS.length !== 4) throw new Error('H0: expected 4 levels, got ' + LEVELS.length);
@@ -306,13 +310,15 @@ if(G.visual.nightHint <= 0) throw new Error('H4: night hint banner not armed');
 G.t = 1;
 pump(28);
 if(G.suns.some(s => s.fromSky)) throw new Error('H3: night level spawned sky sun');
-if(bgCache.theme !== 'night') throw new Error('H5: night background not rendered');
+WV.update('battle', G, UI, 0.2, 400);
+if(WV.env.night !== true) throw new Error('H5: night scene not rendered');
 // 白天关卡应正常天降太阳
 startLevel(G, 0); G.slots = []; G.slots.push({type:'sunflower',cool:0}); beginPlay(G, 50);
 if(G.sun !== 50) throw new Error('H6: day level should not get the night bonus, got ' + G.sun);
 G.t = 1; pump(20);
 if(!G.suns.some(s => s.fromSky)) throw new Error('H7: day level produced no sky sun');
-if(bgCache.theme !== 'day') throw new Error('H8: day background not restored');
+WV.update('battle', G, UI, 0.3, 400);
+if(WV.env.night !== false) throw new Error('H8: day scene not restored');
 
 // ===== 场景 I：蘑菇与咖啡豆（白天打盹 → 咖啡豆唤醒；夜里落地即开工） =====
 function press(lx, ly){ globalThis.__canvasHandlers.get('mousedown')({ clientX:lx, clientY:ly, button:0 }); }
@@ -344,24 +350,17 @@ G.suns.length = 0;
 pump(11);
 if(!G.suns.some(s => !s.fromSky && s.value === 25)) throw new Error('I9: 阳光菇应产 25 阳光');
 if(G.suns.some(s => !s.fromSky && s.value !== 25)) throw new Error('I10: 场上不该出现其它产量的植物阳光');
-// 渲染三种新植物与两种蘑菇姿态、孢子弹道，确认不抛错
-drawPlantEntity(0, shroom);
-shroom.asleep = true; drawPlantEntity(0, shroom); shroom.asleep = false;
-drawPlantIcon(0, 'puff', 80, 80, 1);
-drawPlantIcon(0, 'sunshroom', 80, 80, 1);
-drawPlantIcon(0, 'coffee', 80, 80, 1);
-// 拦截 ctx.fillStyle，确认孢子用的是自己的紫色弹道而不是回落到普通豌豆绿
-function peaFills(type){
-  const fills = [];
-  const real = ctx;
-  ctx = new Proxy({}, { get:(t,p)=>real[p],
-    set:(t,p,v)=>{ if(p==='fillStyle' && typeof v==='string') fills.push(v); real[p]=v; return true; } });
-  try { drawPea({ x:300, y:300, row:2, type, dmg:20, vx:300, prevX:300 }); }
-  finally { ctx = real; }
-  return fills;
-}
-if(!peaFills('spore').includes('#b478e0')) throw new Error('I12: 孢子没有按孢子配色渲染');
-if(peaFills('ball').includes('#b478e0')) throw new Error('I13: 非孢子弹道不该用孢子配色');
+// 两种蘑菇姿态与孢子弹道在 3D 场景树里同步，确认不抛错
+WV.update('battle', G, UI, 0.4, 400);
+shroom.asleep = true; WV.update('battle', G, UI, 0.5, 400); shroom.asleep = false;
+G.peas.push({ x:300, y:300, row:2, type:'spore', dmg:20, vx:300, prevX:300 });
+WV.update('battle', G, UI, 0.6, 400);
+G.peas.length = 0;
+// 孢子用自己的紫色弹丸，而不是回落到普通豌豆绿
+const PP = buildPeaProtos(hex => ({ color: { getHex: () => hex } }));
+const sporeC = PP.spore.children[0].material.color, peaC = PP.ball.children[0].material.color;
+if(!(sporeC.b > sporeC.g)) throw new Error('I12: 孢子弹丸不是紫色');
+if(peaC.getHex() === sporeC.getHex()) throw new Error('I13: 非孢子弹丸不该用孢子配色');
 pump(0.2);
 // 夜战：落地即开工，无需咖啡豆
 startLevel(G, 3);

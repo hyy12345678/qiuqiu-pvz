@@ -69,3 +69,21 @@ test('E22：普通僵尸不受 pierce 参数影响', () => {
   damageZombie(w, z, 20);                                 // 不传 pierce
   assert.strictEqual(z.hp, hp - 20, '普通僵尸照常吃弹道伤害');
 });
+test('E28：首见提示与规则一致——说弹道只剩 1/4，且不推荐被同样削弱的火豌豆', async () => {
+  const { updatePlay } = await import('../src/core/sim.js');
+  const { SCREEN_BALLISTIC_MULT } = await import('../src/core/entities.js');
+  const w = mk();
+  w.events = [{ t: 0.5, type: 'screen' }]; w.evIdx = 0; w.t = 0.4;
+  updatePlay(w, 0.2);
+  assert.ok(w.visual.waveText, '铁门僵尸首次登场应弹出提示');
+  const text = w.visual.waveText.text;
+  assert.strictEqual(SCREEN_BALLISTIC_MULT, 0.25, '倍率变了：提示里的「1/4」要跟着改');
+  assert.ok(text.includes('1/4'), '提示应说明弹道伤害只剩 1/4：' + text);
+  assert.ok(!text.includes('火豌豆'), '火豌豆直击同样被削弱，不该被推荐为破门手段：' + text);
+  // 火豌豆直击确实被削：40 点只扣 10 点铁门
+  spawnZombie(w, 'screen');
+  const z = w.zombies[w.zombies.length - 1];
+  const acc = z.acc;
+  damageZombie(w, z, 40);
+  assert.strictEqual(acc - z.acc, 10);
+});

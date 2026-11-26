@@ -1,11 +1,12 @@
-import { COLS, ROWS, CW, CH, LX, LY } from './core/constants.js';
 import { startQuiz, answerQuiz, updateQuiz, toggleUnlockAll } from './core/world.js';
 import { pickSlot, toggleShovel, pressCell, collectSun, chooseLevel, togglePause, removeSlot, pickTeamPlant } from './core/actions.js';
 import { updatePlay } from './core/sim.js';
-import { clearSelection } from './ui/state.js';
+import { clearSelection, logicalPicker } from './ui/state.js';
 import { hitHotspot } from './ui/hotspots.js';
 
-export function createGame({ world, ui, frameState, audio, render, now, requestFrame, beforeFrame }){
+// picker：屏幕点 → 阳光 / 格子。3D 透视下草坪在屏幕上不再是规整网格，由渲染层按镜头反投影；
+// 不注入时退回逻辑网格（测试与无 WebGL 环境），行为与重构前一致。
+export function createGame({ world, ui, frameState, audio, render, now, requestFrame, beforeFrame, picker = logicalPicker }){
   function dispatch(action){
     switch(action.type){
       case 'nav': world.state = action.state; audio.click(); return;
@@ -34,9 +35,10 @@ export function createGame({ world, ui, frameState, audio, render, now, requestF
     const h = hitHotspot(ui, p);
     if(h){ dispatch(h.action); return; }
     if(world.state !== 'play' || world.paused) return;
-    if(collectSun(world, p.x, p.y).ok) return;
-    const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
-    if(c>=0 && c<COLS && r>=0 && r<ROWS) pressCell(world, ui, r, c);
+    const sp = picker.sunAt(p);
+    if(sp && collectSun(world, sp.x, sp.y).ok) return;
+    const cell = picker.cellAt(p);
+    if(cell) pressCell(world, ui, cell.row, cell.col);
   }
 
   function handleKey(key){

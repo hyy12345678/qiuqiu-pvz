@@ -12,13 +12,18 @@ export function createUI(){
   };
 }
 
-export function setPointer(ui, p, state){
+// 默认拾取：逻辑网格。3D 渲染层会注入按镜头反投影的版本（见 render/scene3d/renderer.js）。
+export const logicalPicker = {
+  cellAt(p){
+    const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
+    return (c>=0 && c<COLS && r>=0 && r<ROWS) ? { row:r, col:c } : null;
+  },
+  sunAt(p){ return p; },
+};
+export function setPointer(ui, p, state, picker = logicalPicker){
   ui.mouse = p;
   ui.hoverCell = null;
-  if(state === 'play'){
-    const c = Math.floor((p.x - LX)/CW), r = Math.floor((p.y - LY)/CH);
-    if(c>=0 && c<COLS && r>=0 && r<ROWS) ui.hoverCell = { row:r, col:c };
-  }
+  if(state === 'play') ui.hoverCell = picker.cellAt(p);
 }
 
 export function clearSelection(ui){

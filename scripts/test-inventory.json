@@ -69,6 +69,10 @@
       "count": 9
     },
     {
+      "path": "tests/render-picking.test.mjs",
+      "count": 5
+    },
+    {
       "path": "tests/render-plant-table.test.mjs",
       "count": 4
     },
@@ -134,10 +138,10 @@
     },
     {
       "path": "tests/zombie-screen.test.mjs",
-      "count": 5
+      "count": 6
     }
   ],
-  "total": 213,
+  "total": 219,
   "covered": [
     "tests/actions.test.mjs",
     "tests/fingerprint.test.mjs",
@@ -154,6 +158,7 @@
     "tests/render-background-trace.test.mjs",
     "tests/render-background.test.mjs",
     "tests/render-boundaries.test.mjs",
+    "tests/render-picking.test.mjs",
     "tests/render-plant-table.test.mjs",
     "tests/render-readonly.test.mjs",
     "tests/render-target.test.mjs",

@@ -96,3 +96,33 @@ export function assertClean(errors, label) {
   if (console.length) throw new Error(label + '：控制台错误\n' + console.join('\n'));
   if (external.length) throw new Error(label + '：外部请求\n' + external.join('\n'));
 }
+
+// ---- 3D 战场的屏幕坐标 ----
+// 草坪是透视投影的，格子在屏幕上的位置由战斗镜头决定。这里用与游戏同一份机位常量换算，
+// 而不是在测试里手抄像素坐标：改镜头时测试跟着走，不会因为坐标过期而假红。
+import { Vector3 } from 'three';
+import { restCamera } from '../../src/render/scene3d/camera.js';
+import { rowZ } from '../../src/render/scene3d/coords.js';
+const battleCam = restCamera('battle');
+export function cellScreen(row, col, height = 0){
+  const v = new Vector3(col + 0.5, height, rowZ(row)).project(battleCam);
+  return [Math.round((v.x + 1) / 2 * W), Math.round((1 - v.y) / 2 * H)];
+}
+
+/** 区域的平均颜色与亮度离散度：用来断言「3D 画面真的画出来了」而不锁定像素 */
+export async function regionStats(page, rect){
+  return page.evaluate(({ rect }) => {
+    const c = document.getElementById('game');
+    const k = c.width / 1024;
+    const d = c.getContext('2d').getImageData(Math.round(rect.x * k), Math.round(rect.y * k), Math.round(rect.w * k), Math.round(rect.h * k)).data;
+    let r = 0, g = 0, b = 0, l2 = 0;
+    const n = d.length / 4;
+    for (let i = 0; i < d.length; i += 4) {
+      r += d[i]; g += d[i + 1]; b += d[i + 2];
+      const l = (d[i] + d[i + 1] + d[i + 2]) / 3; l2 += l * l;
+    }
+    r /= n; g /= n; b /= n;
+    const mean = (r + g + b) / 3;
+    return { r, g, b, mean, std: Math.sqrt(Math.max(0, l2 / n - mean * mean)) };
+  }, { rect });
+}

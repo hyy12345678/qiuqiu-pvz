@@ -8,6 +8,7 @@ import { createUI } from '../../src/ui/state.js';
 import { createGame } from '../../src/game.js';
 import { render } from '../../src/render/scenes/index.js';
 import { bindCanvas, withTarget } from '../../src/render/target.js';
+import { headlessView3D } from './view3d.mjs';
 
 const CTX_METHODS = new Set([
   'beginPath', 'fill', 'stroke', 'moveTo', 'lineTo', 'arc', 'arcTo', 'ellipse',
@@ -18,6 +19,8 @@ const CTX_METHODS = new Set([
 const CTX_PROPS = new Set([
   'fillStyle', 'strokeStyle', 'lineWidth', 'lineJoin', 'lineCap', 'font',
   'textAlign', 'textBaseline', 'globalAlpha', 'globalCompositeOperation',
+  // 3D 版界面层：面板与按钮的投影
+  'shadowColor', 'shadowBlur', 'shadowOffsetX', 'shadowOffsetY',
 ]);
 
 // 离屏背景缓存要 document.createElement；渲染层默认取全局，测试只提供这一处平台替身。
@@ -69,7 +72,8 @@ export function makeContext({ label = '画布', trace = null, writes = null } = 
   return { ctx: canvas, counts, trace, writes };
 }
 
-export function scenario({ seed = 7, dpr = 1, trace = false } = {}) {
+// view3d：默认挂一个无 WebGL 的真实 3D 视图（见 view3d.mjs）；传 false 走「不支持 WebGL」分支。
+export function scenario({ seed = 7, dpr = 1, trace = false, view3d = true } = {}) {
   const sounds = [];
   const saves = [];
   const ports = {
@@ -79,7 +83,8 @@ export function scenario({ seed = 7, dpr = 1, trace = false } = {}) {
   };
   const world = createWorld({ seed, ports });
   const ui = createUI();
-  const frameState = { t: 0, rng: mulberry32((seed ^ DRAW_SEED_XOR) >>> 0), musicOn: false };
+  const v3 = view3d ? headlessView3D() : null;
+  const frameState = { t: 0, rng: mulberry32((seed ^ DRAW_SEED_XOR) >>> 0), musicOn: false, view3d: v3 };
   const paint = makeContext({ label: '主画布', trace: trace ? [] : null });
   const canvas = {
     width: 0,
@@ -128,7 +133,7 @@ export function scenario({ seed = 7, dpr = 1, trace = false } = {}) {
 
   activate();
   game.start();
-  return { world, ui, game, audio, frameState, queue, paint, sounds, saves,
+  return { world, ui, game, audio, frameState, queue, paint, sounds, saves, view3d: v3,
     get clock(){ return clock; },
     trace: paint.trace, activate, frame, pump, press };
 }

@@ -1,5 +1,9 @@
 // 受控绘制轨迹基线：固定时间、随机源、存储、视口与 DPR，记录 Canvas 调用顺序与参数。
 //
+// 3D 版：轨迹记录的是 2D 主画布上的全部调用——界面层（卡片、按钮、文字、HUD）逐行锁定，
+// 3D 战场在轨迹里只是一次整幅 drawImage。战场本身由下面的画面统计兜底：
+// 不锁像素（软件光栅与真 GPU 的像素本来就不同），只断言「画出来了、昼夜确实分叉」。
+//
 // 验证与更新分离：
 //   npm run test:browser:baselines        # 只比较（verify 链用的就是这一条）
 //   npm run test:browser:update           # 审查差异后重写基线
@@ -16,7 +20,7 @@ import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { ROOT, launch, openRelease, clickLogical, assertClean } from './lib.mjs';
+import { ROOT, launch, openRelease, clickLogical, assertClean, regionStats } from './lib.mjs';
 import { initHarness } from './trace-harness.mjs';
 
 const require = createRequire(import.meta.url);
@@ -56,10 +60,15 @@ async function toPlay(page, card) {
   await advance(page, 240);
 }
 
+// lawn：战场中央的画面统计断言（白天草坪明亮偏绿，夜里整体压暗）
+const LAWN = { x: 380, y: 260, w: 260, h: 160 };
 const SCENES = [
-  { name: 'menu', prepare: page => advance(page, 5) },
-  { name: 'play-day-l1', prepare: page => toPlay(page, LV1) },
-  { name: 'play-night-l4', prepare: page => toPlay(page, LV4) },
+  { name: 'menu', prepare: page => advance(page, 5),
+    check: st => assert.ok(st.b > st.r, '菜单应是 3D 院子的蓝天') , rect: { x: 0, y: 0, w: 1024, h: 60 } },
+  { name: 'play-day-l1', prepare: page => toPlay(page, LV1),
+    check: st => { assert.ok(st.g > st.r && st.g > st.b, '白天草坪应偏绿'); assert.ok(st.mean > 90, '白天草坪应明亮，实际 ' + st.mean.toFixed(0)); }, rect: LAWN },
+  { name: 'play-night-l4', prepare: page => toPlay(page, LV4),
+    check: st => assert.ok(st.mean < 90, '夜战应明显压暗，实际 ' + st.mean.toFixed(0)), rect: LAWN },
 ];
 
 function baselinePath(name) { return path.join(BASE_DIR, name + '.trace.txt'); }
@@ -122,6 +131,8 @@ for (const scene of SCENES) {
         return window.__traceStop();
       });
       assert.ok(lines.length > 100, '轨迹行数过少（' + lines.length + '），可能没有真正渲染');
+      assert.ok(lines.some(l => /drawImage\(\[object HTMLCanvasElement\],0,0,1024,640\)/.test(l)), '应整幅贴出 3D 画面');
+      scene.check(await regionStats(page, scene.rect));
       await checkScene(page, scene.name, lines);
       assertClean(errors, scene.name);
       await context.close();

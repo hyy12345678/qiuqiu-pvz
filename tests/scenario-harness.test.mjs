@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { makeContext, scenario, withTarget } from './helpers/scenario.mjs';
 import { startLevel, beginPlay } from '../src/core/world.js';
 import { ctx, DPR } from '../src/render/target.js';
-import { bgCache } from '../src/render/background.js';
 import { H, W } from '../src/core/constants.js';
 
 test('夹具1 记录型 ctx 统计真实绘制，未知 API 与未知属性写入均抛错', () => {
@@ -14,7 +13,7 @@ test('夹具1 记录型 ctx 统计真实绘制，未知 API 与未知属性写�
   assert.equal(counts.get('fillRect'), 2);
   assert.equal(c.fillStyle, '#fff');
   assert.throws(() => c.definitelyNotARealCanvasApi(), /Canvas 桩缺少 API/);
-  assert.throws(() => { c.shadowBlur = 4; }, /不支持写入属性/);
+  assert.throws(() => { c.filter = 'blur(2px)'; }, /不支持写入属性/);
   const gradient = c.createLinearGradient(0, 0, 1, 1);
   assert.equal(typeof gradient.addColorStop, 'function');
 });
@@ -38,34 +37,40 @@ test('夹具2 记录模式留下绘制顺序、渐变停靠点与样式写入历
   assert.deepEqual(traced.writes, [{ prop: 'fillStyle', value: 'red' }]);
 });
 
-test('夹具3 scenario 绑定主画布并启动帧链，菜单帧真实绘制天空渐变与底板', () => {
+test('夹具3 scenario 绑定主画布并启动帧链，菜单帧贴出 3D 院子并画出界面', () => {
   assert.equal(ctx, null, '导入夹具前渲染目标未绑定');
   const h = scenario({ seed: 7, dpr: 2 });
   assert.equal(DPR, 2);
   assert.equal(ctx, h.paint.ctx);
   assert.equal(h.queue.length, 1, 'start 已排第一帧');
   h.frame();
-  assert.ok(h.paint.counts.get('createLinearGradient') > 0, '菜单帧没有绘制天空渐变');
-  assert.ok(h.paint.counts.get('fillRect') > 0, '菜单帧没有绘制底板/暗角');
-  assert.ok(h.paint.counts.get('arc') > 0, '菜单帧没有绘制太阳与云');
+  assert.deepEqual(h.view3d.draws, ['menu'], '菜单帧应以 menu 模式绘制 3D 院子');
+  assert.equal(h.paint.counts.get('drawImage'), 1, '3D 画面应整幅贴底一次');
+  assert.ok(h.paint.counts.get('createLinearGradient') > 0, '菜单帧没有绘制标题与卡片渐变');
+  assert.ok(h.paint.counts.get('fillRect') > 0, '菜单帧没有绘制暗角');
+  assert.ok(h.paint.counts.get('arc') > 0, '菜单帧没有绘制锁住关卡的挂锁');
   assert.equal(h.world.state, 'menu');
   assert.equal(h.clock, 1000 / 60);
 });
 
-test('夹具3b 战斗帧经背景缓存走 drawImage，主题切换后缓存重新生成', () => {
+test('夹具3b 战斗帧以 battle 模式贴出 3D 战场，没有 WebGL 时退回提示底图', () => {
   const h = scenario({ seed: 7, trace: true });
   startLevel(h.world, 0);
   h.world.slots = [];
   beginPlay(h.world);
-  // E18/E19 之后卡槽图标、木板、太阳图标都走 drawImage，总数不再等于「背景贴了几次」。
-  // 改成数「整屏级」贴图：drawImage(画布, 0, 0, 1024, 640)。
+  // 数「整屏级」贴图：drawImage(3D 画布, 0, 0, 1024, 640)
   const bgBlits = () => h.paint.trace.filter(e => e.op === 'drawImage'
     && e.args[1] === 0 && e.args[2] === 0 && e.args[3] === 1024).length;
   h.frame();
-  assert.equal(bgBlits(), 1, '首个战斗帧应生成并贴出背景缓存');
+  assert.equal(bgBlits(), 1, '首个战斗帧应贴出 3D 画面');
   h.frame();
-  assert.equal(bgBlits(), 2, '同主题第二帧应命中缓存后再次贴图');
-  assert.equal(bgCache.theme, 'day');
+  assert.equal(bgBlits(), 2, '每帧都贴一次');
+  assert.deepEqual(h.view3d.draws, ['battle', 'battle']);
+  assert.equal(h.view3d.view.env.night, false);
+  const bare = scenario({ seed: 7, trace: true, view3d: false });
+  bare.frame();
+  assert.equal(bare.paint.trace.filter(e => e.op === 'drawImage').length, 0, '没有 3D 视图时不应贴图');
+  assert.ok(bare.paint.trace.some(e => e.op === 'fillText' && /WebGL/.test(e.args[0])), '应提示浏览器不支持 WebGL');
 });
 
 test('夹具4 pump 推进世界时钟，帧链断裂与空队列均报错', () => {

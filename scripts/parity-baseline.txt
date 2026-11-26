@@ -1262,8 +1262,8 @@ const view = createWorldView();
 const view3d = createView3D({ document });
 const vx = isMissile ? 300 : 520;
 const w = 74;
-const w = Math.ceil(g.measureText(text).width) + 4, h = Math.ceil(px * 1.35) + 2;
 const w = bmFace.width * scale, h = bmFace.height * scale;
+const w = textCells(text, px) + 4, h = Math.ceil(px * 1.35) + 2;
 const walk = tiledBox(1.5, 0.1, zl, T.stoneBrick); walk.position.set(COLS + 0.75, -0.05, zc); g.add(walk);
 const wall = tiledBox(1.4, 3.5, zl, T.planks); wall.position.set(-4.2, 2.0, zc); g.add(wall);
 const want = fade < 1;
@@ -1736,6 +1736,7 @@ for(const b of booms) group.remove(b.g);
 for(const b of btns){
 for(const b of recentBooms) b.age += fdt;
 for(const c of menuCast){
+for(const ch of text) n += ch.charCodeAt(0) > 0x2e7f ? 1 : 0.6;
 for(const d of debris){ group.remove(d.inst.root); d.inst.mats.dispose(); }
 for(const e of list){
 for(const frac of [0.5, 1.0]){
@@ -2195,6 +2196,7 @@ function syncList(list, map, make, upd, kill){
 function syncSuns(world, t){ syncList(world.suns, sunViews, makeSun, (v, s) => updateSun(v, s, t), killSun); }
 function template(kind, type){
 function tex(key, paint, size = 16){ return tileTexture(key, size, paint); }
+function textCells(text, px){
 function tigaAnimate(inst, p, t){
 function tigaBuild(rig){
 function tileTexture(key, size, paint, repeat){
@@ -2270,8 +2272,7 @@ g.attributes.color.setXYZ(n, r, gg, b);
 g.attributes.position.setXYZ(n, x, y, z);
 g.attributes.size.setX(n, size);
 g.fillStyle = '#ffffff';
-g.fillText(text, 2, h / 2);
-g.font = '900 ' + px + 'px ' + UI_FONT;
+g.fillText(text, w / 2, h / 2);
 g.font = '900 ' + px + 'px ' + UI_FONT;
 g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
 g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
@@ -2291,7 +2292,7 @@ g.setAttribute('size', mk(1)); g.setAttribute('alpha', mk(1));
 g.setAttribute('uv', new Float32BufferAttribute(arr, 2));
 g.setDrawRange(0, 0);
 g.setDrawRange(0, n);
-g.textBaseline = 'middle'; g.textAlign = 'left';
+g.textBaseline = 'middle'; g.textAlign = 'center';
 g.translate(0, h * P / 2, 0);
 g.userData.grass = grass;
 g2.addColorStop(0, active ? '#ffe58a' : '#6a8a80'); g2.addColorStop(1, active ? '#c8902e' : '#2a4038');
@@ -2916,6 +2917,7 @@ let lost = false;
 let menuBuilt = false;
 let meta = partMeta.get(p);
 let n = 0;
+let n = 0;
 let night = null;
 let parent = 'flagpole';
 let pixelOK = null;
@@ -3118,7 +3120,7 @@ pivots[parent].add(g); pivots[name] = g;
 pivots[pv].add(mesh);
 pix(SHOVEL_ROWS, { k: '#1a1a1a', w: '#c89a5a', b: '#8a5a2a', s: '#c8d0d8', w2: '#ffffff' }, Math.round(x - 5.5 * k), Math.round(y - 5.5 * k), k);
 pix(SUN_ROWS, { y: blink ? '#ffe23a' : '#ffc020', o: '#ff9a10', w: '#fffbe0' }, Math.round(x - 5 * k), Math.round(y - 5 * k), k);
-pixelOK = !!g && ('getImageData' in g) && ('putImageData' in g) && ('measureText' in g);
+pixelOK = !!g && ('getImageData' in g) && ('putImageData' in g);
 pixelOK = false;
 pixelText('已暂停', W / 2, H / 2 - 20, 16, 4, { face: ['#ffffff', '#d0d0d0'], edge: '#111111', side: '#3a3a3a', depth: 3 });
 pixelText(text[i], x, y, px, scale, { face, edge, side, depth: 3 });
@@ -3278,6 +3280,7 @@ return (p, w, h, R) => {
 return (p, w, h, R) => {
 return (p, w, h, R) => { for(const f of fns) f(p, w, h, R); };
 return FACE_ORDER.map(f => {
+return Math.ceil(n * px);
 return Math.min(MAX_DPR, raw);
 return Object.assign({}, SILENT, overrides);
 return P;
@@ -4097,6 +4100,7 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { spec: flower('dandelion', '#ffd23a', '#ffb020'), n: 26, w: 16, h: 16, s: [0.7, 0.85] },
 { spec: flower('poppy', '#e03030', '#2a2a2a'), n: 26, w: 16, h: 16, s: [0.7, 0.85] },
 { type: 'startQuiz' }, { disabled: !world.slots.length, size: 20, color: 'orange' });
+}
 }
 }
 }

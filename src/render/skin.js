@@ -113,7 +113,7 @@ function canPixel(){
     const c = document.createElement('canvas');
     const g = c.getContext && c.getContext('2d');
     // 记录型 Canvas 替身没有像素读写能力：这里用 in 探测，不会触发替身的「未登记 API」报错
-    pixelOK = !!g && ('getImageData' in g) && ('putImageData' in g) && ('measureText' in g);
+    pixelOK = !!g && ('getImageData' in g) && ('putImageData' in g);
   } catch(e){ pixelOK = false; }
   return pixelOK;
 }
@@ -124,13 +124,14 @@ function pixelBitmap(text, px, colors){
   if(c) return c;
   c = document.createElement('canvas');
   const g = c.getContext('2d');
-  g.font = '900 ' + px + 'px ' + UI_FONT;
-  const w = Math.ceil(g.measureText(text).width) + 4, h = Math.ceil(px * 1.35) + 2;
+  // 画布尺寸只按字符类别估算，不用 measureText：后者取决于系统装了什么字体，
+  // macOS 与 CI 的 Ubuntu 量出来不一样，会让绘制轨迹里的 drawImage 尺寸跨平台漂移（E29 首次 CI 实跑）。
+  const w = textCells(text, px) + 4, h = Math.ceil(px * 1.35) + 2;
   c.width = w; c.height = h;
   g.font = '900 ' + px + 'px ' + UI_FONT;
-  g.textBaseline = 'middle'; g.textAlign = 'left';
+  g.textBaseline = 'middle'; g.textAlign = 'center';
   g.fillStyle = '#ffffff';
-  g.fillText(text, 2, h / 2);
+  g.fillText(text, w / 2, h / 2);
   const img = g.getImageData(0, 0, w, h), d = img.data;
   const top = hexRgb(colors[0]), bot = hexRgb(colors[1]);
   for(let y = 0; y < h; y++){
@@ -144,6 +145,12 @@ function pixelBitmap(text, px, colors){
   g.putImageData(img, 0, 0);
   PIXEL_CACHE.set(key, c);
   return c;
+}
+// 字宽估算：全角字符（汉字、全角标点）一格，其余（数字、字母、半角标点）六成
+function textCells(text, px){
+  let n = 0;
+  for(const ch of text) n += ch.charCodeAt(0) > 0x2e7f ? 1 : 0.6;
+  return Math.ceil(n * px);
 }
 function hexRgb(c){ const n = parseInt(c.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
 

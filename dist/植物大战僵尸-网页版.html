@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 36d57bff */
+/* build: v0.1.0 pretty · src 9a77ff5d */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -840,7 +840,7 @@
       if (typeof document === "undefined" || !document.createElement) return false;
       const c = document.createElement("canvas");
       const g2 = c.getContext && c.getContext("2d");
-      pixelOK = !!g2 && "getImageData" in g2 && "putImageData" in g2 && "measureText" in g2;
+      pixelOK = !!g2 && "getImageData" in g2 && "putImageData" in g2;
     } catch (e) {
       pixelOK = false;
     }
@@ -852,15 +852,14 @@
     if (c) return c;
     c = document.createElement("canvas");
     const g2 = c.getContext("2d");
-    g2.font = "900 " + px + "px " + UI_FONT;
-    const w = Math.ceil(g2.measureText(text).width) + 4, h = Math.ceil(px * 1.35) + 2;
+    const w = textCells(text, px) + 4, h = Math.ceil(px * 1.35) + 2;
     c.width = w;
     c.height = h;
     g2.font = "900 " + px + "px " + UI_FONT;
     g2.textBaseline = "middle";
-    g2.textAlign = "left";
+    g2.textAlign = "center";
     g2.fillStyle = "#ffffff";
-    g2.fillText(text, 2, h / 2);
+    g2.fillText(text, w / 2, h / 2);
     const img = g2.getImageData(0, 0, w, h), d = img.data;
     const top = hexRgb(colors[0]), bot = hexRgb(colors[1]);
     for (let y = 0; y < h; y++) {
@@ -878,6 +877,11 @@
     g2.putImageData(img, 0, 0);
     PIXEL_CACHE.set(key, c);
     return c;
+  }
+  function textCells(text, px) {
+    let n = 0;
+    for (const ch of text) n += ch.charCodeAt(0) > 11903 ? 1 : 0.6;
+    return Math.ceil(n * px);
   }
   function hexRgb(c) {
     const n = parseInt(c.slice(1), 16);

@@ -1,36 +1,105 @@
 # day fog cfe6f5 34-80 env 0.28
-mesh PlaneGeometry 4 MeshStandardMaterial recv @4.5,-0.05,-4.5
+mesh PlaneGeometry 4 MeshStandardMaterial recv @4.5,-0.52,-4.5
 mesh BufferGeometry 1656 MeshStandardMaterial/m recv @0,0,0
-instanced 3400 x 18
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.35,0.08,3.2
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.05,0,3.2
-mesh PlaneGeometry 4 MeshStandardMaterial recv @-0.6,0.012,3.2
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.2,1.75,3.2
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.45,0.25,3.2
-mesh BufferGeometry 2124 MeshStandardMaterial/m cast recv @0,0,0
-mesh BufferGeometry 6444 MeshPhysicalMaterial/g cast recv @0,0,0
-mesh BufferGeometry 456 MeshStandardMaterial/x cast @0,0,0
-mesh BoxGeometry 24 MeshBasicMaterial @-3.4,1.55,0.4
-mesh BoxGeometry 24 MeshBasicMaterial @-3.4,1.55,4
-mesh BoxGeometry 24 MeshBasicMaterial @-3.4,1.55,6.9
-mesh SphereGeometry 117 MeshBasicMaterial @-3.3,2.15,3.1
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.35,3.05,3.2
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.4,4.2,3.2
-mesh BufferGeometry 13992 MeshStandardMaterial/m cast recv @0,0,0
-mesh PlaneGeometry 4 MeshStandardMaterial recv @9.85,0.03,2.5
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @10.48,0,2.5
-mesh PlaneGeometry 4 MeshStandardMaterial recv @14.55,-0.03,2.5
-mesh BufferGeometry 1248 MeshStandardMaterial/m cast recv @0,0,0
-mesh BufferGeometry 528 MeshStandardMaterial/x cast @0,0,0
-mesh BufferGeometry 1620 MeshPhysicalMaterial/g cast recv @0,0,0
-mesh SphereGeometry 117 MeshBasicMaterial @10.25,2.56,-0.6
-mesh CylinderGeometry 42 MeshBasicMaterial hidden @10.25,1.3,-0.6
-mesh SphereGeometry 117 MeshBasicMaterial @10.25,2.56,7.9
-mesh CylinderGeometry 42 MeshBasicMaterial hidden @10.25,1.3,7.9
-mesh BufferGeometry 7644 MeshStandardMaterial/m cast recv @0,0,0
-mesh BufferGeometry 66240 MeshPhysicalMaterial/g cast recv @0,0,0
+instanced 300 x 12
+instanced 26 x 12
+instanced 26 x 12
+instanced 14 x 12
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.35,0,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1,-0.06,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-0.55,-0.05,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.2,0,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.2,2,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.5,1.95,-1.95
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.5,1.95,2.9
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.5,1.95,8.35
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.5,3.75,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.44,1.9,0.6
+mesh BoxGeometry 24 MeshBasicMaterial @-3.35,1.9,0.6
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.2,1.05,0.6
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.44,1.9,4.4
+mesh BoxGeometry 24 MeshBasicMaterial @-3.35,1.9,4.4
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.2,1.05,4.4
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.44,1.9,6.8
+mesh BoxGeometry 24 MeshBasicMaterial @-3.35,1.9,6.8
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.2,1.05,6.8
+mesh BoxGeometry 24 MeshStandardMaterial cast @-3.42,1.25,2.3
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,-1.8
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,1.4
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,3.3
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,5.6
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,8.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,2.95,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.25,3.3,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.75,3.8,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.25,4.3,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.75,4.8,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.25,4,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.75,4.5,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.25,5,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.75,5.5,3.2
+mesh BoxGeometry 24 MeshBasicMaterial @-3.25,2.5,3.1
+mesh BufferGeometry 72 MeshStandardMaterial/m cast recv @0,0,0
+mesh BufferGeometry 288 MeshStandardMaterial/g cast recv @0,0,0
+mesh BufferGeometry 1440 MeshStandardMaterial/m cast recv @0,0,0
+mesh BufferGeometry 10476 MeshStandardMaterial/t recv @0,0,0
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @9.75,-0.05,2.5
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @10.62,0,2.5
+mesh PlaneGeometry 4 MeshStandardMaterial recv @14.75,-0.06,2.5
+mesh BufferGeometry 504 MeshStandardMaterial/m cast recv @0,0,0
+mesh BufferGeometry 72 MeshStandardMaterial/g cast recv @0,0,0
+mesh BoxGeometry 24 MeshBasicMaterial @10.25,2.7,-0.6
+mesh CylinderGeometry 10 MeshBasicMaterial hidden @10.25,1.3,-0.6
+mesh BoxGeometry 24 MeshBasicMaterial @10.25,2.7,7.9
+mesh CylinderGeometry 10 MeshBasicMaterial hidden @10.25,1.3,7.9
+mesh BufferGeometry 2052 MeshStandardMaterial/m cast recv @0,0,0
+mesh BufferGeometry 840 MeshStandardMaterial/t recv @0,0,0
 mesh SphereGeometry 561 ShaderMaterial @0,0,0
-mesh BufferGeometry 10800 MeshStandardMaterial/m @0,0,0
+mesh PlaneGeometry 4 MeshBasicMaterial @0,0,0
+mesh PlaneGeometry 4 MeshBasicMaterial hidden @0,0,0
+mesh BoxGeometry 24 MeshBasicMaterial @11.657,18.999,-80.503
+mesh BoxGeometry 24 MeshBasicMaterial @12.883,18.999,-81.107
+mesh BoxGeometry 24 MeshBasicMaterial @7.538,18.877,-61.742
+mesh BoxGeometry 24 MeshBasicMaterial @7.177,18.877,-60.181
+mesh BoxGeometry 24 MeshBasicMaterial @37.575,18.539,-73.414
+mesh BoxGeometry 24 MeshBasicMaterial @37.306,18.539,-71.301
+mesh BoxGeometry 24 MeshBasicMaterial @23.325,19.534,-80.693
+mesh BoxGeometry 24 MeshBasicMaterial @23.211,19.534,-81.85
+mesh BoxGeometry 24 MeshBasicMaterial @29.215,18.622,-87.333
+mesh BoxGeometry 24 MeshBasicMaterial @32.544,18.622,-89.394
+mesh BoxGeometry 24 MeshBasicMaterial @32.818,18.622,-87.817
+mesh BoxGeometry 24 MeshBasicMaterial @30.315,18.622,-87.609
+mesh BoxGeometry 24 MeshBasicMaterial @-23.778,17.52,-77.862
+mesh BoxGeometry 24 MeshBasicMaterial @-22.166,17.52,-78.983
+mesh BoxGeometry 24 MeshBasicMaterial @-23.982,17.52,-78.572
+mesh BoxGeometry 24 MeshBasicMaterial @-22.066,17.52,-78.681
+mesh BoxGeometry 24 MeshBasicMaterial @-24.995,19.5,-67.943
+mesh BoxGeometry 24 MeshBasicMaterial @-23.346,19.5,-67.195
+mesh BoxGeometry 24 MeshBasicMaterial @-24.861,19.5,-66.992
+mesh BoxGeometry 24 MeshBasicMaterial @-7.686,16.289,-45.718
+mesh BoxGeometry 24 MeshBasicMaterial @-7.613,16.289,-45.841
+mesh BoxGeometry 24 MeshBasicMaterial @-9.931,16.289,-44.863
+mesh BoxGeometry 24 MeshBasicMaterial @-7.499,16.289,-44.753
+mesh BoxGeometry 24 MeshBasicMaterial @-6.712,16.735,-53
+mesh BoxGeometry 24 MeshBasicMaterial @-6.17,16.735,-53.447
+mesh BoxGeometry 24 MeshBasicMaterial @-8.77,16.735,-54.08
+mesh BoxGeometry 24 MeshBasicMaterial @7.474,19.589,-48.549
+mesh BoxGeometry 24 MeshBasicMaterial @6.976,19.589,-49.685
+mesh BoxGeometry 24 MeshBasicMaterial @6.623,19.589,-51.235
+mesh BoxGeometry 24 MeshBasicMaterial @7.481,19.589,-49.012
+mesh BoxGeometry 24 MeshBasicMaterial @9.923,16.404,-90.04
+mesh BoxGeometry 24 MeshBasicMaterial @12.91,16.404,-89.263
+mesh BoxGeometry 24 MeshBasicMaterial @11.323,16.404,-89.596
+mesh BoxGeometry 24 MeshBasicMaterial @11.452,16.404,-88.994
+mesh BoxGeometry 24 MeshBasicMaterial @-8.325,16.47,-43.524
+mesh BoxGeometry 24 MeshBasicMaterial @-7.219,16.47,-45.021
+mesh BoxGeometry 24 MeshBasicMaterial @-9.568,16.47,-44.858
+mesh BoxGeometry 24 MeshBasicMaterial @-3.428,16.692,-71.461
+mesh BoxGeometry 24 MeshBasicMaterial @-4.866,16.692,-70.603
+mesh BoxGeometry 24 MeshBasicMaterial @-3.946,16.692,-70.656
+mesh BoxGeometry 24 MeshBasicMaterial @-7.272,16.692,-71.676
+mesh BoxGeometry 24 MeshBasicMaterial @39.196,16.539,-57.448
+mesh BoxGeometry 24 MeshBasicMaterial @38.328,16.539,-57.626
 points 700 hidden
 points 60 hidden
 light HemisphereLight cfe6ff 0.85
@@ -42,38 +111,107 @@ light PointLight ff9a40 0
 light PointLight ff9a40 0
 light PointLight ff9a40 0
 # night fog 141c3a 26-62 env 0.1
-mesh PlaneGeometry 4 MeshStandardMaterial recv @4.5,-0.05,-4.5
+mesh PlaneGeometry 4 MeshStandardMaterial recv @4.5,-0.52,-4.5
 mesh BufferGeometry 1656 MeshStandardMaterial/m recv @0,0,0
-instanced 3400 x 18
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.35,0.08,3.2
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.05,0,3.2
-mesh PlaneGeometry 4 MeshStandardMaterial recv @-0.6,0.012,3.2
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.2,1.75,3.2
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.45,0.25,3.2
-mesh BufferGeometry 2124 MeshStandardMaterial/m cast recv @0,0,0
-mesh BufferGeometry 6444 MeshPhysicalMaterial/g cast recv @0,0,0
-mesh BufferGeometry 456 MeshStandardMaterial/x cast @0,0,0
-mesh BoxGeometry 24 MeshBasicMaterial @-3.4,1.55,0.4
-mesh BoxGeometry 24 MeshBasicMaterial @-3.4,1.55,4
-mesh BoxGeometry 24 MeshBasicMaterial @-3.4,1.55,6.9
-mesh SphereGeometry 117 MeshBasicMaterial @-3.3,2.15,3.1
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.35,3.05,3.2
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.4,4.2,3.2
-mesh BufferGeometry 13992 MeshStandardMaterial/m cast recv @0,0,0
-mesh PlaneGeometry 4 MeshStandardMaterial recv @9.85,0.03,2.5
-mesh BoxGeometry 24 MeshStandardMaterial cast recv @10.48,0,2.5
-mesh PlaneGeometry 4 MeshStandardMaterial recv @14.55,-0.03,2.5
-mesh BufferGeometry 1248 MeshStandardMaterial/m cast recv @0,0,0
-mesh BufferGeometry 528 MeshStandardMaterial/x cast @0,0,0
-mesh BufferGeometry 1620 MeshPhysicalMaterial/g cast recv @0,0,0
-mesh SphereGeometry 117 MeshBasicMaterial @10.25,2.56,-0.6
-mesh CylinderGeometry 42 MeshBasicMaterial @10.25,1.3,-0.6
-mesh SphereGeometry 117 MeshBasicMaterial @10.25,2.56,7.9
-mesh CylinderGeometry 42 MeshBasicMaterial @10.25,1.3,7.9
-mesh BufferGeometry 7644 MeshStandardMaterial/m cast recv @0,0,0
-mesh BufferGeometry 66240 MeshPhysicalMaterial/g cast recv @0,0,0
+instanced 300 x 12
+instanced 26 x 12
+instanced 26 x 12
+instanced 14 x 12
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.35,0,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1,-0.06,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-0.55,-0.05,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.2,0,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.2,2,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.5,1.95,-1.95
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.5,1.95,2.9
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.5,1.95,8.35
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.5,3.75,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.44,1.9,0.6
+mesh BoxGeometry 24 MeshBasicMaterial @-3.35,1.9,0.6
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.2,1.05,0.6
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.44,1.9,4.4
+mesh BoxGeometry 24 MeshBasicMaterial @-3.35,1.9,4.4
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.2,1.05,4.4
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.44,1.9,6.8
+mesh BoxGeometry 24 MeshBasicMaterial @-3.35,1.9,6.8
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.2,1.05,6.8
+mesh BoxGeometry 24 MeshStandardMaterial cast @-3.42,1.25,2.3
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,-1.8
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,1.4
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,3.3
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,5.6
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,1.5,8.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.45,2.95,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.25,3.3,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-1.75,3.8,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.25,4.3,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-2.75,4.8,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.25,4,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-3.75,4.5,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.25,5,3.2
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @-4.75,5.5,3.2
+mesh BoxGeometry 24 MeshBasicMaterial @-3.25,2.5,3.1
+mesh BufferGeometry 72 MeshStandardMaterial/m cast recv @0,0,0
+mesh BufferGeometry 288 MeshStandardMaterial/g cast recv @0,0,0
+mesh BufferGeometry 1440 MeshStandardMaterial/m cast recv @0,0,0
+mesh BufferGeometry 10476 MeshStandardMaterial/t recv @0,0,0
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @9.75,-0.05,2.5
+mesh BoxGeometry 24 MeshStandardMaterial cast recv @10.62,0,2.5
+mesh PlaneGeometry 4 MeshStandardMaterial recv @14.75,-0.06,2.5
+mesh BufferGeometry 504 MeshStandardMaterial/m cast recv @0,0,0
+mesh BufferGeometry 72 MeshStandardMaterial/g cast recv @0,0,0
+mesh BoxGeometry 24 MeshBasicMaterial @10.25,2.7,-0.6
+mesh CylinderGeometry 10 MeshBasicMaterial @10.25,1.3,-0.6
+mesh BoxGeometry 24 MeshBasicMaterial @10.25,2.7,7.9
+mesh CylinderGeometry 10 MeshBasicMaterial @10.25,1.3,7.9
+mesh BufferGeometry 2052 MeshStandardMaterial/m cast recv @0,0,0
+mesh BufferGeometry 840 MeshStandardMaterial/t recv @0,0,0
 mesh SphereGeometry 561 ShaderMaterial @0,0,0
-mesh BufferGeometry 10800 MeshStandardMaterial/m @0,0,0
+mesh PlaneGeometry 4 MeshBasicMaterial hidden @0,0,0
+mesh PlaneGeometry 4 MeshBasicMaterial @0,0,0
+mesh BoxGeometry 24 MeshBasicMaterial @11.657,18.999,-80.503
+mesh BoxGeometry 24 MeshBasicMaterial @12.883,18.999,-81.107
+mesh BoxGeometry 24 MeshBasicMaterial @7.538,18.877,-61.742
+mesh BoxGeometry 24 MeshBasicMaterial @7.177,18.877,-60.181
+mesh BoxGeometry 24 MeshBasicMaterial @37.575,18.539,-73.414
+mesh BoxGeometry 24 MeshBasicMaterial @37.306,18.539,-71.301
+mesh BoxGeometry 24 MeshBasicMaterial @23.325,19.534,-80.693
+mesh BoxGeometry 24 MeshBasicMaterial @23.211,19.534,-81.85
+mesh BoxGeometry 24 MeshBasicMaterial @29.215,18.622,-87.333
+mesh BoxGeometry 24 MeshBasicMaterial @32.544,18.622,-89.394
+mesh BoxGeometry 24 MeshBasicMaterial @32.818,18.622,-87.817
+mesh BoxGeometry 24 MeshBasicMaterial @30.315,18.622,-87.609
+mesh BoxGeometry 24 MeshBasicMaterial @-23.778,17.52,-77.862
+mesh BoxGeometry 24 MeshBasicMaterial @-22.166,17.52,-78.983
+mesh BoxGeometry 24 MeshBasicMaterial @-23.982,17.52,-78.572
+mesh BoxGeometry 24 MeshBasicMaterial @-22.066,17.52,-78.681
+mesh BoxGeometry 24 MeshBasicMaterial @-24.995,19.5,-67.943
+mesh BoxGeometry 24 MeshBasicMaterial @-23.346,19.5,-67.195
+mesh BoxGeometry 24 MeshBasicMaterial @-24.861,19.5,-66.992
+mesh BoxGeometry 24 MeshBasicMaterial @-7.686,16.289,-45.718
+mesh BoxGeometry 24 MeshBasicMaterial @-7.613,16.289,-45.841
+mesh BoxGeometry 24 MeshBasicMaterial @-9.931,16.289,-44.863
+mesh BoxGeometry 24 MeshBasicMaterial @-7.499,16.289,-44.753
+mesh BoxGeometry 24 MeshBasicMaterial @-6.712,16.735,-53
+mesh BoxGeometry 24 MeshBasicMaterial @-6.17,16.735,-53.447
+mesh BoxGeometry 24 MeshBasicMaterial @-8.77,16.735,-54.08
+mesh BoxGeometry 24 MeshBasicMaterial @7.474,19.589,-48.549
+mesh BoxGeometry 24 MeshBasicMaterial @6.976,19.589,-49.685
+mesh BoxGeometry 24 MeshBasicMaterial @6.623,19.589,-51.235
+mesh BoxGeometry 24 MeshBasicMaterial @7.481,19.589,-49.012
+mesh BoxGeometry 24 MeshBasicMaterial @9.923,16.404,-90.04
+mesh BoxGeometry 24 MeshBasicMaterial @12.91,16.404,-89.263
+mesh BoxGeometry 24 MeshBasicMaterial @11.323,16.404,-89.596
+mesh BoxGeometry 24 MeshBasicMaterial @11.452,16.404,-88.994
+mesh BoxGeometry 24 MeshBasicMaterial @-8.325,16.47,-43.524
+mesh BoxGeometry 24 MeshBasicMaterial @-7.219,16.47,-45.021
+mesh BoxGeometry 24 MeshBasicMaterial @-9.568,16.47,-44.858
+mesh BoxGeometry 24 MeshBasicMaterial @-3.428,16.692,-71.461
+mesh BoxGeometry 24 MeshBasicMaterial @-4.866,16.692,-70.603
+mesh BoxGeometry 24 MeshBasicMaterial @-3.946,16.692,-70.656
+mesh BoxGeometry 24 MeshBasicMaterial @-7.272,16.692,-71.676
+mesh BoxGeometry 24 MeshBasicMaterial @39.196,16.539,-57.448
+mesh BoxGeometry 24 MeshBasicMaterial @38.328,16.539,-57.626
 points 700
 points 60
 light HemisphereLight 4a5aa0 0.42

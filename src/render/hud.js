@@ -6,7 +6,7 @@ import { PLANTS } from '../core/data/plants.js';
 import { hotRect, getUITime } from './scenes/common.js';
 import { ctx } from './target.js';
 import { rr, drawText } from './paint.js';
-import { candyButton, portrait, shovelIcon, sunIcon } from './skin.js';
+import { candyButton, portrait, shovelIcon, sunIcon, pixelText } from './skin.js';
 import { getIcon } from './icons.js';
 
 const BANK_Y = 8, BANK_H = 88;
@@ -207,10 +207,7 @@ export function drawWaveText(at, world){
     ctx.strokeStyle = '#ff7a5a'; ctx.lineWidth = 2; ctx.stroke();
   }
   ctx.scale(scale, scale);
-  for(let k = 6; k > 0; k--) drawText(wv.text, 0, k, size, '#5a0402', '#5a0402', Math.round(size / 5));
-  const g = ctx.createLinearGradient(0, -size / 2, 0, size / 2);
-  g.addColorStop(0, '#ffe0a0'); g.addColorStop(0.45, '#ff5a2a'); g.addColorStop(1, '#b00a04');
-  drawText(wv.text, 0, 0, size, g, '#2a0000', Math.round(size / 5));
+  pixelText(wv.text, 0, 0, 14, Math.max(2, Math.round(size / 14)), { face: ['#ffd8a0', '#ff4a1a'], edge: '#2a0000', side: '#6a0806', depth: size >= 40 ? 3 : 2 });
   ctx.restore();
 }
 
@@ -225,11 +222,7 @@ export function drawIntro(at, world){
   ctx.globalAlpha = go ? 1 : k;
   ctx.translate(W / 2, H / 2 - 30);
   ctx.scale(scale, scale);
-  for(let d = 7; d > 0; d--) drawText(txt, 0, d, 72, '#2a1a02', '#2a1a02', 12);
-  const g = ctx.createLinearGradient(0, -36, 0, 36);
-  if(go){ g.addColorStop(0, '#fffbd0'); g.addColorStop(0.5, '#ffd23a'); g.addColorStop(1, '#e07a08'); }
-  else { g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#c8dce8'); }
-  drawText(txt, 0, 0, 72, g, '#3a2004', 12);
+  pixelText(txt, 0, 0, 16, 5, go ? { face: ['#fff6a0', '#ffb020'], edge: '#2a1a02', side: '#6a3a04', depth: 3 } : { face: ['#ffffff', '#c8d8e0'], edge: '#1a1a1a', side: '#4a4a4a', depth: 3 });
   ctx.restore();
 }
 

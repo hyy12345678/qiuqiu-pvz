@@ -1,228 +1,270 @@
-// 界面皮肤：面板、按钮、徽章、标题字。所有 2D 界面元素都从这里取画法，换风格只改这一个文件。
+// 界面皮肤（方块风）：面板、按钮、横幅、像素标题字、像素图标。所有 2D 界面元素都从这里取画法。
 //
-// 视觉语言：深色琉璃面板 + 金色描边（压在 3D 场景上仍然读得清），
-// 糖果感的厚按钮（下沿有一道「侧壁」，按下去像真的按钮），粗描边白字。
+// 视觉语言：方块游戏的界面——硬边、切角、两像素的亮暗斜面（左上亮、右下暗）、黑色外框，
+// 文字带一像素的硬投影。大标题用「像素字」：先用小字号画到离屏画布、把半透明边缘二值化，
+// 再关掉平滑放大，于是中文也变成一格一格的方块字。
 import { TAU } from '../core/constants.js';
 import { ctx } from './target.js';
-import { rr, drawText } from './paint.js';
+import { rr, drawText, UI_FONT } from './paint.js';
 
-export const FONT = '"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif';
+export const FONT = UI_FONT;
 
 export const PALETTE = {
-  green:  { top: '#9ff05a', mid: '#4cc22a', bot: '#2a8a18', lip: '#17580c', ink: '#0f3a06' },
-  orange: { top: '#ffd36a', mid: '#ff9a1e', bot: '#e0620e', lip: '#8a3404', ink: '#5a2002' },
-  red:    { top: '#ff9a8a', mid: '#f0443a', bot: '#b8221c', lip: '#6a0c08', ink: '#4a0604' },
-  blue:   { top: '#a8e4ff', mid: '#3aa6f0', bot: '#1a6ac0', lip: '#0c3a72', ink: '#06224a' },
-  purple: { top: '#e0b8ff', mid: '#9a5ae8', bot: '#6430b8', lip: '#38166e', ink: '#220a48' },
-  gray:   { top: '#c8ccd0', mid: '#8a9096', bot: '#5c6268', lip: '#33373c', ink: '#1e2124' },
+  green:  { top: '#8fe05a', mid: '#4cae2a', bot: '#2e7a18', lip: '#1a4a0c', ink: '#0e2a06' },
+  orange: { top: '#ffc860', mid: '#e8901e', bot: '#b0600e', lip: '#5a2c04', ink: '#3a1a02' },
+  red:    { top: '#ff8a7a', mid: '#d0382e', bot: '#982018', lip: '#4a0a06', ink: '#2a0402' },
+  blue:   { top: '#9ad4ff', mid: '#3a8ad8', bot: '#1f5aa0', lip: '#0c2a58', ink: '#061838' },
+  purple: { top: '#d4a8ff', mid: '#8a4ad8', bot: '#5a28a0', lip: '#2a0c58', ink: '#180638' },
+  gray:   { top: '#bdbdbd', mid: '#8b8b8b', bot: '#6a6a6a', lip: '#373737', ink: '#1e1e1e' },
 };
 
-function shadow(blur, color, oy = 0){
-  ctx.shadowColor = color; ctx.shadowBlur = blur; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = oy;
-}
+function shadow(blur, color, oy = 0){ ctx.shadowColor = color; ctx.shadowBlur = blur; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = oy; }
 function noShadow(){ ctx.shadowColor = 'rgba(0,0,0,0)'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; }
 
-function goldStroke(y0, y1){
-  const g = ctx.createLinearGradient(0, y0, 0, y1);
-  g.addColorStop(0, '#fff6c8'); g.addColorStop(0.3, '#f0c552'); g.addColorStop(0.65, '#b07a1c'); g.addColorStop(1, '#ffe08a');
-  return g;
+// 两像素斜面：左上亮、右下暗（方块游戏界面的立体感全靠这一下）
+function bevel(x, y, w, h, light, dark, t = 2){
+  ctx.fillStyle = light;
+  ctx.fillRect(x, y, w - t, t); ctx.fillRect(x, y, t, h - t);
+  ctx.fillStyle = dark;
+  ctx.fillRect(x + t, y + h - t, w - t, t); ctx.fillRect(x + w - t, y + t, t, h - t);
 }
 
-// 琉璃面板：tone 决定底色（'jade' 默认、'night' 夜色、'wine' 失败、'cream' 浅色纸面）
+// 面板：tone 决定底色（'jade' 深石绿、'night' 夜色、'wine' 失败、'cream' 浅色石面）
 const TONES = {
-  jade:  ['rgba(30,74,60,0.93)', 'rgba(10,34,30,0.95)', 'rgba(150,255,210,0.16)'],
-  night: ['rgba(40,44,96,0.93)', 'rgba(14,16,46,0.95)', 'rgba(170,190,255,0.18)'],
-  wine:  ['rgba(92,26,40,0.94)', 'rgba(34,8,16,0.96)', 'rgba(255,170,180,0.16)'],
-  cream: ['rgba(255,248,226,0.97)', 'rgba(236,214,166,0.97)', 'rgba(255,255,255,0.6)'],
+  jade:  { fill: ['rgba(44,58,50,0.95)', 'rgba(26,36,30,0.96)'], light: 'rgba(150,190,160,0.55)', dark: 'rgba(0,0,0,0.55)', edge: '#0b0f0c' },
+  night: { fill: ['rgba(40,44,84,0.95)', 'rgba(20,22,48,0.96)'], light: 'rgba(160,170,240,0.5)', dark: 'rgba(0,0,0,0.55)', edge: '#06070f' },
+  wine:  { fill: ['rgba(80,28,34,0.95)', 'rgba(40,10,14,0.96)'], light: 'rgba(240,150,150,0.45)', dark: 'rgba(0,0,0,0.55)', edge: '#0f0304' },
+  cream: { fill: ['rgba(198,198,198,0.98)', 'rgba(178,178,178,0.98)'], light: '#ffffff', dark: '#555555', edge: '#000000' },
 };
 export function panel(x, y, w, h, o = {}){
-  const r = o.r || 18;
-  const tone = TONES[o.tone || 'jade'];
+  const t = TONES[o.tone || 'jade'];
+  x = Math.round(x); y = Math.round(y); w = Math.round(w); h = Math.round(h);
   ctx.save();
-  shadow(o.blur === undefined ? 26 : o.blur, 'rgba(0,0,0,0.5)', 8);
-  rr(x, y, w, h, r);
-  const g = ctx.createLinearGradient(0, y, 0, y + h);
-  g.addColorStop(0, tone[0]); g.addColorStop(1, tone[1]);
-  ctx.fillStyle = g; ctx.fill();
+  shadow(o.blur === undefined ? 18 : o.blur, 'rgba(0,0,0,0.5)', 6);
+  ctx.fillStyle = t.edge;
+  ctx.fillRect(x - 3, y - 3, w + 6, h + 6);
   noShadow();
-  // 上半部的柔光，像玻璃里映着天空
-  ctx.save();
-  rr(x, y, w, h, r); ctx.clip();
-  const gl = ctx.createLinearGradient(0, y, 0, y + Math.min(h, 120));
-  gl.addColorStop(0, tone[2]); gl.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = gl; ctx.fillRect(x, y, w, Math.min(h, 120));
-  ctx.restore();
-  // 双线描边：外金内暗
-  rr(x, y, w, h, r);
-  ctx.strokeStyle = goldStroke(y, y + h); ctx.lineWidth = o.lw || 3.5; ctx.stroke();
-  rr(x + 5, y + 5, w - 10, h - 10, Math.max(4, r - 5));
-  ctx.strokeStyle = o.tone === 'cream' ? 'rgba(160,110,40,0.35)' : 'rgba(255,240,190,0.22)'; ctx.lineWidth = 1.5; ctx.stroke();
-  if(o.corners !== false) for(const [cx, cy] of [[x + 12, y + 12], [x + w - 12, y + 12], [x + 12, y + h - 12], [x + w - 12, y + h - 12]]) gem(cx, cy, 4.2, '#ffe08a');
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, t.fill[0]); g.addColorStop(1, t.fill[1]);
+  ctx.fillStyle = g;
+  ctx.fillRect(x, y, w, h);
+  bevel(x, y, w, h, t.light, t.dark, 3);
+  if(o.corners !== false) for(const [cx, cy] of [[x + 10, y + 10], [x + w - 10, y + 10], [x + 10, y + h - 10], [x + w - 10, y + h - 10]]) gem(cx, cy, 3, '#ffe08a');
   ctx.restore();
 }
 
-// 小宝石：面板四角与徽章上的点缀
-export function gem(x, y, r, color = '#ffe08a'){
+// 小宝石：一颗像素钻石
+export function gem(x, y, r, color = '#5ae8e0'){
+  const s = Math.max(1, Math.round(r / 1.5));
   ctx.save();
-  ctx.translate(x, y); ctx.rotate(TAU / 8);
-  ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r, 0); ctx.lineTo(0, r); ctx.lineTo(-r, 0); ctx.closePath();
-  const g = ctx.createLinearGradient(-r, -r, r, r);
-  g.addColorStop(0, '#ffffff'); g.addColorStop(0.4, color); g.addColorStop(1, '#8a5a10');
-  ctx.fillStyle = g; ctx.fill();
-  ctx.strokeStyle = 'rgba(60,30,0,0.6)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = '#0a0a0a';
+  ctx.fillRect(x - s * 2, y - s, s * 4, s * 2); ctx.fillRect(x - s, y - s * 2, s * 2, s * 4);
+  ctx.fillStyle = color;
+  ctx.fillRect(x - s, y - s, s * 2, s * 2);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x - s, y - s, s, s);
   ctx.restore();
 }
 
-// 糖果按钮。state：{ hover, pressed, disabled }；color：PALETTE 的键
+// 方块按钮：彩色石面 + 斜面 + 黑框，悬停时亮一档、白框、微微上浮
 export function candyButton(x, y, w, h, label, o = {}){
   const c = PALETTE[o.disabled ? 'gray' : (o.color || 'green')];
-  const lift = o.hover && !o.disabled ? 2 : 0;
-  const lipH = Math.max(4, Math.round(h * 0.12));
-  const r = o.r === undefined ? h / 2 : o.r;
+  const hover = o.hover && !o.disabled;
+  x = Math.round(x); y = Math.round(y - (hover ? 2 : 0)); w = Math.round(w); h = Math.round(h);
   ctx.save();
-  // 落地阴影 + 侧壁
-  shadow(o.hover && !o.disabled ? 18 : 10, o.hover && !o.disabled ? 'rgba(255,230,120,0.55)' : 'rgba(0,0,0,0.45)', 3);
-  rr(x, y + lipH - lift, w, h, r);
-  ctx.fillStyle = c.lip; ctx.fill();
+  shadow(hover ? 14 : 8, hover ? 'rgba(255,240,150,0.6)' : 'rgba(0,0,0,0.45)', 3);
+  ctx.fillStyle = hover ? '#ffffff' : '#000000';
+  ctx.fillRect(x - 2, y - 2, w + 4, h + 6);
   noShadow();
-  const yy = y - lift;
-  rr(x, yy, w, h, r);
-  const g = ctx.createLinearGradient(0, yy, 0, yy + h);
-  g.addColorStop(0, c.top); g.addColorStop(0.5, c.mid); g.addColorStop(1, c.bot);
-  ctx.fillStyle = g; ctx.fill();
-  ctx.strokeStyle = c.ink; ctx.lineWidth = 2.5; ctx.stroke();
-  // 顶部高光带
-  ctx.save();
-  rr(x, yy, w, h, r); ctx.clip();
-  const hg = ctx.createLinearGradient(0, yy, 0, yy + h * 0.5);
-  hg.addColorStop(0, 'rgba(255,255,255,0.75)'); hg.addColorStop(1, 'rgba(255,255,255,0.05)');
-  ctx.fillStyle = hg;
-  rr(x + 6, yy + 3, w - 12, h * 0.42, Math.max(2, r - 4)); ctx.fill();
-  // 扫光：悬停时一道斜光掠过
-  if(o.hover && !o.disabled && o.t !== undefined){
-    const sx = x - 40 + ((o.t * 260) % (w + 120));
-    const sg = ctx.createLinearGradient(sx, 0, sx + 40, 0);
-    sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(0.5, 'rgba(255,255,255,0.45)'); sg.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = sg; ctx.fillRect(sx, yy, 40, h);
+  ctx.fillStyle = c.lip; ctx.fillRect(x, y + h - 2, w, 4);
+  const g = ctx.createLinearGradient(0, y, 0, y + h);
+  g.addColorStop(0, hover ? c.top : c.mid); g.addColorStop(1, hover ? c.mid : c.bot);
+  ctx.fillStyle = g; ctx.fillRect(x, y, w, h - 2);
+  // 石面纹理：几道确定位置的暗块（不用随机数，绘制轨迹才稳定）
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
+  for(let k = 0; k < Math.floor(w / 14); k++) ctx.fillRect(x + 4 + ((k * 37) % (w - 10)), y + 4 + ((k * 23) % Math.max(1, h - 12)), 4, 2);
+  bevel(x, y, w, h - 2, 'rgba(255,255,255,0.45)', 'rgba(0,0,0,0.35)', 2);
+  if(hover && o.t !== undefined){
+    const sx = x + ((o.t * 220) % (w + 60)) - 30;
+    ctx.fillStyle = 'rgba(255,255,255,0.22)';
+    ctx.fillRect(Math.max(x, sx), y + 2, Math.max(0, Math.min(14, x + w - sx)), h - 6);
   }
-  ctx.restore();
   ctx.restore();
   const size = o.size || Math.round(h * 0.42);
-  if(o.icon) o.icon(x + h * 0.55, yy + h / 2);
-  drawText(label, x + w / 2 + (o.icon ? h * 0.22 : 0), yy + h / 2 + 1, size, o.disabled ? '#e6e6e6' : '#ffffff', c.ink, Math.max(3, size * 0.22), 'center', '900');
+  if(o.icon) o.icon(x + h * 0.55, y + h / 2);
+  shadowText(label, x + w / 2 + (o.icon ? h * 0.22 : 0), y + h / 2, size, o.disabled ? '#d0d0d0' : '#ffffff', '#3f3f3f');
 }
 
-// 大标题：逐字挤出（8 层叠影）+ 渐变面 + 粗描边，波浪起伏
-export function heroTitle(text, cx, cy, size, t, o = {}){
-  const gap = size * (o.gap || 0.98);
-  const n = text.length;
-  const depth = o.depth || Math.round(size * 0.12);
+// 带一像素硬投影的文字（方块游戏的字就是这样）
+export function shadowText(text, x, y, size, fill = '#ffffff', shade = '#3f3f3f', align = 'center', weight = '900'){
+  const d = Math.max(1, Math.round(size / 10));
+  drawText(text, x + d, y + d, size, shade, null, 0, align, weight);
+  drawText(text, x, y, size, fill, null, 0, align, weight);
+}
+
+// ---- 像素字：小字号画到离屏 → 二值化 → 关平滑放大 ----
+const PIXEL_CACHE = new Map();
+let pixelOK = null;
+function canPixel(){
+  if(pixelOK !== null) return pixelOK;
+  pixelOK = false;
+  try {
+    if(typeof document === 'undefined' || !document.createElement) return false;
+    const c = document.createElement('canvas');
+    const g = c.getContext && c.getContext('2d');
+    // 记录型 Canvas 替身没有像素读写能力：这里用 in 探测，不会触发替身的「未登记 API」报错
+    pixelOK = !!g && ('getImageData' in g) && ('putImageData' in g) && ('measureText' in g);
+  } catch(e){ pixelOK = false; }
+  return pixelOK;
+}
+// colors：[上半部颜色, 下半部颜色]；返回离屏画布（每个字形像素是 1×1）
+function pixelBitmap(text, px, colors){
+  const key = text + '|' + px + '|' + colors.join(',');
+  let c = PIXEL_CACHE.get(key);
+  if(c) return c;
+  c = document.createElement('canvas');
+  const g = c.getContext('2d');
+  g.font = '900 ' + px + 'px ' + UI_FONT;
+  const w = Math.ceil(g.measureText(text).width) + 4, h = Math.ceil(px * 1.35) + 2;
+  c.width = w; c.height = h;
+  g.font = '900 ' + px + 'px ' + UI_FONT;
+  g.textBaseline = 'middle'; g.textAlign = 'left';
+  g.fillStyle = '#ffffff';
+  g.fillText(text, 2, h / 2);
+  const img = g.getImageData(0, 0, w, h), d = img.data;
+  const top = hexRgb(colors[0]), bot = hexRgb(colors[1]);
+  for(let y = 0; y < h; y++){
+    const col = y < h * 0.52 ? top : bot;
+    for(let x = 0; x < w; x++){
+      const i = (y * w + x) * 4;
+      if(d[i + 3] > 110){ d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255; }
+      else d[i + 3] = 0;
+    }
+  }
+  g.putImageData(img, 0, 0);
+  PIXEL_CACHE.set(key, c);
+  return c;
+}
+function hexRgb(c){ const n = parseInt(c.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+
+// 像素字：cx, cy 居中；scale 每个字形像素放大几倍；o.face / o.edge / o.depth 控制颜色与立体厚度
+export function pixelText(text, cx, cy, px, scale, o = {}){
+  const face = o.face || ['#ffffff', '#d8d8d8'];
+  const edge = o.edge || '#1a1a1a';
+  const depth = o.depth === undefined ? 2 : o.depth;
+  if(!canPixel()){
+    // 记录替身 / 不支持像素读写：退回普通粗体字（只影响测试，浏览器里总是像素字）
+    drawText(text, cx, cy + depth, px * scale, edge, null, 0, 'center', '900');
+    drawText(text, cx, cy, px * scale, face[0], edge, Math.max(2, scale), 'center', '900');
+    return;
+  }
+  const bmFace = pixelBitmap(text, px, face), bmEdge = pixelBitmap(text, px, [edge, edge]);
+  const w = bmFace.width * scale, h = bmFace.height * scale;
+  const x = Math.round(cx - w / 2), y = Math.round(cy - h / 2);
   ctx.save();
-  ctx.font = '900 ' + size + 'px ' + FONT;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.imageSmoothingEnabled = false;
+  // 外描边：上下左右各偏一个字形像素；再往下叠 depth 层作厚度
+  for(const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) ctx.drawImage(bmEdge, x + dx * scale, y + dy * scale, w, h);
+  for(let k = 1; k <= depth; k++) ctx.drawImage(bmEdge, x, y + k * scale, w, h);
+  if(o.side) for(let k = 1; k < depth; k++) ctx.drawImage(pixelBitmap(text, px, [o.side, o.side]), x, y + k * scale, w, h);
+  ctx.drawImage(bmFace, x, y, w, h);
+  ctx.restore();
+}
+
+// 大标题：逐字像素字，波浪起伏
+export function heroTitle(text, cx, cy, size, t, o = {}){
+  const n = text.length;
+  const gap = size * (o.gap || 0.98);
+  const px = o.px || 22;
+  const scale = Math.max(2, Math.round(size / px));
+  const face = o.face ? [o.face[0], o.face[2] || o.face[1]] : ['#c8ff6a', '#5cc23a'];
+  const edge = o.edge || '#0e2a06', side = o.side || '#2e7414';
   for(let i = 0; i < n; i++){
     const x = cx + (i - (n - 1) / 2) * gap;
-    const y = cy + Math.sin(t * 2.4 + i * 0.7) * size * 0.06;
-    const rot = Math.sin(t * 1.7 + i * 1.3) * 0.05;
-    ctx.save();
-    ctx.translate(x, y); ctx.rotate(rot);
-    // 投影
-    shadow(size * 0.35, 'rgba(0,0,0,0.45)', size * 0.14);
-    ctx.fillStyle = o.edge || '#1d4a0c';
-    ctx.lineWidth = size * 0.2; ctx.strokeStyle = o.edge || '#1d4a0c';
-    ctx.strokeText(text[i], 0, depth);
-    noShadow();
-    // 侧面挤出
-    for(let k = depth; k > 0; k--){
-      ctx.strokeStyle = k > depth / 2 ? (o.edge || '#1d4a0c') : (o.side || '#2e7414');
-      ctx.strokeText(text[i], 0, k);
-    }
-    // 正面
-    ctx.lineWidth = size * 0.13; ctx.strokeStyle = o.rim || '#fffbe0';
-    ctx.strokeText(text[i], 0, 0);
-    const g = ctx.createLinearGradient(0, -size * 0.5, 0, size * 0.45);
-    const fc = o.face || ['#fbffd8', '#c8f55a', '#62c21e', '#2f8a10'];
-    g.addColorStop(0, fc[0]); g.addColorStop(0.35, fc[1]); g.addColorStop(0.62, fc[2]); g.addColorStop(1, fc[3]);
-    ctx.fillStyle = g;
-    ctx.fillText(text[i], 0, 0);
-    // 字面上沿的一道亮光
-    ctx.save();
-    ctx.beginPath(); ctx.rect(-size, -size, size * 2, size * 0.78); ctx.clip();
-    ctx.globalAlpha = 0.35; ctx.fillStyle = '#ffffff';
-    ctx.fillText(text[i], 0, 0);
-    ctx.restore();
-    ctx.restore();
+    const y = cy + Math.round(Math.sin(t * 2.4 + i * 0.7) * size * 0.05 / scale) * scale;
+    pixelText(text[i], x, y, px, scale, { face, edge, side, depth: 3 });
   }
-  ctx.restore();
 }
 
-// 丝带横幅
+// 横幅：一条带像素燕尾的彩色石条
 export function ribbon(cx, cy, w, h, text, o = {}){
   const c = PALETTE[o.color || 'red'];
+  const x = Math.round(cx - w / 2), y = Math.round(cy - h / 2);
   ctx.save();
-  shadow(10, 'rgba(0,0,0,0.4)', 4);
-  for(const s of [-1, 1]){
-    ctx.beginPath();
-    const ex = cx + s * (w / 2 - 6), tx = cx + s * (w / 2 + h * 0.7);
-    ctx.moveTo(ex, cy - h / 2 + 6); ctx.lineTo(tx, cy - h / 2 + 6); ctx.lineTo(tx - s * h * 0.35, cy + 6); ctx.lineTo(tx, cy + h / 2 + 6); ctx.lineTo(ex, cy + h / 2 + 6); ctx.closePath();
-    ctx.fillStyle = c.bot; ctx.fill();
-  }
+  shadow(10, 'rgba(0,0,0,0.45)', 4);
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
   noShadow();
-  rr(cx - w / 2, cy - h / 2, w, h, 6);
-  const g = ctx.createLinearGradient(0, cy - h / 2, 0, cy + h / 2);
-  g.addColorStop(0, c.top); g.addColorStop(0.45, c.mid); g.addColorStop(1, c.bot);
-  ctx.fillStyle = g; ctx.fill();
-  ctx.strokeStyle = c.ink; ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(cx - w / 2 + 6, cy - h / 2 + 3, w - 12, h * 0.25);
-  ctx.restore();
-  drawText(text, cx, cy + 1, o.size || Math.round(h * 0.52), '#fffaf0', c.ink, 4, 'center', '900');
-}
-
-// 太阳图标：发光核 + 两圈光芒（会慢慢转）
-export function sunIcon(x, y, s, t = 0){
-  ctx.save();
-  ctx.translate(x, y); ctx.scale(s, s);
-  const halo = ctx.createRadialGradient(0, 0, 4, 0, 0, 30);
-  halo.addColorStop(0, 'rgba(255,240,150,0.9)'); halo.addColorStop(1, 'rgba(255,200,60,0)');
-  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(0, 0, 30, 0, TAU); ctx.fill();
-  ctx.rotate(t * 0.6);
-  for(let k = 0; k < 12; k++){
-    ctx.rotate(TAU / 12);
-    ctx.beginPath(); ctx.moveTo(-4.2, -13); ctx.lineTo(0, k % 2 ? -21 : -24); ctx.lineTo(4.2, -13); ctx.closePath();
-    ctx.fillStyle = k % 2 ? '#ffb21e' : '#ffd23a'; ctx.fill();
+  for(const s of [-1, 1]){
+    const ex = s < 0 ? x - h * 0.8 : x + w;
+    ctx.fillStyle = '#000000'; ctx.fillRect(ex - 2, y + 4, h * 0.8 + 4, h);
+    ctx.fillStyle = c.bot; ctx.fillRect(ex, y + 6, h * 0.8, h - 4);
+    const nx = s < 0 ? ex : ex + h * 0.8 - h * 0.3;
+    ctx.fillStyle = '#000000'; ctx.fillRect(nx, y + h * 0.5, h * 0.3, h * 0.3);
   }
-  ctx.rotate(-t * 0.6);
-  const g = ctx.createRadialGradient(-4, -5, 1, 0, 0, 15);
-  g.addColorStop(0, '#fffbe0'); g.addColorStop(0.5, '#ffd84a'); g.addColorStop(1, '#ff9a10');
-  ctx.beginPath(); ctx.arc(0, 0, 14, 0, TAU); ctx.fillStyle = g; ctx.fill();
-  ctx.strokeStyle = 'rgba(170,80,0,0.7)'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
-  ctx.beginPath(); ctx.ellipse(-4.5, -6, 4.5, 2.6, -0.6, 0, TAU); ctx.fill();
+  ctx.fillStyle = c.mid; ctx.fillRect(x, y, w, h);
+  bevel(x, y, w, h, c.top, c.lip, 3);
   ctx.restore();
+  shadowText(text, cx, cy + 1, o.size || Math.round(h * 0.52), '#ffffff', c.ink);
 }
 
-// 铲子图标
-export function shovelIcon(x, y, s){
+// 像素图案：rows 一行一个字符串，pal 调色板，每个字符画成 s×s 的方块
+export function pix(rows, pal, x, y, s){
+  for(let r = 0; r < rows.length; r++){
+    const row = rows[r];
+    for(let q = 0; q < row.length; q++){
+      const ch = row[q];
+      if(ch === '.' || !pal[ch]) continue;
+      ctx.fillStyle = pal[ch];
+      ctx.fillRect(x + q * s, y + r * s, s, s);
+    }
+  }
+}
+
+// 太阳图标：方形的像素太阳，外圈光芒一闪一闪
+const SUN_ROWS = [
+  '...y..y...',
+  '..........',
+  'y.oooooo.y',
+  '..owwyyo..',
+  '..owyyyo..',
+  '..oyyyyo..',
+  '..oyyyyo..',
+  'y.oooooo.y',
+  '..........',
+  '...y..y...',
+];
+export function sunIcon(x, y, s, t = 0){
+  const k = Math.max(1, Math.round(3 * s));
+  const blink = Math.floor(t * 3) % 2;
   ctx.save();
-  ctx.translate(x, y); ctx.rotate(-0.7); ctx.scale(s, s);
-  ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(0, -26); ctx.lineTo(0, 4);
-  ctx.strokeStyle = '#3a2208'; ctx.lineWidth = 9; ctx.stroke();
-  const hg = ctx.createLinearGradient(-4, 0, 4, 0);
-  hg.addColorStop(0, '#e0a868'); hg.addColorStop(1, '#8a5420');
-  ctx.strokeStyle = hg; ctx.lineWidth = 5.5; ctx.stroke();
-  ctx.beginPath(); ctx.arc(0, -28, 6.5, 0, TAU);
-  ctx.fillStyle = '#c8843c'; ctx.fill(); ctx.strokeStyle = '#3a2208'; ctx.lineWidth = 2.4; ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(-11, 2); ctx.lineTo(11, 2); ctx.lineTo(10, 18); ctx.quadraticCurveTo(0, 30, -10, 18); ctx.closePath();
-  const bg = ctx.createLinearGradient(-11, 0, 11, 24);
-  bg.addColorStop(0, '#ffffff'); bg.addColorStop(0.35, '#c8d2dc'); bg.addColorStop(1, '#68727c');
-  ctx.fillStyle = bg; ctx.fill(); ctx.strokeStyle = '#2a3036'; ctx.lineWidth = 2.2; ctx.stroke();
-  ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(-7, 5, 3, 11);
+  const halo = ctx.createRadialGradient(x, y, 2, x, y, 18 * s + 6);
+  halo.addColorStop(0, 'rgba(255,230,120,0.75)'); halo.addColorStop(1, 'rgba(255,200,60,0)');
+  ctx.fillStyle = halo; ctx.fillRect(x - 18 * s - 6, y - 18 * s - 6, 36 * s + 12, 36 * s + 12);
+  pix(SUN_ROWS, { y: blink ? '#ffe23a' : '#ffc020', o: '#ff9a10', w: '#fffbe0' }, Math.round(x - 5 * k), Math.round(y - 5 * k), k);
   ctx.restore();
 }
 
-// 3D 肖像（没有 WebGL 时是 null）：没有就画一个带首字的圆章，保证卡片不会是空的
+// 铲子图标：像素铁铲
+const SHOVEL_ROWS = [
+  '.........kk',
+  '........kwk',
+  '.......kwk.',
+  '......kbk..',
+  '.....kbk...',
+  '..kkkbk....',
+  '.kssskk....',
+  'ksswsk.....',
+  'kswssk.....',
+  'kssssk.....',
+  '.kkkk......',
+];
+export function shovelIcon(x, y, s){
+  const k = Math.max(1, Math.round(3 * s));
+  pix(SHOVEL_ROWS, { k: '#1a1a1a', w: '#c89a5a', b: '#8a5a2a', s: '#c8d0d8', w2: '#ffffff' }, Math.round(x - 5.5 * k), Math.round(y - 5.5 * k), k);
+}
+
+// 3D 肖像（没有 WebGL 时是 null）：没有就画一个带首字的方章，保证卡片不会是空的
 export function portrait(img, name, x, y, w, h, o = {}){
   if(img){
     const iw = img.width, ih = img.height;
@@ -231,30 +273,26 @@ export function portrait(img, name, x, y, w, h, o = {}){
     return;
   }
   const r = Math.min(w, h) * 0.38;
-  ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, r, 0, TAU);
-  ctx.fillStyle = o.color || '#5cb444'; ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = o.color || '#5cb444';
+  ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, r, 0, TAU); ctx.fill();
   drawText(name.slice(0, 1), x + w / 2, y + h / 2 + 1, r * 1.1, '#ffffff', 'rgba(0,0,0,0.5)', 3, 'center', '900');
 }
 
-// 全屏压暗 + 中心透光：弹层底
+// 全屏压暗：弹层底
 export function dimmer(W, H, a = 0.55){
-  const g = ctx.createRadialGradient(W / 2, H / 2, 80, W / 2, H / 2, W * 0.7);
-  g.addColorStop(0, 'rgba(6,14,12,' + (a * 0.6).toFixed(3) + ')');
-  g.addColorStop(1, 'rgba(4,8,8,' + Math.min(0.95, a * 1.35).toFixed(3) + ')');
-  ctx.fillStyle = g;
+  ctx.fillStyle = 'rgba(8,10,12,' + Math.min(0.92, a * 1.1).toFixed(3) + ')';
   ctx.fillRect(0, 0, W, H);
 }
 
-// 星光：标题、胜利面板上闪烁的四角星
+// 星光：十字形像素闪光
 export function sparkle(x, y, r, a){
-  if(a <= 0) return;
+  if(a <= 0 || r <= 0.5) return;
+  const s = Math.max(1, Math.round(r / 3));
   ctx.save();
   ctx.globalAlpha = Math.min(1, a);
-  ctx.translate(x, y);
-  ctx.beginPath();
-  ctx.moveTo(0, -r); ctx.quadraticCurveTo(0, 0, r, 0); ctx.quadraticCurveTo(0, 0, 0, r); ctx.quadraticCurveTo(0, 0, -r, 0); ctx.quadraticCurveTo(0, 0, 0, -r);
-  ctx.fillStyle = '#ffffff'; ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(x - s / 2, y - s * 2.5, s, s * 5);
+  ctx.fillRect(x - s * 2.5, y - s / 2, s * 5, s);
   ctx.restore();
 }
 

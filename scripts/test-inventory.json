@@ -57,6 +57,10 @@
       "count": 8
     },
     {
+      "path": "tests/render-atlas.test.mjs",
+      "count": 3
+    },
+    {
       "path": "tests/render-background-trace.test.mjs",
       "count": 1
     },
@@ -141,7 +145,7 @@
       "count": 6
     }
   ],
-  "total": 219,
+  "total": 222,
   "covered": [
     "tests/actions.test.mjs",
     "tests/fingerprint.test.mjs",
@@ -155,6 +159,7 @@
     "tests/ports.test.mjs",
     "tests/quiz.test.mjs",
     "tests/random-streams.test.mjs",
+    "tests/render-atlas.test.mjs",
     "tests/render-background-trace.test.mjs",
     "tests/render-background.test.mjs",
     "tests/render-boundaries.test.mjs",

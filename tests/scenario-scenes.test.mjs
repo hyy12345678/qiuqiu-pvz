@@ -13,7 +13,7 @@ import { instantiate, resetPose } from '../src/render/scene3d/rig.js';
 import { buildPeaProtos } from '../src/render/scene3d/props.js';
 import { scenario } from './helpers/scenario.mjs';
 
-const KEYS = ['fill', 'stroke', 'fillText', 'createLinearGradient', 'createRadialGradient', 'drawImage', 'arc'];
+const KEYS = ['fill', 'stroke', 'fillText', 'createLinearGradient', 'createRadialGradient', 'drawImage', 'arc', 'fillRect'];
 function countsOf(paint){
   const out = {};
   for (const key of KEYS) out[key] = paint.counts.get(key) || 0;
@@ -43,7 +43,8 @@ function frameTrace(sc){
 // 夜关卡片右上角的月亮：只在第 4 关解锁后画
 const MOON = '#fff4c8';
 const moons = entries => entries.filter(e => e.prop === 'fillStyle' && e.value === MOON).length;
-const filled = d => d.fill + d.stroke + d.drawImage;
+// 方块风界面大量用 fillRect 画斜面与像素图标，一并计入「画出来了」
+const filled = d => d.fill + d.stroke + d.drawImage + d.fillRect;
 
 describe('场景 D：各界面用真实 render 各画一帧', () => {
   test('D0：锁住的关卡也必须注册热点——只是不高亮，点下去由 chooseLevel 给出 locked 反馈', () => {

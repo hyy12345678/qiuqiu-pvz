@@ -17,7 +17,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { W, H } from '../../core/constants.js';
 import { PLANTS } from '../../core/data/plants.js';
 import { DPR } from '../target.js';
-import { createWorldView, template, PLANT_YAW } from './world-view.js';
+import { createWorldView, template, plantYaw } from './world-view.js';
 import { instantiate, resetPose } from './rig.js';
 import { PLANT_MODELS } from './plants.js';
 import { ZOMBIE_MODELS } from './zombies.js';
@@ -113,7 +113,7 @@ export function createView3D({ document: doc = globalThis.document, search = glo
   function renderIcon(kind, type){
     const inst = instantiate(template(kind === 'head' ? 'zombie' : 'plant', type));
     const holder = new Group(); holder.add(inst.root);
-    holder.rotation.y = kind === 'head' ? -Math.PI / 2 + 0.55 : PLANT_YAW + 0.1;
+    holder.rotation.y = kind === 'head' ? -Math.PI / 2 + 0.55 : plantYaw(type) - 0.2;
     resetPose(inst);
     const e = { dt: 0, night: false, asleep: false };
     if(kind === 'plant'){

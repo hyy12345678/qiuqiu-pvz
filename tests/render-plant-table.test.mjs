@@ -39,7 +39,8 @@ test('每个模型都建得出网格，且按「节点 × 材质类」合并后�
       root.traverse(o => { if(o.isMesh){ meshes++; verts += o.geometry.attributes.position.count; } });
       assert.ok(meshes >= 2, kind + ':' + type + ' 网格过少（' + meshes + '）');
       assert.ok(meshes <= 40, kind + ':' + type + ' 网格过多（' + meshes + '），合并失效会拖垮帧率');
-      assert.ok(verts > 300, kind + ':' + type + ' 顶点过少，模型可能没建出来');
+      // 方块模型本来就是低多边形：一个长方体 36 个顶点，至少 4 个零件才算建出来了
+      assert.ok(verts >= 36 * 4, kind + ':' + type + ' 顶点过少（' + verts + '），模型可能没建出来');
     }
   }
   // 没有 WebGL 时卡片肖像退回圆章，必须落笔，不能留白

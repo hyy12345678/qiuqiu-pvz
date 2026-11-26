@@ -6,6 +6,9 @@
 **3D 版**（E28）：战场、角色、特效由 three.js 现场建模渲染（几何体拼装 + 程序生成贴图 + 泛光后期），
 three.js 随产物一起内联，界面层仍是 2D Canvas。需要支持 WebGL2 的浏览器；不支持时只显示提示，不再有 2D 战场兜底。
 
+**方块世界画风**（E29）：所有角色、布景、粒子与界面改成方块风——长方体零件 + 代码现场画的像素贴图（最近邻采样），
+大标题用像素字。只借方块游戏的风格，贴图与名字全部原创。
+
 ## 怎么玩
 
 **在线试玩**：<https://hyy12345678.github.io/qiuqiu-pvz/dist/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8-%E7%BD%91%E9%A1%B5%E7%89%88.html>
@@ -13,7 +16,7 @@ three.js 随产物一起内联，界面层仍是 2D Canvas。需要支持 WebGL2
 
 或者离线玩：双击 `dist/植物大战僵尸-网页版.html`（拷到U盘、发给自己都行）。
 
-原来的 2D 版归档在 [`archive/2d`](https://github.com/hyy12345678/qiuqiu-pvz/tree/archive/2d) 分支，产物同样在该分支的 `dist/` 下。
+原来的 2D 版归档在 [`archive/2d`](https://github.com/hyy12345678/qiuqiu-pvz/tree/archive/2d) 分支，方块化之前的圆润 3D 版归档在 [`archive/3d`](https://github.com/hyy12345678/qiuqiu-pvz/tree/archive/3d) 分支，产物都在各自分支的 `dist/` 下。
 
 - 逻辑分辨率 1024×640，按窗口与 DPR 自适应（DPR 上限 2）。运行期换屏（把窗口拖到另一块像素密度不同的屏幕）会每帧比对 `devicePixelRatio` 并自动重建 2D 背板与 3D 渲染尺寸——`resize` 事件在这种场景下不会触发。
 - 画质自动调节：持续掉帧（90 帧平均低于约 38fps）就降一档分辨率；识别到软件光栅（SwiftShader / llvmpipe）直接用低配（关泛光与多重采样）。地址后加 `?gfx=low` 或 `?gfx=high` 可手动指定。
@@ -27,7 +30,7 @@ three.js 随产物一起内联，界面层仍是 2D Canvas。需要支持 WebGL2
 | 命令 | 作用 |
 |---|---|
 | `npm run dev` | esbuild watch + 本地服务（默认 `http://localhost:8787/`）。**会把 `/* dev build */` 写进 `dist/` 同名文件**，验收或提交前必须重新 `npm run build`。 |
-| `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 1.6 MB，其中 three.js 约 1.25 MB）。 |
+| `npm run build` | 标准发布构建 → `dist/植物大战僵尸-网页版.html`（pretty，约 1.5 MB，其中 three.js 约 1.2 MB）。 |
 | `npm run build:min` | 等价验证构建 → `dist/植物大战僵尸-网页版.min.html`（约 0.74 MB）。只用于验证，`.gitignore` 已排除，不提交。 |
 | `npm run verify` | 全链护栏，依次跑 `parity` → `fingerprint` → `test` → `test:inventory` → `parity:dist` → `build` → `test:smoke` → `test:browser`。注意 `parity:dist` 在 `build` **之前**：它检查的是仓库里已提交的那份 dist，不是刚构建出来的自己。 |
 | `npm test` | `node --test tests/*.test.mjs`：规则单测 + A–I 场景迁移测试（挂真实的 3D 世界视图，只是不调 WebGL）+ 3D 拾取 + 战场环境结构基线（`tests/baselines/background-3d.trace.txt`）+ `scripts/inline.js` 的转义测试。 |
@@ -41,7 +44,7 @@ three.js 随产物一起内联，界面层仍是 2D Canvas。需要支持 WebGL2
 | `npm run parity:rebase` / `fingerprint:update` / `test:browser:update` | 重新盖章工具。**会先跑 `npm test`，全绿才写基线**（E1 D4）；绘制轨迹基线尤其需要单独批准。 |
 | `npm run dist:fresh` | `git diff --exit-code -- dist/`：产物是否已随源码一并提交。**只进 CI**，不进 `verify`——提交前跑它必然红。 |
 
-改 Canvas 绘制时 `tests/helpers/scenario.mjs` 与 `headless_test.js` 的 ctx 白名单会对外抛错，这是有意的（E28 登记了 `shadow*` 四个属性）：
+改 Canvas 绘制时 `tests/helpers/scenario.mjs` 与 `headless_test.js` 的 ctx 白名单会对外抛错，这是有意的（E28 登记了 `shadow*` 四个属性，E29 登记了 `clearRect` 与 `imageSmoothingEnabled`）：
 新增绘制 API 必须显式登记，避免测试默默吞掉画面。
 
 ### 考古附录：重构前的基线与 `parity:legacy`
@@ -117,12 +120,13 @@ E1、E3–E12 这一系列工程轮次（共 11 轮）**只在 Node v22.23.2（m
 | `scripts/` | 构建与护栏工具（CommonJS）：`build.js`/`dev.js`/`inline.js`/`esbuild-opts.js` 构建侧；`check-parity.js`/`check-fingerprint.js`/`check-test-inventory.js` 护栏侧；`legacy-source.js` 从 tag 现取历史基线。三份基线：`parity-baseline.txt`/`source-fingerprint.txt`/`tool-fingerprint.txt`，外加 `test-inventory.json` |
 | `headless_test.js` | 历史 A–I 冒烟驱动，仍留在 `verify` 链里（目标固定 `src/main.js`） |
 | `docs/项目分析-2026-11-20.md` | 接手时的项目分析：架构、领域模型、代码质量、护栏体系评估、风险与建议；§11 起是 E1–E12 的逐轮实施进展 |
-| `docs/工程执行计划-E*.md` | 逐轮执行计划与验收记录：E1–E12（护栏收口、三层拆分、背景轨迹、测试清单下限、CI、inline 测试）、E13（CI 实跑）、E14–E19（画面精细度与性能）、E20–E24（玩法平衡与铁门僵尸）、E25（缺陷修复与测试基础设施护栏）、E26（运行期 DPR 重建）、E28（3D 画面重做） |
+| `docs/工程执行计划-E*.md` | 逐轮执行计划与验收记录：E1–E12（护栏收口、三层拆分、背景轨迹、测试清单下限、CI、inline 测试）、E13（CI 实跑）、E14–E19（画面精细度与性能）、E20–E24（玩法平衡与铁门僵尸）、E25（缺陷修复与测试基础设施护栏）、E26（运行期 DPR 重建）、E28（3D 画面重做）、E29（方块世界画风） |
 | `docs/护栏评估-E8-parity与legacy去留.md` | `parity` / `parity:legacy` 去留的结论与理由（结论：保留，但重新定位） |
 | `docs/工程执行计划-E13-CI实跑验证.md` | CI 首次在 GitHub 上真跑的证据，含 Actions 升 v7 的前后对比 |
 | `docs/工程执行计划-E25-缺陷修复与护栏补强.md` | 评审发现四处缺陷的修复记录，以及「测试清单对『没跑』和『一致』同样沉默」的结构性缺口与补法 |
 | `docs/工程执行计划-E26-运行期DPR重建.md` | 换屏不发 resize 事件导致的发模糊问题、为什么选每帧比对而不是 matchMedia、以及 canvas.width 会重置 ctx 状态的隐患 |
 | `docs/工程执行计划-E28-3D画面重做.md` | 3D 版的架构（离屏 WebGL → 2D 主画布）、拾取、画质分档、护栏怎么跟着改、已知局限 |
+| `docs/工程执行计划-E29-方块世界画风.md` | 像素图集、方块零件、像素字的做法，性能变化与护栏调整 |
 | `docs/决策记录-画风取舍.md` | 为什么不做《旷野之息》风格：做过两个实验、失败在尺寸、以及贴图管线这条唯一可行的替代路 |
 | `docs/重构方案-v0.2.md` | 重构总方案与分轮定义（R0–R5） |
 | `docs/重构执行计划-R*.md` | 每轮的执行计划与验收记录（R0 … R5b） |

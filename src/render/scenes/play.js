@@ -5,7 +5,7 @@ import { LEVELS } from '../../core/data/levels.js';
 import { isNight } from '../../core/world.js';
 import { ctx } from '../target.js';
 import { rr, drawText } from '../paint.js';
-import { shovelIcon } from '../skin.js';
+import { shovelIcon, pixelText } from '../skin.js';
 import { drawSeedBank, drawProgressBar, drawTopRightButtons, drawWaveText, drawIntro } from '../hud.js';
 
 export function renderPlay(t, world, ui, musicOn){
@@ -48,8 +48,7 @@ export function renderPlay(t, world, ui, musicOn){
   if(world.paused){
     ctx.fillStyle = 'rgba(6,12,16,0.6)';
     ctx.fillRect(0, 0, W, H);
-    for(let d = 6; d > 0; d--) drawText('已暂停', W / 2, H / 2 - 20 + d, 60, '#0a1a14', '#0a1a14', 10);
-    drawText('已暂停', W / 2, H / 2 - 20, 60, '#fff4d0', '#1a3a2a', 10);
+    pixelText('已暂停', W / 2, H / 2 - 20, 16, 4, { face: ['#ffffff', '#d0d0d0'], edge: '#111111', side: '#3a3a3a', depth: 3 });
     drawText('点击「继续」或按 P 键继续游戏', W / 2, H / 2 + 38, 18, '#e0f0e4', 'rgba(0,0,0,0.6)', 4, 'center', '800');
   }
 }

@@ -49,12 +49,16 @@ const CTX_METHODS = new Set([
   'quadraticCurveTo', 'bezierCurveTo', 'closePath', 'rect', 'fillRect', 'strokeRect',
   'save', 'restore', 'translate', 'rotate', 'scale', 'clip', 'fillText', 'strokeText',
   'drawImage', 'setTransform', 'createLinearGradient', 'createRadialGradient',
+  // 方块风：像素图集里的镂空像素（树叶、铁门纱网、薄片侧边）
+  'clearRect',
 ]);
 const CTX_PROPS = new Set([
   'fillStyle', 'strokeStyle', 'lineWidth', 'lineJoin', 'lineCap', 'font',
   'textAlign', 'textBaseline', 'globalAlpha', 'globalCompositeOperation',
   // 3D 版界面层：面板与按钮的投影
   'shadowColor', 'shadowBlur', 'shadowOffsetX', 'shadowOffsetY',
+  // 方块风：像素字与像素图标放大时关闭平滑
+  'imageSmoothingEnabled',
 ]);
 function makeGradient() { return { addColorStop() {} }; }
 function makeCtx(label) {

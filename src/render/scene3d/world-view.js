@@ -3,8 +3,8 @@
 // 只读约定：这里从不写 world / ui / 实体的任何字段。需要跨帧记忆的东西（上一帧血量、
 // 光线起点、粒子归属的行）一律存在视图自己的 Map / WeakMap 里。
 import {
-  Color, Group, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, PerspectiveCamera, PlaneGeometry,
-  Scene, Vector3, CylinderGeometry, AdditiveBlending,
+  Color, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PerspectiveCamera, PlaneGeometry,
+  Scene, Vector3, BoxGeometry, AdditiveBlending,
 } from 'three';
 import { W, H } from '../../core/constants.js';
 import { LEVELS } from '../../core/data/levels.js';
@@ -24,7 +24,10 @@ import { makeRadial } from './textures.js';
 import { RIM } from './materials.js';
 
 const PI = Math.PI;
-export const PLANT_YAW = -0.38;
+export const PLANT_YAW = -0.55;
+// 方块人（球球、迪迦）正面很窄：多转一些，让脸和胸口朝向镜头，而不是只露一条侧影
+const HUMANOID_YAW = { qiuqiu: -0.85, tiga: -0.85 };
+export function plantYaw(type){ return HUMANOID_YAW[type] === undefined ? PLANT_YAW : HUMANOID_YAW[type]; }
 export const ZOMBIE_YAW = PI + 0.62;
 const PEA_DZ = 0.08;
 const SLEEP_TINT = new Color(0.62, 0.62, 0.78);
@@ -76,7 +79,7 @@ export function createWorldView(opts = {}){
   }
 
   // 弹丸原型的标准材质
-  const makeStd = (hex, rough) => new MeshPhysicalMaterial({ color: hex, roughness: rough, clearcoat: 0.8, clearcoatRoughness: 0.15 });
+  const makeStd = (hex, rough) => new MeshStandardMaterial({ color: hex, roughness: rough });
   const peaProtos = buildPeaProtos(makeStd);
 
   // ---- 植物 ----
@@ -85,7 +88,7 @@ export function createWorldView(opts = {}){
     const inst = instantiate(template('plant', p.type));
     const holder = new Group();
     holder.add(inst.root);
-    holder.rotation.y = PLANT_YAW;
+    holder.rotation.y = plantYaw(p.type);
     if(p.type === 'tiga') holder.scale.setScalar(1.22);   // 光之巨人：比其它植物高出一截
     const b = blob(p.type === 'tiga' ? 0.8 : 0.62);
     const g = new Group(); g.add(holder, b);
@@ -201,12 +204,11 @@ export function createWorldView(opts = {}){
   const peaViews = new Map();
   const beamCore = new MeshBasicMaterial({ color: new Color(2.0, 2.3, 2.6) });
   const beamGlow = new MeshBasicMaterial({ color: new Color(0.15, 0.5, 1.1), transparent: true, blending: AdditiveBlending, depthWrite: false });
-  const beamGeo = new CylinderGeometry(1, 1, 1, 14, 1, true);
+  const beamGeo = new BoxGeometry(1, 1, 1);   // 方块光束：一根发光的长方条
   function makePea(pea){
     if(pea.type === 'beam'){
       const g = new Group();
       const core = new Mesh(beamGeo, beamCore), glow = new Mesh(beamGeo, beamGlow);
-      core.rotation.z = glow.rotation.z = PI / 2;
       g.add(core, glow);
       battle.add(g);
       return { g, beam: true, startX: toX(pea.x), core, glow };
@@ -229,9 +231,9 @@ export function createWorldView(opts = {}){
       const len = Math.max(0.05, X - v.startX);
       v.g.position.set(v.startX + len / 2, Y, Z);
       const fl = 1 + Math.sin(t * 60) * 0.12;
-      v.core.scale.set(0.035 * fl, len, 0.035 * fl);
-      v.glow.scale.set(0.1 * fl, len, 0.1 * fl);
-      fx.light(X, Y, Z, '#a8e4ff', 10, 3);
+      v.core.scale.set(len, 0.05 * fl, 0.05 * fl);
+      v.glow.scale.set(len, 0.13 * fl, 0.13 * fl);
+      fx.light(X, Y, Z, '#a8e4ff', 4, 2.5);
       fx.emit('spark', X, Y, Z, 2, { spMin: 0.5, spMax: 2, g: 0, lifeMin: 0.15, lifeMax: 0.35, sizeMin: 0.03, sizeMax: 0.07, colors: [[0.7, 0.95, 1], [1, 1, 1]] });
       return;
     }
@@ -256,7 +258,7 @@ export function createWorldView(opts = {}){
     const inst = instantiate(sunTpl());
     const g = new Group(); g.add(inst.root);
     if(haloTex){
-      const h = haloMesh(haloTex, '#ffd060', 1.4, 1.3);
+      const h = haloMesh(haloTex, '#ffd060', 0.7, 1.1);
       h.position.z = -0.05;
       g.add(h);
     }
@@ -281,7 +283,8 @@ export function createWorldView(opts = {}){
     v.g.quaternion.copy(camera.quaternion);
     const pulse = 1 + Math.sin(t * 4 + (s.t || 0)) * 0.05;
     v.g.scale.setScalar(scale * pulse);
-    v.inst.root.rotation.z = t * 0.8;
+    // 方块阳光：像掉落物一样斜着自转
+    v.inst.root.rotation.set(0.45, t * 1.4, 0.25);
     v.inst.mats.set(0, null, alpha);
     if(v.g.children[1]) v.g.children[1].material.opacity = alpha;
   }
@@ -340,7 +343,7 @@ export function createWorldView(opts = {}){
     let gh = ghosts.get(type);
     if(!gh){
       const inst = instantiate(template('plant', type), { ghost: true });
-      const holder = new Group(); holder.add(inst.root); holder.rotation.y = PLANT_YAW;
+      const holder = new Group(); holder.add(inst.root); holder.rotation.y = plantYaw(type);
       battle.add(holder);
       gh = { holder, inst };
       ghosts.set(type, gh);
@@ -380,7 +383,7 @@ export function createWorldView(opts = {}){
     for(const [kind, type, x, z, s] of cast){
       const inst = instantiate(template(kind, type));
       const holder = new Group(); holder.add(inst.root);
-      holder.rotation.y = kind === 'plant' ? PLANT_YAW - 0.25 : ZOMBIE_YAW + 0.25;
+      holder.rotation.y = kind === 'plant' ? plantYaw(type) - 0.25 : ZOMBIE_YAW + 0.25;
       holder.scale.setScalar(s);
       const g = new Group(); g.add(holder, blob(0.7 * s)); g.position.set(x, 0, z);
       menu.add(g);
@@ -444,7 +447,7 @@ export function createWorldView(opts = {}){
         const c = parseCss(p.color);
         const k = Math.max(0, Math.min(1, p.life / p.max));
         const y = Math.max(0.03, heightIn(meta.row, p.y));
-        (c.hot ? coreAdd : coreNormal).push(toX(p.x), y, rowZ(meta.row) + meta.dz, c.r, c.g, c.b, p.size * PX * 2.4, k * c.a);
+        (c.hot ? coreAdd : coreNormal).push(toX(p.x), y, rowZ(meta.row) + meta.dz, c.r, c.g, c.b, p.size * PX * 1.4, k * c.a);   // 方块风：方形粒子比圆点显大，缩一些
       }
       coreNormal.end(pointScale); coreAdd.end(pointScale);
       // 悬停

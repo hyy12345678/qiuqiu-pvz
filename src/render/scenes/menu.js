@@ -15,12 +15,12 @@ export function renderMenu(t, world, ui, musicOn){
   top.addColorStop(0, 'rgba(8,24,40,0.45)'); top.addColorStop(1, 'rgba(8,24,40,0)');
   ctx.fillStyle = top; ctx.fillRect(0, 0, W, 250);
 
-  heroTitle('球球的植物大战僵尸', W / 2, 104, 70, t);
+  heroTitle('球球的植物大战僵尸', W / 2, 100, 72, t);
   for(let i = 0; i < 6; i++){
     const k = (t * 0.7 + i * 0.37) % 1;
     sparkle(W / 2 + Math.sin(i * 2.3) * 330, 70 + Math.cos(i * 1.7) * 40, 9 * Math.sin(k * Math.PI), Math.sin(k * Math.PI));
   }
-  ribbon(W / 2, 182, 330, 34, '网页版 · 3D 全新画面 · 离线可玩', { color: 'orange', size: 17 });
+  ribbon(W / 2, 182, 330, 34, '方块世界 · 3D 画面 · 离线可玩', { color: 'orange', size: 17 });
 
   const cardW = 214, cardH = 150, gap = 22;
   const n = LEVELS.length;

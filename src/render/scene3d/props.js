@@ -1,41 +1,35 @@
-// 小件模型：小推车、各类弹丸、阳光、铲子。
-import { AdditiveBlending, Color, Group, Mesh, MeshBasicMaterial, PlaneGeometry, SphereGeometry, CylinderGeometry } from 'three';
-import { GEO } from './rig.js';
+// 小件模型：小推车、各类弹丸、阳光。全部是方块。
+import { AdditiveBlending, BoxGeometry, Color, Group, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three';
+import { layers, noise, sprite, centered } from './pixels.js';
 
 const PI = Math.PI;
 
+const MOWER_SIDE = { key: 'mower:side', paint: layers(noise('#d8302a', 0.07), (p, w, h) => { p.rect(0, h - 2, w, 2, '#8a1a14'); p.rect(1, 1, w - 2, 1, '#ff6a5a'); }) };
+const WHEEL = { key: 'wheel', paint: layers(noise('#1e1e22', 0.1), centered(['.ss.', 'sggs', 'sggs', '.ss.'], { s: '#5a5a60', g: '#d8dce2' })) };
 export function mowerBuild(rig){
   rig.pivot('body', 'root', [0, 0, 0]);
-  for(const [x, z] of [[0.14, 0.15], [0.14, -0.15], [-0.14, 0.15], [-0.14, -0.15]]){
-    rig.pivot('w' + x + z, 'root', [x, 0.075, z]);
-    rig.add('w' + x + z, 'g', GEO.cyl(0.075, 0.075, 0.05, 18), '#1e1e22', { r: [PI / 2, 0, 0] });
-    rig.add('w' + x + z, 'x', GEO.cyl(0.04, 0.04, 0.055, 12), '#d8dce2', { r: [PI / 2, 0, 0] });
-    rig.add('w' + x + z, 'x', GEO.box(0.012, 0.11, 0.056), '#9aa0a8');
+  for(const [x, z] of [[4.5, 5], [4.5, -5], [-4.5, 5], [-4.5, -5]]){
+    const name = 'w' + x + z;
+    rig.pivot(name, 'root', [x, 2.5, z]);
+    rig.box(name, 'g', [5, 5, 1.6], [0, 0, 0], { near: WHEEL, far: WHEEL, sides: '#1e1e22', top: '#1e1e22', bottom: '#1e1e22' });
   }
-  rig.add('body', 'g', GEO.box(0.42, 0.13, 0.3), '#d8302a', { p: [0, 0.16, 0], shade: 0.7 });
-  rig.add('body', 'g', GEO.cyl(0.13, 0.15, 0.08, 20), '#c02822', { p: [0.02, 0.26, 0] });
-  rig.add('body', 'x', GEO.box(0.16, 0.1, 0.16), '#3a3d44', { p: [0.02, 0.33, 0] });
-  rig.add('body', 'x', GEO.cyl(0.03, 0.03, 0.05, 10), '#8a9098', { p: [0.06, 0.41, 0.04] });
-  rig.add('body', 'm', GEO.box(0.06, 0.05, 0.31), '#2a2a2a', { p: [0.22, 0.12, 0] });
-  rig.add('body', 'e', GEO.box(0.02, 0.03, 0.06), '#ffd040', { p: [0.215, 0.2, 0.09] });
-  rig.add('body', 'e', GEO.box(0.02, 0.03, 0.06), '#ffd040', { p: [0.215, 0.2, -0.09] });
-  rig.add('body', 'x', GEO.tube([[-0.18, 0.2, 0.12], [-0.32, 0.42, 0.12], [-0.38, 0.55, 0.12]], 0.014, 8, 5), '#3a3d44');
-  rig.add('body', 'x', GEO.tube([[-0.18, 0.2, -0.12], [-0.32, 0.42, -0.12], [-0.38, 0.55, -0.12]], 0.014, 8, 5), '#3a3d44');
-  rig.add('body', 'm', GEO.cyl(0.02, 0.02, 0.28, 8), '#202020', { p: [-0.38, 0.55, 0], r: [PI / 2, 0, 0] });
+  rig.stand('body', 'g', [13, 4, 9], [0, 2.5, 0], { all: '#d8302a', near: MOWER_SIDE, far: MOWER_SIDE });
+  rig.stand('body', 'g', [8, 2, 8], [0.5, 6.5, 0], '#c02822');
+  rig.stand('body', 'x', [5, 3, 5], [0.5, 8.5, 0], '#3a3d44');
+  rig.stand('body', 'x', [1.5, 1.5, 1.5], [2, 11.5, 1], '#8a9098');
+  rig.box('body', 'm', [2, 1.6, 10], [7, 4, 0], '#2a2a2a');
+  for(const z of [-3, 3]) rig.box('body', 'e', [0.6, 1, 1.8], [6.9, 6, z], null, { tint: '#ffd040' });
+  // 推手：两根斜杆 + 横把
+  for(const z of [-4, 4]) rig.box('body', 'x', [1, 1, 10], [-9, 11, z], '#3a3d44', { r: [PI / 2, 0, -0.9], order: 'ZXY' });
+  rig.box('body', 'm', [1.4, 1.4, 10], [-12.5, 15, 0], '#202020');
 }
 
-export function shovelBuild(rig){
-  rig.pivot('s', 'root', [0, 0, 0], [0, 0, -0.65]);
-  rig.add('s', 'm', GEO.cyl(0.035, 0.035, 0.6, 12), '#a8743c', { p: [0, 0.45, 0] });
-  rig.add('s', 'm', GEO.torus(0.06, 0.022, 14, 6), '#5f3c18', { p: [0, 0.8, 0] });
-  rig.add('s', 'x', GEO.cyl(0.045, 0.04, 0.08, 12), '#8a929a', { p: [0, 0.13, 0] });
-  rig.add('s', 'x', GEO.sphere(0.15, 20, 14), '#c8d0d8', { p: [0, -0.06, 0], s: [1, 1.35, 0.25] });
-}
-
+const SUN_FACE = { key: 'sun:face', paint: layers(noise('#ffd84a', 0.12), sprite(['ww', 'w.'], { w: '#fffbe0' }, 1, 1), (p, w, h) => {
+  for(let i = 0; i < w; i++){ p.px(i, 0, '#ffb020'); p.px(i, h - 1, '#ffb020'); p.px(0, i, '#ffb020'); p.px(w - 1, i, '#ffb020'); }
+}) };
 export function sunBuild(rig){
-  rig.add('root', 'e', GEO.sphere(0.2, 24, 16), '#ffd84a');
-  rig.add('root', 'e', GEO.star(12, 0.36, 0.22, 0.02), '#ffb020', { p: [0, 0, -0.03] });
-  rig.add('root', 'e', GEO.star(12, 0.3, 0.2, 0.02), '#ffe070', { p: [0, 0, -0.01], r: [0, 0, PI / 12] });
+  rig.pivot('cube', 'root');
+  rig.box('cube', 'e', [10, 10, 10], [0, 0, 0], SUN_FACE);
 }
 
 // ---- 弹丸：每种类型一个原型，飞行中的每颗弹丸 clone 原型（共享几何与材质）----
@@ -44,34 +38,31 @@ function basic(hex, k = 1, add = false){
   return new MeshBasicMaterial({ color: c, transparent: add, blending: add ? AdditiveBlending : 1, depthWrite: !add });
 }
 export function buildPeaProtos(makeStd){
-  const sphere = new SphereGeometry(1, 18, 14);
+  const cube = new BoxGeometry(1, 1, 1);
   const P = {};
   const mk = (...meshes) => { const g = new Group(); for(const m of meshes) g.add(m); return g; };
-  const m = (geo, mat, s = 1, p = [0, 0, 0], sc) => {
-    const o = new Mesh(geo, mat); o.scale.set(...(sc || [s, s, s])); o.position.set(...p); return o;
+  const m = (mat, s, p = [0, 0, 0]) => {
+    const o = new Mesh(cube, mat);
+    if(typeof s === 'number') o.scale.setScalar(s); else o.scale.set(...s);
+    o.position.set(...p); return o;
   };
-  P.pea = mk(m(sphere, makeStd('#5fd22e', 0.3), 0.08), m(sphere, basic('#ffffff', 1.5), 0.02, [-0.02, 0.04, 0.04]));
-  P.snow = mk(m(sphere, makeStd('#9fe6ff', 0.15), 0.08), m(sphere, basic('#7fd8ff', 1.4, true), 0.13), m(sphere, basic('#ffffff', 1.8), 0.022, [-0.02, 0.04, 0.04]));
-  P.fire = mk(m(sphere, basic('#ffd040', 3)), m(sphere, basic('#ff6a10', 2.2, true), 1, [-0.05, 0, 0], [0.22, 0.14, 0.14]));
-  P.fire.children[0].scale.setScalar(0.075);
-  P.spore = mk(m(sphere, basic('#c890f0', 1.4, true), 0.09), m(sphere, basic('#f4e0ff', 2), 0.04));
-  P.ball = mk(m(sphere, makeStd('#e8483c', 0.3), 0.09));
-  P.bullet = mk(m(new CylinderGeometry(1, 1, 1, 8), basic('#fff0a0', 3.2), 1, [-0.06, 0, 0], [0.018, 0.2, 0.018]), m(sphere, basic('#ffffff', 3), 0.025));
-  P.bullet.children[0].rotation.z = PI / 2;
-  const body = m(new CylinderGeometry(1, 1, 1, 12), makeStd('#f2f2f0', 0.4), 1, [0, 0, 0], [0.045, 0.2, 0.045]);
-  body.rotation.z = PI / 2;
-  const nose = m(new CylinderGeometry(0, 1, 1, 12), makeStd('#e8302a', 0.4), 1, [0.13, 0, 0], [0.045, 0.07, 0.045]);
-  nose.rotation.z = -PI / 2;
-  const flame = m(sphere, basic('#ff8a20', 2.6, true), 1, [-0.14, 0, 0], [0.09, 0.04, 0.04]);
-  const fins = m(new CylinderGeometry(1, 1, 1, 3), makeStd('#e8302a', 0.4), 1, [-0.09, 0, 0], [0.08, 0.05, 0.08]);
-  fins.rotation.z = PI / 2;
-  P.missile = mk(body, nose, flame, fins);
+  P.pea = mk(m(makeStd('#5fd22e', 0.5), 0.13), m(basic('#d8ffb0', 1.3), 0.04, [-0.02, 0.05, 0.05]));
+  P.snow = mk(m(makeStd('#9fe6ff', 0.3), 0.13), m(basic('#7fd8ff', 1.2, true), 0.2), m(basic('#ffffff', 1.6), 0.04, [-0.02, 0.05, 0.05]));
+  P.fire = mk(m(basic('#ffd040', 2.6), 0.12), m(basic('#ff6a10', 2.0, true), [0.26, 0.15, 0.15], [-0.07, 0, 0]));
+  P.spore = mk(m(basic('#c890f0', 1.3, true), 0.14), m(basic('#f4e0ff', 1.8), 0.06));
+  P.ball = mk(m(makeStd('#e8483c', 0.5), 0.14));
+  P.bullet = mk(m(basic('#fff0a0', 2.8), [0.22, 0.035, 0.035], [-0.06, 0, 0]), m(basic('#ffffff', 2.6), 0.05));
+  P.missile = mk(
+    m(makeStd('#f2f2f0', 0.5), [0.22, 0.08, 0.08]),
+    m(makeStd('#e8302a', 0.5), [0.07, 0.07, 0.07], [0.14, 0, 0]),
+    m(basic('#ff8a20', 2.4, true), [0.1, 0.06, 0.06], [-0.15, 0, 0]),
+    m(makeStd('#e8302a', 0.5), [0.05, 0.16, 0.03], [-0.09, 0, 0]),
+  );
   return P;
 }
 
 // 发光光晕面片（总是朝向镜头）
 export function haloMesh(tex, hex, k, size){
   const mat = new MeshBasicMaterial({ map: tex, color: new Color(hex).multiplyScalar(k), transparent: true, blending: AdditiveBlending, depthWrite: false });
-  const m = new Mesh(new PlaneGeometry(size, size), mat);
-  return m;
+  return new Mesh(new PlaneGeometry(size, size), mat);
 }

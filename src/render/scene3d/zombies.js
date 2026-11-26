@@ -1,160 +1,188 @@
-// 7 种僵尸的 3D 造型与动画。共用一具「驼背、前伸双臂」的人形骨架，按类型换衣服和道具。
+// 7 种僵尸的方块造型与动画。共用一具「头、身、两臂两腿」的方块人骨架，按类型换衣服贴图和道具。
 //
-// 局部坐标与植物相同：脚底在原点，+X 是「面朝的方向」（僵尸朝左走，世界视图会把它整体转过去）。
+// 尺寸单位是像素（32 像素 = 一格宽），比例接近方块游戏的人形：大头、方身、细长四肢。
+// 局部坐标与植物相同：脚底在原点，+X 是面朝方向（僵尸朝左走，世界视图会把它整体转过去）。
 // 护具（路障、铁桶、报纸、铁门）按剩余耐久分档变形，耗尽时由特效层生成一块飞出去的残骸。
 import { Color } from 'three';
-import { GEO, eye } from './rig.js';
+import { noise, ramp, layers, spots, sprite, hex, shade, tone } from './pixels.js';
 import { ZTYPES } from '../../core/data/zombies.js';
 
 const PI = Math.PI;
-const SKIN = '#9fb98a', SKIN_D = '#7f9a6c';
+const SKIN = '#8fb57a', SKIN_D = '#6f9a5c';
 
 const LOOKS = {
-  normal:    { coat: '#6b4a2f', pants: '#3e4a5e', tie: '#c0262d', shirt: '#e9e3d0' },
-  flag:      { coat: '#5f4632', pants: '#3a4558', tie: '#c0262d', shirt: '#e9e3d0' },
-  cone:      { coat: '#6b4a2f', pants: '#3e4a5e', tie: '#2f6ec0', shirt: '#e9e3d0' },
+  normal:    { coat: '#6b4a2f', pants: '#3e4a6e', tie: '#c0262d', shirt: '#e9e3d0' },
+  flag:      { coat: '#5f4632', pants: '#3a4568', tie: '#c0262d', shirt: '#e9e3d0' },
+  cone:      { coat: '#6b4a2f', pants: '#3e4a6e', tie: '#2f6ec0', shirt: '#e9e3d0' },
   bucket:    { coat: '#4f5a40', pants: '#3a3a3a', tie: '#c0262d', shirt: '#e9e3d0' },
   vault:     { coat: '#c43a36', pants: '#c43a36', tie: null, shirt: '#f4f4f0', stripe: '#ffffff', band: '#ffd23e' },
   newspaper: { coat: '#7a6d5a', pants: '#4a4036', tie: '#7a2a6a', shirt: '#efe8d4', glasses: true, hair: '#d8d8d0' },
   screen:    { coat: '#55606e', pants: '#2f3540', tie: '#d8a020', shirt: '#e9e3d0' },
 };
 
-function humanoid(rig, L){
-  rig.pivot('hips', 'root', [0, 0.58, 0]);
-  rig.pivot('legF', 'hips', [0, -0.02, 0.085]);
-  rig.pivot('kneeF', 'legF', [0, -0.27, 0]);
-  rig.pivot('legB', 'hips', [0, -0.02, -0.085]);
-  rig.pivot('kneeB', 'legB', [0, -0.27, 0]);
-  rig.pivot('torso', 'hips', [0, 0.02, 0], [0, 0, -0.2]);
-  rig.pivot('head', 'torso', [0.05, 0.45, 0], [0, 0, 0.42]);
-  rig.pivot('jaw', 'head', [0.06, -0.06, 0]);
-  rig.pivot('hat', 'head', [-0.01, 0.15, 0]);
-  rig.pivot('armF', 'torso', [0.01, 0.36, 0.19]);
-  rig.pivot('foreF', 'armF', [0, -0.2, 0]);
-  rig.pivot('armB', 'torso', [0.01, 0.36, -0.19]);
-  rig.pivot('foreB', 'armB', [0, -0.2, 0]);
-  // 腿：裤管 + 小腿 + 大头皮鞋
-  for(const s of ['F', 'B']){
-    rig.add('leg' + s, 'm', GEO.capsule(0.062, 0.2, 12), L.pants, { p: [0, -0.13, 0] });
-    rig.add('knee' + s, 'm', GEO.capsule(0.056, 0.18, 12), L.pants, { p: [0, -0.1, 0] });
-    if(L.stripe) rig.add('knee' + s, 'm', GEO.box(0.012, 0.22, 0.02), L.stripe, { p: [0, -0.1, s === 'F' ? 0.055 : -0.055] });
-    rig.add('knee' + s, 'm', GEO.capsule(0.03, 0.03, 8), SKIN_D, { p: [0, -0.23, 0] });
-    rig.add('knee' + s, 'g', GEO.sphere(0.07, 14, 10), '#3a2a1e', { p: [0.04, -0.27, 0], s: [1.6, 0.6, 0.95] });
-  }
-  // 躯干：外套、白衬衫、领带
-  rig.add('torso', 'm', GEO.capsule(0.165, 0.24, 18), L.coat, { p: [0, 0.2, 0], s: [1, 1, 1.12], shade: 0.75 });
-  rig.add('torso', 'm', GEO.sphere(0.12, 14, 10), L.shirt, { p: [0.1, 0.27, 0], s: [0.55, 1.1, 0.75] });
-  if(L.tie){
-    rig.add('torso', 'm', GEO.box(0.02, 0.18, 0.05), L.tie, { p: [0.165, 0.22, 0], r: [0, 0, -0.18] });
-    rig.add('torso', 'm', GEO.box(0.025, 0.04, 0.06), L.tie, { p: [0.165, 0.33, 0] });
-  }
-  for(const z of [0.075, -0.075]) rig.add('torso', 'm', GEO.box(0.03, 0.2, 0.05), shade(L.coat, 0.75), { p: [0.13, 0.25, z], r: [z > 0 ? 0.3 : -0.3, 0, -0.15] });
-  for(const y of [0.08, 0.15]) rig.add('torso', 'g', GEO.sphere(0.014, 8, 6), '#2a2018', { p: [0.155, y, 0.05] });
-  // 胳膊：袖子 + 前臂 + 手
-  for(const s of ['F', 'B']){
-    rig.add('arm' + s, 'm', GEO.capsule(0.052, 0.14, 12), L.coat, { p: [0, -0.1, 0] });
-    rig.add('fore' + s, 'm', GEO.torus(0.045, 0.012, 14, 6), L.shirt, { p: [0, -0.01, 0], r: [PI / 2, 0, 0] });
-    rig.add('fore' + s, 'm', GEO.capsule(0.038, 0.12, 10), SKIN, { p: [0, -0.08, 0] });
-    rig.add('fore' + s, 'm', GEO.sphere(0.05, 12, 10), SKIN, { p: [0.01, -0.19, 0], s: [1, 1.1, 0.7] });
-    for(let k = 0; k < 3; k++) rig.add('fore' + s, 'm', GEO.capsule(0.012, 0.04, 6), SKIN_D, { p: [0.02 + k * 0.006, -0.25, (k - 1) * 0.022] });
-  }
-  // 头：长脸、一大一小两只眼、稀疏的头发、下颌单独成节点（啃食时开合）
-  rig.add('head', 'm', GEO.capsule(0.05, 0.08, 10), SKIN_D, { p: [-0.02, -0.12, 0] });
-  rig.add('head', 'm', GEO.sphere(0.17, 22, 16), SKIN, { p: [0, 0.02, 0], s: [1.08, 1.12, 0.98], shade: 0.8 });
-  rig.add('head', 'm', GEO.sphere(0.03, 8, 6), SKIN_D, { p: [0.17, 0.0, 0.02], s: [1.2, 0.9, 0.9] });   // 鼻子
-  rig.add('head', 'm', GEO.sphere(0.045, 10, 8), SKIN_D, { p: [-0.03, 0.02, 0.165], s: [0.6, 1, 0.5] });   // 耳朵
-  eye(rig, 'head', [0.13, 0.07, 0.085], 0.058, { white: '#f3f0cf', iris: '#2a2a20', pupil: 0.32, dir: [0.9, 0.05, 0.3] });
-  eye(rig, 'head', [0.15, 0.06, -0.05], 0.04, { white: '#f3f0cf', iris: '#2a2a20', pupil: 0.36, dir: [1, 0, 0.1] });
-  rig.add('head', 'm', GEO.capsule(0.012, 0.07, 6), '#3a3a28', { p: [0.155, 0.135, 0.09], r: [PI / 2 + 0.35, 0, 0] });
-  rig.add('head', 'm', GEO.capsule(0.011, 0.05, 6), '#3a3a28', { p: [0.17, 0.12, -0.05], r: [PI / 2 - 0.3, 0, 0] });
-  const hair = L.hair || '#2e2a20';
-  for(let i = 0; i < 5; i++){
-    const z = (i - 2) * 0.045, x = -0.03 + (i % 2) * 0.03;
-    rig.add('head', 'm', GEO.tube([[x, 0.17, z], [x + 0.03, 0.23, z * 1.2], [x + 0.08, 0.25 + (i % 2) * 0.02, z * 1.4]], 0.008, 8, 4), hair);
-  }
-  // 下颌与牙齿
-  rig.add('jaw', 'm', GEO.sphere(0.1, 16, 10), SKIN, { p: [0.02, -0.02, 0], s: [1.05, 0.55, 1.05] });
-  rig.add('jaw', 'm', GEO.box(0.02, 0.03, 0.13), '#3a1a14', { p: [0.1, 0.02, 0] });
-  for(let k = 0; k < 4; k++){
-    rig.add('jaw', 'g', GEO.box(0.02, 0.028, 0.022), '#f0ead0', { p: [0.1, 0.035, -0.045 + k * 0.03], r: [0, 0, (k % 2) * 0.2] });
-  }
-  if(L.glasses){
-    for(const z of [0.085, -0.05]) rig.add('head', 'x', GEO.torus(0.05, 0.007, 16, 5), '#2a2a2a', { p: [0.17, 0.065, z], r: [0, PI / 2, 0] });
-    rig.add('head', 'x', GEO.box(0.008, 0.008, 0.06), '#2a2a2a', { p: [0.18, 0.07, 0.018] });
-  }
-  if(L.band){
-    rig.add('head', 'm', GEO.torus(0.165, 0.022, 24, 6), L.band, { p: [0, 0.09, 0], r: [PI / 2, 0, 0.15] });
-  }
+// ---- 贴图 ----
+function faceTex(type, L){
+  return { key: 'zface:' + type, paint: layers(noise(SKIN, 0.09), spots(SKIN_D, 5, 1), sprite([
+    '.........',
+    '.........',
+    '.bbb..bb.',
+    '.kwk..kw.',
+    '.kkk..kk.',
+    '.........',
+    '....d....',
+    '.........',
+    '.........',
+  ], { k: '#1e2a14', w: '#f3f0cf', b: '#3a3a28', d: SKIN_D }), L.glasses ? sprite([
+    '.........', '.........', 'ggggggggg', 'g...gg..g', 'ggggggggg',
+  ], { g: '#2a2a2a' }) : () => {}, (p, w) => {
+    const hair = hex(L.hair || '#2e2a20');
+    for(let x = 0; x < w; x++) if(x % 3 !== 1) p.px(x, 0, hair);
+  }) };
 }
-function shade(hex, k){ const c = new Color(hex); c.multiplyScalar(k); return c; }
+function headSide(type, L, far){
+  return { key: 'zside:' + type + (far ? ':f' : ''), paint: layers(noise(SKIN, 0.09), spots(SKIN_D, 4, 1), (p, w) => {
+    const hair = hex(L.hair || '#2e2a20');
+    for(let x = 0; x < w; x++) if((x + 1) % 3) p.px(x, 0, hair);
+    p.rect(far ? 2 : w - 4, 4, 2, 2, SKIN_D);         // 耳朵
+  }) };
+}
+function headTop(type, L){
+  return { key: 'ztop:' + type, paint: layers(noise(SKIN, 0.09), spots(L.hair || '#2e2a20', 7, 1)) };
+}
+const JAW_FRONT = { key: 'zjaw', paint: layers(noise(SKIN, 0.09), sprite([
+  '.kkkkkk.',
+  '.wkwkwk.',
+  '........',
+], { k: '#3a1a14', w: '#f0ead0' })) };
+function torsoFront(type, L){
+  return { key: 'ztorso:' + type, paint: (p, w, h, R) => {
+    const coat = hex(L.coat), shirt = hex(L.shirt);
+    for(let y = 0; y < h; y++) for(let x = 0; x < w; x++){
+      const mid = Math.abs(x - (w - 1) / 2);
+      const open = mid < 2 - y * 0.08 + 1 && y < h - 2;
+      p.px(x, y, shade(open ? shirt : coat, 0.92 + R() * 0.14));
+    }
+    if(L.tie){ const t = hex(L.tie); const cx = Math.floor(w / 2); p.rect(cx - 1, 0, 2, 1, t); for(let y = 1; y < h * 0.6; y++) p.px(cx - (y > 4 ? 0 : 1), y, t); p.rect(cx - 1, Math.floor(h * 0.6), 2, 1, t); }
+    if(L.stripe){ for(let y = 0; y < h; y++) p.px(Math.floor(w / 2), y, hex(L.stripe)); }
+    p.px(1, Math.floor(h * 0.45), [40, 30, 20]); p.px(1, Math.floor(h * 0.7), [40, 30, 20]);
+    // 衣服上的破洞
+    if(type === 'normal' || type === 'flag') p.rect(w - 3, h - 4, 2, 2, hex(SKIN_D));
+  } };
+}
+function cloth(c, id){ return { key: 'zcloth:' + id, paint: layers(noise(c, 0.1), spots(tone(c, 0.75), 4, 1)) }; }
+const SLEEVE_HAND = (coat, id) => ({ key: 'zarm:' + id, paint: (p, w, h, R) => {
+  const c = hex(coat), s = hex(SKIN);
+  for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) p.px(x, y, shade(y < h * 0.55 ? c : s, 0.9 + R() * 0.16));
+} });
 
-// ---- 护具与道具 ----
+function humanoid(rig, type, L){
+  rig.pivot('hips', 'root', [0, 10, 0]);
+  rig.pivot('legF', 'hips', [0, 0, 2]);
+  rig.pivot('kneeF', 'legF', [0, -5, 0]);
+  rig.pivot('legB', 'hips', [0, 0, -2]);
+  rig.pivot('kneeB', 'legB', [0, -5, 0]);
+  rig.pivot('torso', 'hips', [0, 0, 0], [0, 0, -0.18]);
+  rig.pivot('head', 'torso', [0.5, 11, 0], [0, 0, 0.25]);
+  rig.pivot('jaw', 'head', [2.5, 0.5, 0]);
+  rig.pivot('hat', 'head', [0, 9, 0]);
+  rig.pivot('armF', 'torso', [0, 10, 5.6]);
+  rig.pivot('foreF', 'armF', [0, -5, 0]);
+  rig.pivot('armB', 'torso', [0, 10, -5.6]);
+  rig.pivot('foreB', 'armB', [0, -5, 0]);
+  const pants = cloth(L.pants, type + ':pants');
+  for(const s of ['F', 'B']){
+    rig.box('leg' + s, 'm', [3.6, 5, 3.6], [0, -2.5, 0], pants);
+    rig.box('knee' + s, 'm', [3.4, 5, 3.4], [0, -2.5, 0], pants);
+    rig.box('knee' + s, 'g', [5, 1.6, 3.8], [0.8, -4.4, 0], { all: '#3a2a1e', top: '#4a3626' });
+  }
+  rig.stand('torso', 'm', [5, 11, 8], [0, 0, 0], { all: cloth(L.coat, type + ':coat'), front: torsoFront(type, L) });
+  for(const s of ['F', 'B']){
+    rig.box('arm' + s, 'm', [3, 5.5, 3], [0, -2.5, 0], cloth(L.coat, type + ':coat'));
+    rig.box('fore' + s, 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND(L.coat, type), top: L.coat, bottom: SKIN });
+  }
+  rig.stand('head', 'm', [8, 9, 8], [0, 0, 0], { front: faceTex(type, L), near: headSide(type, L, false), far: headSide(type, L, true), top: headTop(type, L), back: headSide(type, L, true), bottom: SKIN });
+  rig.box('jaw', 'm', [3.5, 2.6, 6.4], [0, -1, 0], { all: SKIN, front: JAW_FRONT });
+  if(L.band) rig.box('head', 'm', [8.4, 1.5, 8.4], [0, 7, 0], L.band);
+}
+
+// ---- 护具与道具（也用作被打掉时飞出去的残骸）----
+const CONE_TEX = { key: 'cone', paint: (p, w, h, R) => {
+  const o = hex('#ff7a18'), wht = hex('#f6f2e8');
+  for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) p.px(x, y, shade(y % 5 === 2 ? wht : o, 0.92 + R() * 0.12));
+} };
 export function buildCone(rig, pv){
-  rig.add(pv, 'g', GEO.lathe([[0.17, 0], [0.165, 0.02], [0.12, 0.12], [0.065, 0.26], [0.025, 0.33], [0.001, 0.335]], 24), '#ff7a18', { shade: 0.75 });
-  rig.add(pv, 'g', GEO.cyl(0.115, 0.13, 0.04, 24, true), '#f6f2e8', { p: [0, 0.1, 0] });
-  rig.add(pv, 'g', GEO.cyl(0.07, 0.085, 0.035, 24, true), '#f6f2e8', { p: [0, 0.21, 0] });
-  rig.add(pv, 'g', GEO.box(0.36, 0.03, 0.36), '#e86a10', { p: [0, 0.0, 0] });
+  rig.stand(pv, 'g', [10, 1.5, 10], [0, 0, 0], '#e86a10');
+  rig.stand(pv, 'g', [7, 4, 7], [0, 1.5, 0], CONE_TEX);
+  rig.stand(pv, 'g', [5, 3, 5], [0, 5.5, 0], CONE_TEX);
+  rig.stand(pv, 'g', [3, 3, 3], [0, 8.5, 0], '#ff7a18');
 }
+const BUCKET_TEX = { key: 'bucket', paint: (p, w, h, R) => {
+  const m = hex('#a7b0ba');
+  for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) p.px(x, y, shade(m, (y === 1 || y === h - 2 ? 0.72 : 1) * (x % 4 === 0 ? 1.08 : 1) * (0.94 + R() * 0.1)));
+} };
 export function buildBucket(rig, pv){
-  rig.add(pv, 'x', GEO.cyl(0.165, 0.185, 0.26, 26, true), '#a7b0ba', { p: [0, 0.1, 0], shade: 0.7 });
-  rig.add(pv, 'x', GEO.cyl(0.165, 0.165, 0.01, 26), '#8e979f', { p: [0, 0.23, 0] });
-  rig.add(pv, 'x', GEO.torus(0.185, 0.014, 28, 6), '#c8d0d8', { p: [0, -0.03, 0], r: [PI / 2, 0, 0] });
-  for(const y of [0.04, 0.16]) rig.add(pv, 'x', GEO.torus(0.178 - y * 0.08, 0.006, 28, 4), '#7d868e', { p: [0, y, 0], r: [PI / 2, 0, 0] });
-  rig.add(pv, 'x', GEO.torus(0.13, 0.007, 16, 4, PI), '#7d868e', { p: [0, 0.0, 0], r: [0, 0, PI] });
+  rig.stand(pv, 'x', [9.4, 7, 9.4], [0, -1.5, 0], { sides: BUCKET_TEX, top: '#8e979f', bottom: '#5a6068' });
+  rig.stand(pv, 'x', [10.4, 1, 10.4], [0, -2, 0], '#c8d0d8');
+  rig.box(pv, 'x', [1, 1, 9], [4.9, 1, 0], '#7d868e');
 }
+const DOOR_MESH = { key: 'doormesh', paint: (p, w, h) => {
+  p.clear();
+  const c = hex('#9aa6b0');
+  for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) if(x % 3 === 0 || y % 3 === 0) p.px(x, y, shade(c, 0.85 + ((x + y) % 2) * 0.15));
+} };
 export function buildDoor(rig, pv){
   const F = '#3b4048';
-  rig.add(pv, 'x', GEO.box(0.04, 0.98, 0.04), F, { p: [0, 0, 0.29] });
-  rig.add(pv, 'x', GEO.box(0.04, 0.98, 0.04), F, { p: [0, 0, -0.29] });
-  for(const y of [0.47, 0, -0.47]) rig.add(pv, 'x', GEO.box(0.04, 0.04, 0.6), F, { p: [0, y, 0] });
-  rig.add(pv, 't', GEO.box(0.006, 0.92, 0.55), '#b8c4cc');
-  for(let i = 1; i < 9; i++) rig.add(pv, 'x', GEO.box(0.008, 0.004, 0.55), '#6a737c', { p: [0.004, -0.46 + i * 0.102, 0] });
-  for(let i = 1; i < 6; i++) rig.add(pv, 'x', GEO.box(0.008, 0.92, 0.004), '#6a737c', { p: [0.004, 0, -0.275 + i * 0.092] });
-  rig.add(pv, 'x', GEO.sphere(0.025, 10, 8), '#e0b040', { p: [0.04, 0, -0.22] });
+  for(const z of [-9, 9]) rig.box(pv, 'x', [1.2, 30, 1.2], [0, 0, z], F);
+  for(const y of [-14.4, 0, 14.4]) rig.box(pv, 'x', [1.2, 1.2, 19], [0, y, 0], F);
+  rig.box(pv, 't', [0.4, 28, 17], [0, 0, 0], { front: DOOR_MESH, back: DOOR_MESH, sides: 'clear', top: 'clear', bottom: 'clear' });
+  rig.box(pv, 'x', [1, 1.6, 1.6], [1, 0, -6.5], '#e0b040');
 }
+const PAPER_TEX = { key: 'paper', paint: (p, w, h, R) => {
+  p.fill('#efe9d6');
+  const k = hex('#3a3a3a'), g = hex('#8a867a');
+  p.rect(1, 1, w - 2, 2, k);
+  for(let y = 4; y < h - 1; y += 2) for(let x = 1; x < w - 1; x++) if(R() < 0.75 && (x + 1) % Math.max(4, Math.floor(w / 2)) !== 0) p.px(x, y, g);
+  p.rect(Math.floor(w / 2) + 1, 5, Math.floor(w / 2) - 2, 3, [120, 120, 120]);
+} };
 export function buildPaper(rig, pv){
-  // 摊开的报纸：两页微微折成 V 形，朝外一面印着标题和栏线
-  for(const sz of [1, -1]){
-    rig.add(pv, 'm', GEO.box(0.012, 0.34, 0.25), '#efe9d6', { p: [0.02 * (1 - sz * 0), 0, sz * 0.125], r: [0, sz * 0.25, 0] });
-    rig.add(pv, 'm', GEO.box(0.004, 0.05, 0.2), '#2a2a2a', { p: [0.034 + (sz > 0 ? -0.03 : 0.03), 0.12, sz * 0.12], r: [0, sz * 0.25, 0] });
-    for(let k = 0; k < 6; k++){
-      rig.add(pv, 'm', GEO.box(0.004, 0.012, 0.09), '#8a867a', { p: [0.034 + (sz > 0 ? -0.03 : 0.03), 0.05 - k * 0.035, sz * (0.07 + (k % 2) * 0.1)], r: [0, sz * 0.25, 0] });
-    }
-  }
+  for(const s of [1, -1]) rig.box(pv, 'm', [0.6, 11, 8], [0, 0, s * 4], { front: PAPER_TEX, back: PAPER_TEX, sides: '#e0d8c4', top: '#e0d8c4', bottom: '#e0d8c4' }, { r: [0, s * 0.25, 0] });
 }
 export function buildFlag(rig, pv){
-  rig.add(pv, 'm', GEO.cyl(0.012, 0.012, 0.8, 8), '#6a4a2a', { p: [0, 0.4, 0] });
-  rig.add(pv, 'x', GEO.sphere(0.025, 10, 8), '#e0b040', { p: [0, 0.81, 0] });
+  rig.stand(pv, 'm', [1, 26, 1], [0, 0, 0], '#6a4a2a');
+  rig.box(pv, 'x', [1.6, 1.6, 1.6], [0, 26.5, 0], '#e0b040');
 }
 export function buildPole(rig, pv){
-  rig.add(pv, 'm', GEO.cyl(0.018, 0.018, 1.5, 10), '#d4a24e', { r: [0, 0, PI / 2] });
-  rig.add(pv, 'm', GEO.cyl(0.022, 0.022, 0.08, 10), '#3a3a3a', { p: [0.72, 0, 0], r: [0, 0, PI / 2] });
+  rig.box(pv, 'm', [48, 1.2, 1.2], [0, 0, 0], { key: 'pole', paint: (p, w, h, R) => { for(let x = 0; x < w; x++) p.rect(x, 0, 1, h, x % 6 < 3 ? '#d4a24e' : '#e8c070'); } });
 }
+const FLAG_TEX = { key: 'flagcloth', paint: (p, w, h, R) => {
+  const r = hex('#c82a30');
+  for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) p.px(x, y, shade(r, 0.9 + R() * 0.15));
+  sprite(['.ss.', 'skks', 'ssss', '.s.s'], { s: '#f0c8c8', k: '#3a0808' }, Math.max(0, Math.floor(w / 2) - 2), 2)(p);
+} };
 
 function zombieBuild(type){
   return rig => {
     const L = LOOKS[type];
-    humanoid(rig, L);
+    humanoid(rig, type, L);
     if(type === 'cone'){ rig.pivot('acc', 'hat'); buildCone(rig, 'acc'); }
-    if(type === 'bucket'){ rig.pivot('acc', 'hat', [0, -0.04, 0]); buildBucket(rig, 'acc'); }
-    if(type === 'newspaper'){ rig.pivot('acc', 'torso', [0.36, 0.38, 0], [0, 0, 0.1]); buildPaper(rig, 'acc'); }
-    if(type === 'screen'){ rig.pivot('acc', 'torso', [0.34, 0.12, 0], [0, 0, 0.2]); buildDoor(rig, 'acc'); }
+    if(type === 'bucket'){ rig.pivot('acc', 'hat', [0, -1, 0]); buildBucket(rig, 'acc'); }
+    if(type === 'newspaper'){ rig.pivot('acc', 'torso', [9, 11, 0], [0, 0, 0.1]); buildPaper(rig, 'acc'); }
+    if(type === 'screen'){ rig.pivot('acc', 'torso', [10, 5, 0], [0, 0, 0.18]); buildDoor(rig, 'acc'); }
     if(type === 'flag'){
-      rig.pivot('flagpole', 'foreB', [0.02, -0.2, 0], [0, 0, -1.25]);
+      rig.pivot('flagpole', 'foreB', [0.5, -6, 0], [0, 0, -1.25]);
       buildFlag(rig, 'flagpole');
       let parent = 'flagpole';
       for(let i = 0; i < 4; i++){
         const name = 'cloth' + i;
-        rig.pivot(name, parent, i === 0 ? [0, 0.68, 0] : [0, 0, -0.1]);
-        rig.add(name, 'm', GEO.box(0.008, 0.26, 0.1), i % 2 ? '#c82a30' : '#b02228', { p: [0, 0, -0.05] });
-        if(i === 1) rig.add(name, 'm', GEO.sphere(0.05, 12, 8), '#f0c8c8', { p: [0.008, 0.02, -0.05], s: [0.15, 1, 1] });
+        rig.pivot(name, parent, i === 0 ? [0, 22, 0] : [0, 0, -3]);
+        rig.box(name, 'm', [0.6, 8, 3], [0, 0, -1.5], { near: FLAG_TEX, far: FLAG_TEX, sides: '#b02228', top: '#b02228', bottom: '#b02228' });
         parent = name;
       }
     }
-    if(type === 'vault'){ rig.pivot('acc', 'foreF', [0.02, -0.19, 0], [0, 0, 1.2]); buildPole(rig, 'acc'); }
+    if(type === 'vault'){ rig.pivot('acc', 'foreF', [0.5, -6, 0], [0, 0, 1.2]); buildPole(rig, 'acc'); }
     if(type === 'newspaper'){
       rig.pivot('rage', 'head');
-      for(const z of [0.085, -0.05]) rig.add('rage', 'e', GEO.sphere(0.022, 10, 8), '#ff3018', { p: [0.185, 0.065, z] });
+      for(const z of [2.2, -2]) rig.box('rage', 'e', [0.6, 1.4, 1.6], [4.2, 5.2, z], null, { tint: '#ff3018' });
     }
   };
 }
@@ -167,23 +195,23 @@ function zombieAnimate(inst, z, t, env){
   const ph = (z.animT || 0) * (z.angry ? 4.6 : 3.4);
   const st = z.state;
   const sw = Math.sin(ph), cw = Math.cos(ph);
-  // 走路：大幅度甩腿、膝盖在后摆时弯曲、双臂前伸微晃
-  let legA = 0.42, armBase = 1.3;
-  if(z.type === 'newspaper' && !z.angry){ legA = 0.26; armBase = 1.0; }
+  // 走路：方块人式的大幅甩腿，双臂前伸
+  let legA = 0.5, armBase = 1.45;
+  if(z.type === 'newspaper' && !z.angry){ legA = 0.3; armBase = 1.0; }
   if(st === 'walk' || st === 'dying'){
     pv.legF.rotation.z = sw * legA; pv.legB.rotation.z = -sw * legA;
-    pv.kneeF.rotation.z = -Math.max(0, -cw) * 0.6; pv.kneeB.rotation.z = -Math.max(0, cw) * 0.6;
-    pv.hips.position.y += Math.abs(sw) * 0.025;
-    pv.hips.rotation.y = sw * 0.08;
+    pv.kneeF.rotation.z = -Math.max(0, -cw) * 0.5; pv.kneeB.rotation.z = -Math.max(0, cw) * 0.5;
+    pv.hips.position.y += Math.abs(sw) * 0.02;
+    pv.hips.rotation.y = sw * 0.06;
     pv.torso.rotation.x = sw * 0.05;
-    pv.armF.rotation.z = armBase + Math.sin(ph + 0.6) * 0.12;
-    pv.armB.rotation.z = armBase - 0.08 - Math.sin(ph + 0.6) * 0.12;
-    pv.head.rotation.z = Math.sin(ph * 0.5) * 0.08;
+    pv.armF.rotation.z = armBase + Math.sin(ph + 0.6) * 0.1;
+    pv.armB.rotation.z = armBase - 0.08 - Math.sin(ph + 0.6) * 0.1;
+    pv.head.rotation.z += Math.sin(ph * 0.5) * 0.07;
     pv.head.rotation.x = Math.sin(ph * 0.5 + 1) * 0.08;
   }
   if(z.angry){
-    pv.armF.rotation.z = 1.9 + Math.sin(ph * 2) * 0.5;
-    pv.armB.rotation.z = 1.7 - Math.sin(ph * 2) * 0.5;
+    pv.armF.rotation.z = 2.0 + Math.sin(ph * 2) * 0.5;
+    pv.armB.rotation.z = 1.8 - Math.sin(ph * 2) * 0.5;
     pv.torso.rotation.z -= 0.15;
   }
   if(z.type === 'newspaper' && !z.angry){
@@ -191,11 +219,11 @@ function zombieAnimate(inst, z, t, env){
     pv.head.rotation.z -= 0.15;
   }
   if(z.type === 'screen' && pv.acc && pv.acc.visible){
-    pv.armF.rotation.z = 1.25; pv.foreF.rotation.z = 0.5;
-    pv.armB.rotation.z = 1.1; pv.foreB.rotation.z = 0.6;
+    pv.armF.rotation.z = 1.3; pv.foreF.rotation.z = 0.4;
+    pv.armB.rotation.z = 1.15; pv.foreB.rotation.z = 0.5;
   }
   if(z.type === 'flag'){
-    pv.armB.rotation.z = 2.4 + Math.sin(ph) * 0.06;
+    pv.armB.rotation.z = 2.5 + Math.sin(ph) * 0.06;
     pv.foreB.rotation.z = 0.2;
     for(let i = 0; i < 4; i++) pv['cloth' + i].rotation.y = Math.sin(t * 5 - i * 0.9) * 0.35;
   }
@@ -208,15 +236,15 @@ function zombieAnimate(inst, z, t, env){
   if(st === 'eat'){
     const e = z.eatT || 0;
     const bite = Math.abs(Math.sin(e / 0.62 * PI));
-    pv.armF.rotation.z = 1.55 + Math.sin(e * 9) * 0.1;
-    pv.armB.rotation.z = 1.45 + Math.cos(e * 9) * 0.1;
+    pv.armF.rotation.z = 1.6 + Math.sin(e * 9) * 0.1;
+    pv.armB.rotation.z = 1.5 + Math.cos(e * 9) * 0.1;
     pv.foreF.rotation.z = 0.35; pv.foreB.rotation.z = 0.35;
     pv.torso.rotation.z -= 0.18 + bite * 0.12;
-    pv.head.rotation.z = -0.25 - bite * 0.3;
-    pv.jaw.rotation.z = -bite * 0.5;
+    pv.head.rotation.z = -0.2 - bite * 0.3;
+    pv.jaw.position.y -= bite * 0.06;
     pv.legF.rotation.z = 0.15; pv.legB.rotation.z = -0.25;
   } else {
-    pv.jaw.rotation.z = -0.15 - Math.abs(Math.sin(t * 1.7 + z.row)) * 0.12;
+    pv.jaw.position.y -= Math.abs(Math.sin(t * 1.7 + (z.row || 0))) * 0.025;
   }
   // 撑杆跳：收腿、身体前倾，撑杆竖起
   if(st === 'vault'){
@@ -281,9 +309,5 @@ export const DEBRIS_MODELS = {
   bucket: { build: rig => buildBucket(rig, 'root') },
   screen: { build: rig => buildDoor(rig, 'root') },
   newspaper: { build: rig => buildPaper(rig, 'root') },
-  arm: { build: rig => {
-    rig.add('root', 'm', GEO.capsule(0.038, 0.12, 10), SKIN, { p: [0, -0.08, 0] });
-    rig.add('root', 'm', GEO.sphere(0.05, 12, 10), SKIN, { p: [0.01, -0.19, 0] });
-    rig.add('root', 'm', GEO.torus(0.045, 0.012, 14, 6), '#e9e3d0', { r: [PI / 2, 0, 0] });
-  } },
+  arm: { build: rig => rig.box('root', 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND('#6b4a2f', 'debris'), top: '#6b4a2f', bottom: SKIN }) },
 };

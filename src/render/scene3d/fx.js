@@ -43,21 +43,24 @@ const VS = `
     gl_PointSize = max(1.0, size * scale / -mv.z);
     gl_Position = projectionMatrix * mv;
   }`;
+// 方块风粒子：方形像素块，边缘一圈暗一点（方块游戏的粒子就是一个个小方片）
 const FS_NORMAL = `
   varying vec3 vColor; varying float vAlpha;
   void main(){
-    float d = length(gl_PointCoord - 0.5) * 2.0;
-    if(d > 1.0) discard;
-    float a = smoothstep(1.0, 0.55, d);
-    gl_FragColor = vec4(vColor * (1.05 - d * 0.25), a * vAlpha);
+    vec2 q = abs(gl_PointCoord - 0.5) * 2.0;
+    float d = max(q.x, q.y);
+    if(d > 0.92) discard;
+    float edge = d > 0.62 ? 0.78 : 1.0;
+    gl_FragColor = vec4(vColor * edge, vAlpha);
   }`;
 const FS_ADD = `
   varying vec3 vColor; varying float vAlpha;
   void main(){
-    float d = length(gl_PointCoord - 0.5) * 2.0;
-    if(d > 1.0) discard;
-    float a = pow(1.0 - d, 1.6);
-    gl_FragColor = vec4(vColor * a * vAlpha * 2.2, 1.0);
+    vec2 q = abs(gl_PointCoord - 0.5) * 2.0;
+    float d = max(q.x, q.y);
+    if(d > 0.92) discard;
+    float a = d > 0.55 ? 0.55 : 1.0;
+    gl_FragColor = vec4(vColor * a * vAlpha * 1.8, 1.0);
   }`;
 
 export function createCloud(max, additive){
@@ -136,13 +139,13 @@ export function createFx(scene){
     group.add(g);
     booms.push({ g, core, ring, age: 0, radius, big });
     emit('fire', x, 0.35, z, big ? 40 : 22, { spMin: 1.5, spMax: big ? 4.5 : 3, elMin: 0.5, elMax: 1.5, g: -4.5, drag: 4, lifeMin: 0.3, lifeMax: 0.7,
-      sizeMin: radius * 0.3, sizeMax: radius * 0.55, grow: radius * 1.2, jitter: radius * 0.2,
+      sizeMin: radius * 0.18, sizeMax: radius * 0.32, grow: radius * 0.5, jitter: radius * 0.25,
       colors: [[2.6, 1.5, 0.35], [2.4, 0.9, 0.18], [2.8, 2.0, 0.8]], additive: false });
     const n = big ? 110 : 60;
     emit('spark', x, 0.4, z, n, { spMin: 2, spMax: big ? 8 : 5, elMin: 0.1, elMax: 1.4, g: 9, lifeMin: 0.35, lifeMax: 0.9, sizeMin: 0.04, sizeMax: 0.1,
       colors: [[1, 0.85, 0.4], [1, 0.55, 0.15], [1, 0.95, 0.7]] });
-    emit('smoke', x, 0.3, z, big ? 22 : 12, { spMin: 0.3, spMax: 1.4, elMin: 0.2, elMax: 1.4, g: -0.6, drag: 1.5, lifeMin: 0.9, lifeMax: 1.8,
-      sizeMin: 0.35, sizeMax: 0.7, grow: 0.9, jitter: radius * 0.3, colors: [[0.18, 0.16, 0.15], [0.26, 0.23, 0.2], [0.12, 0.11, 0.1]], additive: false });
+    emit('smoke', x, 0.3, z, big ? 36 : 18, { spMin: 0.6, spMax: 2.2, elMin: 0.2, elMax: 1.4, g: -0.8, drag: 1.8, lifeMin: 0.6, lifeMax: 1.3,
+      sizeMin: 0.1, sizeMax: 0.22, grow: 0.12, jitter: radius * 0.3, colors: [[0.18, 0.16, 0.15], [0.26, 0.23, 0.2], [0.12, 0.11, 0.1]], additive: false });
     emit('dust', x, 0.15, z, big ? 26 : 14, { spMin: 1.5, spMax: 4, elMin: 0.4, elMax: 1.3, g: 9, lifeMin: 0.5, lifeMax: 1.0, sizeMin: 0.05, sizeMax: 0.11,
       colors: [[0.36, 0.25, 0.14], [0.45, 0.33, 0.2]], additive: false });
   }

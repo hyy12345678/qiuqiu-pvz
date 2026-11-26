@@ -1,592 +1,242 @@
 c1 drawImage([object HTMLCanvasElement],0,0,1024,640)
 c1 save()
-c1 createLinearGradient g350(0,0,0,250)
-c1 g350.addColorStop(0,rgba(8,24,40,0.45))
-c1 g350.addColorStop(1,rgba(8,24,40,0))
-c1 fillStyle=g350
+c1 createLinearGradient g95(0,0,0,250)
+c1 g95.addColorStop(0,rgba(8,24,40,0.45))
+c1 g95.addColorStop(1,rgba(8,24,40,0))
+c1 fillStyle=g95
 c1 fillRect(0,0,1024,250)
 c1 save()
-c1 font=900 70px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
-c1 textAlign=center
-c1 textBaseline=middle
-c1 lineJoin=round
-c1 save()
-c1 translate(237.600,105.321)
-c1 rotate(0.011)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(球,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(球,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(球,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(球,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(球,0,0)
-c1 createLinearGradient g351(0,-35,0,31.500)
-c1 g351.addColorStop(0,#fbffd8)
-c1 g351.addColorStop(0.350,#c8f55a)
-c1 g351.addColorStop(0.620,#62c21e)
-c1 g351.addColorStop(1,#2f8a10)
-c1 fillStyle=g351
-c1 fillText(球,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(球,0,0)
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],186,52,81,96)
+c1 drawImage([object HTMLCanvasElement],192,52,81,96)
+c1 drawImage([object HTMLCanvasElement],189,49,81,96)
+c1 drawImage([object HTMLCanvasElement],189,55,81,96)
+c1 drawImage([object HTMLCanvasElement],189,55,81,96)
+c1 drawImage([object HTMLCanvasElement],189,58,81,96)
+c1 drawImage([object HTMLCanvasElement],189,61,81,96)
+c1 drawImage([object HTMLCanvasElement],189,55,81,96)
+c1 drawImage([object HTMLCanvasElement],189,58,81,96)
+c1 drawImage([object HTMLCanvasElement],189,52,81,96)
 c1 restore()
 c1 save()
-c1 translate(306.200,107.579)
-c1 rotate(0.050)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(球,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(球,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(球,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(球,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(球,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(球,0,0)
-c1 createLinearGradient g352(0,-35,0,31.500)
-c1 g352.addColorStop(0,#fbffd8)
-c1 g352.addColorStop(0.350,#c8f55a)
-c1 g352.addColorStop(0.620,#62c21e)
-c1 g352.addColorStop(1,#2f8a10)
-c1 fillStyle=g352
-c1 fillText(球,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(球,0,0)
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],257,55,81,96)
+c1 drawImage([object HTMLCanvasElement],263,55,81,96)
+c1 drawImage([object HTMLCanvasElement],260,52,81,96)
+c1 drawImage([object HTMLCanvasElement],260,58,81,96)
+c1 drawImage([object HTMLCanvasElement],260,58,81,96)
+c1 drawImage([object HTMLCanvasElement],260,61,81,96)
+c1 drawImage([object HTMLCanvasElement],260,64,81,96)
+c1 drawImage([object HTMLCanvasElement],260,58,81,96)
+c1 drawImage([object HTMLCanvasElement],260,61,81,96)
+c1 drawImage([object HTMLCanvasElement],260,55,81,96)
 c1 restore()
 c1 save()
-c1 translate(374.800,108.153)
-c1 rotate(0.015)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(的,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(的,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(的,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(的,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(的,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(的,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(的,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(的,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(的,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(的,0,0)
-c1 createLinearGradient g353(0,-35,0,31.500)
-c1 g353.addColorStop(0,#fbffd8)
-c1 g353.addColorStop(0.350,#c8f55a)
-c1 g353.addColorStop(0.620,#62c21e)
-c1 g353.addColorStop(1,#2f8a10)
-c1 fillStyle=g353
-c1 fillText(的,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(的,0,0)
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],327,55,81,96)
+c1 drawImage([object HTMLCanvasElement],333,55,81,96)
+c1 drawImage([object HTMLCanvasElement],330,52,81,96)
+c1 drawImage([object HTMLCanvasElement],330,58,81,96)
+c1 drawImage([object HTMLCanvasElement],330,58,81,96)
+c1 drawImage([object HTMLCanvasElement],330,61,81,96)
+c1 drawImage([object HTMLCanvasElement],330,64,81,96)
+c1 drawImage([object HTMLCanvasElement],330,58,81,96)
+c1 drawImage([object HTMLCanvasElement],330,61,81,96)
+c1 drawImage([object HTMLCanvasElement],330,55,81,96)
 c1 restore()
 c1 save()
-c1 translate(443.400,106.774)
-c1 rotate(-0.042)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(植,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(植,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(植,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(植,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(植,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(植,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(植,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(植,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(植,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(植,0,0)
-c1 createLinearGradient g354(0,-35,0,31.500)
-c1 g354.addColorStop(0,#fbffd8)
-c1 g354.addColorStop(0.350,#c8f55a)
-c1 g354.addColorStop(0.620,#62c21e)
-c1 g354.addColorStop(1,#2f8a10)
-c1 fillStyle=g354
-c1 fillText(植,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(植,0,0)
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],398,55,81,96)
+c1 drawImage([object HTMLCanvasElement],404,55,81,96)
+c1 drawImage([object HTMLCanvasElement],401,52,81,96)
+c1 drawImage([object HTMLCanvasElement],401,58,81,96)
+c1 drawImage([object HTMLCanvasElement],401,58,81,96)
+c1 drawImage([object HTMLCanvasElement],401,61,81,96)
+c1 drawImage([object HTMLCanvasElement],401,64,81,96)
+c1 drawImage([object HTMLCanvasElement],401,58,81,96)
+c1 drawImage([object HTMLCanvasElement],401,61,81,96)
+c1 drawImage([object HTMLCanvasElement],401,55,81,96)
 c1 restore()
 c1 save()
-c1 translate(512,104.091)
-c1 rotate(-0.038)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(物,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(物,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(物,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(物,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(物,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(物,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(物,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(物,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(物,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(物,0,0)
-c1 createLinearGradient g355(0,-35,0,31.500)
-c1 g355.addColorStop(0,#fbffd8)
-c1 g355.addColorStop(0.350,#c8f55a)
-c1 g355.addColorStop(0.620,#62c21e)
-c1 g355.addColorStop(1,#2f8a10)
-c1 fillStyle=g355
-c1 fillText(物,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(物,0,0)
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],469,52,81,96)
+c1 drawImage([object HTMLCanvasElement],475,52,81,96)
+c1 drawImage([object HTMLCanvasElement],472,49,81,96)
+c1 drawImage([object HTMLCanvasElement],472,55,81,96)
+c1 drawImage([object HTMLCanvasElement],472,55,81,96)
+c1 drawImage([object HTMLCanvasElement],472,58,81,96)
+c1 drawImage([object HTMLCanvasElement],472,61,81,96)
+c1 drawImage([object HTMLCanvasElement],472,55,81,96)
+c1 drawImage([object HTMLCanvasElement],472,58,81,96)
+c1 drawImage([object HTMLCanvasElement],472,52,81,96)
 c1 restore()
 c1 save()
-c1 translate(580.600,101.364)
-c1 rotate(0.021)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(大,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(大,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(大,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(大,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(大,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(大,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(大,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(大,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(大,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(大,0,0)
-c1 createLinearGradient g356(0,-35,0,31.500)
-c1 g356.addColorStop(0,#fbffd8)
-c1 g356.addColorStop(0.350,#c8f55a)
-c1 g356.addColorStop(0.620,#62c21e)
-c1 g356.addColorStop(1,#2f8a10)
-c1 fillStyle=g356
-c1 fillText(大,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(大,0,0)
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],539,49,81,96)
+c1 drawImage([object HTMLCanvasElement],545,49,81,96)
+c1 drawImage([object HTMLCanvasElement],542,46,81,96)
+c1 drawImage([object HTMLCanvasElement],542,52,81,96)
+c1 drawImage([object HTMLCanvasElement],542,52,81,96)
+c1 drawImage([object HTMLCanvasElement],542,55,81,96)
+c1 drawImage([object HTMLCanvasElement],542,58,81,96)
+c1 drawImage([object HTMLCanvasElement],542,52,81,96)
+c1 drawImage([object HTMLCanvasElement],542,55,81,96)
+c1 drawImage([object HTMLCanvasElement],542,49,81,96)
 c1 restore()
 c1 save()
-c1 translate(649.200,99.877)
-c1 rotate(0.049)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(战,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(战,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(战,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(战,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(战,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(战,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(战,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(战,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(战,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(战,0,0)
-c1 createLinearGradient g357(0,-35,0,31.500)
-c1 g357.addColorStop(0,#fbffd8)
-c1 g357.addColorStop(0.350,#c8f55a)
-c1 g357.addColorStop(0.620,#62c21e)
-c1 g357.addColorStop(1,#2f8a10)
-c1 fillStyle=g357
-c1 fillText(战,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(战,0,0)
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],610,49,81,96)
+c1 drawImage([object HTMLCanvasElement],616,49,81,96)
+c1 drawImage([object HTMLCanvasElement],613,46,81,96)
+c1 drawImage([object HTMLCanvasElement],613,52,81,96)
+c1 drawImage([object HTMLCanvasElement],613,52,81,96)
+c1 drawImage([object HTMLCanvasElement],613,55,81,96)
+c1 drawImage([object HTMLCanvasElement],613,58,81,96)
+c1 drawImage([object HTMLCanvasElement],613,52,81,96)
+c1 drawImage([object HTMLCanvasElement],613,55,81,96)
+c1 drawImage([object HTMLCanvasElement],613,49,81,96)
 c1 restore()
 c1 save()
-c1 translate(717.800,100.330)
-c1 rotate(0.005)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(僵,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(僵,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(僵,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(僵,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(僵,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(僵,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(僵,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(僵,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(僵,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(僵,0,0)
-c1 createLinearGradient g358(0,-35,0,31.500)
-c1 g358.addColorStop(0,#fbffd8)
-c1 g358.addColorStop(0.350,#c8f55a)
-c1 g358.addColorStop(0.620,#62c21e)
-c1 g358.addColorStop(1,#2f8a10)
-c1 fillStyle=g358
-c1 fillText(僵,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(僵,0,0)
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],680,49,81,96)
+c1 drawImage([object HTMLCanvasElement],686,49,81,96)
+c1 drawImage([object HTMLCanvasElement],683,46,81,96)
+c1 drawImage([object HTMLCanvasElement],683,52,81,96)
+c1 drawImage([object HTMLCanvasElement],683,52,81,96)
+c1 drawImage([object HTMLCanvasElement],683,55,81,96)
+c1 drawImage([object HTMLCanvasElement],683,58,81,96)
+c1 drawImage([object HTMLCanvasElement],683,52,81,96)
+c1 drawImage([object HTMLCanvasElement],683,55,81,96)
+c1 drawImage([object HTMLCanvasElement],683,49,81,96)
 c1 restore()
 c1 save()
-c1 translate(786.400,102.508)
-c1 rotate(-0.047)
-c1 fillStyle=#1d4a0c
-c1 lineWidth=14
-c1 strokeStyle=#1d4a0c
-c1 strokeText(尸,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(尸,0,8)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(尸,0,7)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(尸,0,6)
-c1 strokeStyle=#1d4a0c
-c1 strokeText(尸,0,5)
-c1 strokeStyle=#2e7414
-c1 strokeText(尸,0,4)
-c1 strokeStyle=#2e7414
-c1 strokeText(尸,0,3)
-c1 strokeStyle=#2e7414
-c1 strokeText(尸,0,2)
-c1 strokeStyle=#2e7414
-c1 strokeText(尸,0,1)
-c1 lineWidth=9.100
-c1 strokeStyle=#fffbe0
-c1 strokeText(尸,0,0)
-c1 createLinearGradient g359(0,-35,0,31.500)
-c1 g359.addColorStop(0,#fbffd8)
-c1 g359.addColorStop(0.350,#c8f55a)
-c1 g359.addColorStop(0.620,#62c21e)
-c1 g359.addColorStop(1,#2f8a10)
-c1 fillStyle=g359
-c1 fillText(尸,0,0)
-c1 save()
-c1 beginPath()
-c1 rect(-70,-70,140,54.600)
-c1 clip()
-c1 globalAlpha=0.350
-c1 fillStyle=#ffffff
-c1 fillText(尸,0,0)
-c1 restore()
-c1 restore()
+c1 drawImage([object HTMLCanvasElement],751,52,81,96)
+c1 drawImage([object HTMLCanvasElement],757,52,81,96)
+c1 drawImage([object HTMLCanvasElement],754,49,81,96)
+c1 drawImage([object HTMLCanvasElement],754,55,81,96)
+c1 drawImage([object HTMLCanvasElement],754,55,81,96)
+c1 drawImage([object HTMLCanvasElement],754,58,81,96)
+c1 drawImage([object HTMLCanvasElement],754,61,81,96)
+c1 drawImage([object HTMLCanvasElement],754,55,81,96)
+c1 drawImage([object HTMLCanvasElement],754,58,81,96)
+c1 drawImage([object HTMLCanvasElement],754,52,81,96)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.289
-c1 translate(512,110)
-c1 beginPath()
-c1 moveTo(0,-2.601)
-c1 quadraticCurveTo(0,0,2.601,0)
-c1 quadraticCurveTo(0,0,0,2.601)
-c1 quadraticCurveTo(0,0,-2.601,0)
-c1 quadraticCurveTo(0,0,0,-2.601)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(511.500,107.500,1,5)
+c1 fillRect(509.500,109.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.993
-c1 translate(758.083,64.846)
-c1 beginPath()
-c1 moveTo(0,-8.940)
-c1 quadraticCurveTo(0,0,8.940,0)
-c1 quadraticCurveTo(0,0,0,8.940)
-c1 quadraticCurveTo(0,0,-8.940,0)
-c1 quadraticCurveTo(0,0,0,-8.940)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(756.583,57.346,3,15)
+c1 fillRect(750.583,63.346,15,3)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.500
-c1 translate(184.082,31.328)
-c1 beginPath()
-c1 moveTo(0,-4.500)
-c1 quadraticCurveTo(0,0,4.500,0)
-c1 quadraticCurveTo(0,0,0,4.500)
-c1 quadraticCurveTo(0,0,-4.500,0)
-c1 quadraticCurveTo(0,0,0,-4.500)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(183.082,26.328,2,10)
+c1 fillRect(179.082,30.328,10,2)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.596
-c1 translate(702.885,85.119)
-c1 beginPath()
-c1 moveTo(0,-5.366)
-c1 quadraticCurveTo(0,0,5.366,0)
-c1 quadraticCurveTo(0,0,0,5.366)
-c1 quadraticCurveTo(0,0,-5.366,0)
-c1 quadraticCurveTo(0,0,0,-5.366)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(701.885,80.119,2,10)
+c1 fillRect(697.885,84.119,10,2)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.974
-c1 translate(585.554,104.776)
-c1 beginPath()
-c1 moveTo(0,-8.762)
-c1 quadraticCurveTo(0,0,8.762,0)
-c1 quadraticCurveTo(0,0,0,8.762)
-c1 quadraticCurveTo(0,0,-8.762,0)
-c1 quadraticCurveTo(0,0,0,-8.762)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(584.054,97.276,3,15)
+c1 fillRect(578.054,103.276,15,3)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.177
-c1 translate(223.101,45.920)
-c1 beginPath()
-c1 moveTo(0,-1.594)
-c1 quadraticCurveTo(0,0,1.594,0)
-c1 quadraticCurveTo(0,0,0,1.594)
-c1 quadraticCurveTo(0,0,-1.594,0)
-c1 quadraticCurveTo(0,0,0,-1.594)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(222.601,43.420,1,5)
+c1 fillRect(220.601,45.420,5,1)
 c1 restore()
 c1 save()
-c1 beginPath()
-c1 moveTo(353,171)
-c1 lineTo(323.200,171)
-c1 lineTo(335.100,188)
-c1 lineTo(323.200,205)
-c1 lineTo(353,205)
-c1 closePath()
-c1 fillStyle=#e0620e
-c1 fill()
-c1 beginPath()
-c1 moveTo(671,171)
-c1 lineTo(700.800,171)
-c1 lineTo(688.900,188)
-c1 lineTo(700.800,205)
-c1 lineTo(671,205)
-c1 closePath()
-c1 fillStyle=#e0620e
-c1 fill()
-c1 beginPath()
-c1 moveTo(353,165)
-c1 arcTo(677,165,677,199,6)
-c1 arcTo(677,199,347,199,6)
-c1 arcTo(347,199,347,165,6)
-c1 arcTo(347,165,677,165,6)
-c1 closePath()
-c1 createLinearGradient g360(0,165,0,199)
-c1 g360.addColorStop(0,#ffd36a)
-c1 g360.addColorStop(0.450,#ff9a1e)
-c1 g360.addColorStop(1,#e0620e)
-c1 fillStyle=g360
-c1 fill()
-c1 strokeStyle=#5a2002
-c1 lineWidth=2
-c1 stroke()
-c1 fillStyle=rgba(255,255,255,0.25)
-c1 fillRect(353,168,318,8.500)
+c1 fillStyle=#000000
+c1 fillRect(345,163,334,38)
+c1 fillStyle=#000000
+c1 fillRect(317.800,169,31.200,34)
+c1 fillStyle=#b0600e
+c1 fillRect(319.800,171,27.200,30)
+c1 fillStyle=#000000
+c1 fillRect(319.800,182,10.200,10.200)
+c1 fillStyle=#000000
+c1 fillRect(675,169,31.200,34)
+c1 fillStyle=#b0600e
+c1 fillRect(677,171,27.200,30)
+c1 fillStyle=#000000
+c1 fillRect(694,182,10.200,10.200)
+c1 fillStyle=#e8901e
+c1 fillRect(347,165,330,34)
+c1 fillStyle=#ffc860
+c1 fillRect(347,165,327,3)
+c1 fillRect(347,165,3,31)
+c1 fillStyle=#5a2c04
+c1 fillRect(350,196,327,3)
+c1 fillRect(674,168,3,31)
 c1 restore()
 c1 font=900 17px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=center
 c1 textBaseline=middle
-c1 lineWidth=4
-c1 strokeStyle=#5a2002
-c1 lineJoin=round
-c1 strokeText(网页版 · 3D 全新画面 · 离线可玩,512,183)
-c1 fillStyle=#fffaf0
-c1 fillText(网页版 · 3D 全新画面 · 离线可玩,512,183)
+c1 fillStyle=#3a1a02
+c1 fillText(方块世界 · 3D 画面 · 离线可玩,514,185)
+c1 font=900 17px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
+c1 textAlign=center
+c1 textBaseline=middle
+c1 fillStyle=#ffffff
+c1 fillText(方块世界 · 3D 画面 · 离线可玩,512,183)
 c1 save()
 c1 translate(0,0)
 c1 save()
-c1 beginPath()
-c1 moveTo(67,258)
-c1 arcTo(265,258,265,408,16)
-c1 arcTo(265,408,51,408,16)
-c1 arcTo(51,408,51,258,16)
-c1 arcTo(51,258,265,258,16)
-c1 closePath()
-c1 createLinearGradient g361(0,258,0,408)
-c1 g361.addColorStop(0,rgba(30,74,60,0.93))
-c1 g361.addColorStop(1,rgba(10,34,30,0.95))
-c1 fillStyle=g361
-c1 fill()
-c1 save()
-c1 beginPath()
-c1 moveTo(67,258)
-c1 arcTo(265,258,265,408,16)
-c1 arcTo(265,408,51,408,16)
-c1 arcTo(51,408,51,258,16)
-c1 arcTo(51,258,265,258,16)
-c1 closePath()
-c1 clip()
-c1 createLinearGradient g362(0,258,0,378)
-c1 g362.addColorStop(0,rgba(150,255,210,0.16))
-c1 g362.addColorStop(1,rgba(255,255,255,0))
-c1 fillStyle=g362
-c1 fillRect(51,258,214,120)
-c1 restore()
-c1 beginPath()
-c1 moveTo(67,258)
-c1 arcTo(265,258,265,408,16)
-c1 arcTo(265,408,51,408,16)
-c1 arcTo(51,408,51,258,16)
-c1 arcTo(51,258,265,258,16)
-c1 closePath()
-c1 createLinearGradient g363(0,258,0,408)
-c1 g363.addColorStop(0,#fff6c8)
-c1 g363.addColorStop(0.300,#f0c552)
-c1 g363.addColorStop(0.650,#b07a1c)
-c1 g363.addColorStop(1,#ffe08a)
-c1 strokeStyle=g363
-c1 lineWidth=3.500
-c1 stroke()
-c1 beginPath()
-c1 moveTo(67,263)
-c1 arcTo(260,263,260,403,11)
-c1 arcTo(260,403,56,403,11)
-c1 arcTo(56,403,56,263,11)
-c1 arcTo(56,263,260,263,11)
-c1 closePath()
-c1 strokeStyle=rgba(255,240,190,0.22)
-c1 lineWidth=1.500
-c1 stroke()
+c1 fillStyle=#0b0f0c
+c1 fillRect(48,255,220,156)
+c1 createLinearGradient g96(0,258,0,408)
+c1 g96.addColorStop(0,rgba(44,58,50,0.95))
+c1 g96.addColorStop(1,rgba(26,36,30,0.96))
+c1 fillStyle=g96
+c1 fillRect(51,258,214,150)
+c1 fillStyle=rgba(150,190,160,0.55)
+c1 fillRect(51,258,211,3)
+c1 fillRect(51,258,3,147)
+c1 fillStyle=rgba(0,0,0,0.55)
+c1 fillRect(54,405,211,3)
+c1 fillRect(262,261,3,147)
 c1 restore()
 c1 save()
 c1 beginPath()
-c1 moveTo(69,298)
-c1 arcTo(257,298,257,370,10)
-c1 arcTo(257,370,59,370,10)
-c1 arcTo(59,370,59,298,10)
-c1 arcTo(59,298,257,298,10)
+c1 moveTo(63,298)
+c1 lineTo(253,298)
+c1 lineTo(253,302)
+c1 lineTo(257,302)
+c1 lineTo(257,366)
+c1 lineTo(253,366)
+c1 lineTo(253,370)
+c1 lineTo(63,370)
+c1 lineTo(63,366)
+c1 lineTo(59,366)
+c1 lineTo(59,302)
+c1 lineTo(63,302)
 c1 closePath()
 c1 clip()
-c1 createLinearGradient g364(0,298,0,370)
-c1 g364.addColorStop(0,#8fd8ff)
-c1 g364.addColorStop(1,#5fb84a)
-c1 fillStyle=g364
+c1 createLinearGradient g97(0,298,0,370)
+c1 g97.addColorStop(0,#8fd8ff)
+c1 g97.addColorStop(1,#5fb84a)
+c1 fillStyle=g97
 c1 fillRect(59,298,198,72)
 c1 drawImage([object HTMLCanvasElement],116,312.333,46.000,53.667)
 c1 drawImage([object HTMLCanvasElement],154,312.333,46.000,53.667)
 c1 restore()
 c1 beginPath()
-c1 moveTo(69,298)
-c1 arcTo(257,298,257,370,10)
-c1 arcTo(257,370,59,370,10)
-c1 arcTo(59,370,59,298,10)
-c1 arcTo(59,298,257,298,10)
+c1 moveTo(63,298)
+c1 lineTo(253,298)
+c1 lineTo(253,302)
+c1 lineTo(257,302)
+c1 lineTo(257,366)
+c1 lineTo(253,366)
+c1 lineTo(253,370)
+c1 lineTo(63,370)
+c1 lineTo(63,366)
+c1 lineTo(59,366)
+c1 lineTo(59,302)
+c1 lineTo(63,302)
 c1 closePath()
 c1 strokeStyle=rgba(255,240,190,0.35)
 c1 lineWidth=1.500
@@ -609,72 +259,40 @@ c1 restore()
 c1 save()
 c1 translate(0,0)
 c1 save()
-c1 beginPath()
-c1 moveTo(303,258)
-c1 arcTo(501,258,501,408,16)
-c1 arcTo(501,408,287,408,16)
-c1 arcTo(287,408,287,258,16)
-c1 arcTo(287,258,501,258,16)
-c1 closePath()
-c1 createLinearGradient g365(0,258,0,408)
-c1 g365.addColorStop(0,rgba(30,74,60,0.93))
-c1 g365.addColorStop(1,rgba(10,34,30,0.95))
-c1 fillStyle=g365
-c1 fill()
-c1 save()
-c1 beginPath()
-c1 moveTo(303,258)
-c1 arcTo(501,258,501,408,16)
-c1 arcTo(501,408,287,408,16)
-c1 arcTo(287,408,287,258,16)
-c1 arcTo(287,258,501,258,16)
-c1 closePath()
-c1 clip()
-c1 createLinearGradient g366(0,258,0,378)
-c1 g366.addColorStop(0,rgba(150,255,210,0.16))
-c1 g366.addColorStop(1,rgba(255,255,255,0))
-c1 fillStyle=g366
-c1 fillRect(287,258,214,120)
-c1 restore()
-c1 beginPath()
-c1 moveTo(303,258)
-c1 arcTo(501,258,501,408,16)
-c1 arcTo(501,408,287,408,16)
-c1 arcTo(287,408,287,258,16)
-c1 arcTo(287,258,501,258,16)
-c1 closePath()
-c1 createLinearGradient g367(0,258,0,408)
-c1 g367.addColorStop(0,#fff6c8)
-c1 g367.addColorStop(0.300,#f0c552)
-c1 g367.addColorStop(0.650,#b07a1c)
-c1 g367.addColorStop(1,#ffe08a)
-c1 strokeStyle=g367
-c1 lineWidth=3.500
-c1 stroke()
-c1 beginPath()
-c1 moveTo(303,263)
-c1 arcTo(496,263,496,403,11)
-c1 arcTo(496,403,292,403,11)
-c1 arcTo(292,403,292,263,11)
-c1 arcTo(292,263,496,263,11)
-c1 closePath()
-c1 strokeStyle=rgba(255,240,190,0.22)
-c1 lineWidth=1.500
-c1 stroke()
+c1 fillStyle=#0b0f0c
+c1 fillRect(284,255,220,156)
+c1 createLinearGradient g98(0,258,0,408)
+c1 g98.addColorStop(0,rgba(44,58,50,0.95))
+c1 g98.addColorStop(1,rgba(26,36,30,0.96))
+c1 fillStyle=g98
+c1 fillRect(287,258,214,150)
+c1 fillStyle=rgba(150,190,160,0.55)
+c1 fillRect(287,258,211,3)
+c1 fillRect(287,258,3,147)
+c1 fillStyle=rgba(0,0,0,0.55)
+c1 fillRect(290,405,211,3)
+c1 fillRect(498,261,3,147)
 c1 restore()
 c1 save()
 c1 beginPath()
-c1 moveTo(305,298)
-c1 arcTo(493,298,493,370,10)
-c1 arcTo(493,370,295,370,10)
-c1 arcTo(295,370,295,298,10)
-c1 arcTo(295,298,493,298,10)
+c1 moveTo(299,298)
+c1 lineTo(489,298)
+c1 lineTo(489,302)
+c1 lineTo(493,302)
+c1 lineTo(493,366)
+c1 lineTo(489,366)
+c1 lineTo(489,370)
+c1 lineTo(299,370)
+c1 lineTo(299,366)
+c1 lineTo(295,366)
+c1 lineTo(295,302)
+c1 lineTo(299,302)
 c1 closePath()
 c1 clip()
-c1 createLinearGradient g368(0,298,0,370)
-c1 g368.addColorStop(0,#8fd8ff)
-c1 g368.addColorStop(1,#5fb84a)
-c1 fillStyle=g368
+c1 createLinearGradient g99(0,298,0,370)
+c1 g99.addColorStop(0,#8fd8ff)
+c1 g99.addColorStop(1,#5fb84a)
+c1 fillStyle=g99
 c1 fillRect(295,298,198,72)
 c1 drawImage([object HTMLCanvasElement],295,312.333,46.000,53.667)
 c1 drawImage([object HTMLCanvasElement],333,312.333,46.000,53.667)
@@ -683,11 +301,18 @@ c1 drawImage([object HTMLCanvasElement],409,312.333,46.000,53.667)
 c1 drawImage([object HTMLCanvasElement],447,312.333,46.000,53.667)
 c1 restore()
 c1 beginPath()
-c1 moveTo(305,298)
-c1 arcTo(493,298,493,370,10)
-c1 arcTo(493,370,295,370,10)
-c1 arcTo(295,370,295,298,10)
-c1 arcTo(295,298,493,298,10)
+c1 moveTo(299,298)
+c1 lineTo(489,298)
+c1 lineTo(489,302)
+c1 lineTo(493,302)
+c1 lineTo(493,366)
+c1 lineTo(489,366)
+c1 lineTo(489,370)
+c1 lineTo(299,370)
+c1 lineTo(299,366)
+c1 lineTo(295,366)
+c1 lineTo(295,302)
+c1 lineTo(299,302)
 c1 closePath()
 c1 strokeStyle=rgba(255,240,190,0.35)
 c1 lineWidth=1.500
@@ -710,72 +335,40 @@ c1 restore()
 c1 save()
 c1 translate(0,0)
 c1 save()
-c1 beginPath()
-c1 moveTo(539,258)
-c1 arcTo(737,258,737,408,16)
-c1 arcTo(737,408,523,408,16)
-c1 arcTo(523,408,523,258,16)
-c1 arcTo(523,258,737,258,16)
-c1 closePath()
-c1 createLinearGradient g369(0,258,0,408)
-c1 g369.addColorStop(0,rgba(30,74,60,0.93))
-c1 g369.addColorStop(1,rgba(10,34,30,0.95))
-c1 fillStyle=g369
-c1 fill()
-c1 save()
-c1 beginPath()
-c1 moveTo(539,258)
-c1 arcTo(737,258,737,408,16)
-c1 arcTo(737,408,523,408,16)
-c1 arcTo(523,408,523,258,16)
-c1 arcTo(523,258,737,258,16)
-c1 closePath()
-c1 clip()
-c1 createLinearGradient g370(0,258,0,378)
-c1 g370.addColorStop(0,rgba(150,255,210,0.16))
-c1 g370.addColorStop(1,rgba(255,255,255,0))
-c1 fillStyle=g370
-c1 fillRect(523,258,214,120)
-c1 restore()
-c1 beginPath()
-c1 moveTo(539,258)
-c1 arcTo(737,258,737,408,16)
-c1 arcTo(737,408,523,408,16)
-c1 arcTo(523,408,523,258,16)
-c1 arcTo(523,258,737,258,16)
-c1 closePath()
-c1 createLinearGradient g371(0,258,0,408)
-c1 g371.addColorStop(0,#fff6c8)
-c1 g371.addColorStop(0.300,#f0c552)
-c1 g371.addColorStop(0.650,#b07a1c)
-c1 g371.addColorStop(1,#ffe08a)
-c1 strokeStyle=g371
-c1 lineWidth=3.500
-c1 stroke()
-c1 beginPath()
-c1 moveTo(539,263)
-c1 arcTo(732,263,732,403,11)
-c1 arcTo(732,403,528,403,11)
-c1 arcTo(528,403,528,263,11)
-c1 arcTo(528,263,732,263,11)
-c1 closePath()
-c1 strokeStyle=rgba(255,240,190,0.22)
-c1 lineWidth=1.500
-c1 stroke()
+c1 fillStyle=#0b0f0c
+c1 fillRect(520,255,220,156)
+c1 createLinearGradient g100(0,258,0,408)
+c1 g100.addColorStop(0,rgba(44,58,50,0.95))
+c1 g100.addColorStop(1,rgba(26,36,30,0.96))
+c1 fillStyle=g100
+c1 fillRect(523,258,214,150)
+c1 fillStyle=rgba(150,190,160,0.55)
+c1 fillRect(523,258,211,3)
+c1 fillRect(523,258,3,147)
+c1 fillStyle=rgba(0,0,0,0.55)
+c1 fillRect(526,405,211,3)
+c1 fillRect(734,261,3,147)
 c1 restore()
 c1 save()
 c1 beginPath()
-c1 moveTo(541,298)
-c1 arcTo(729,298,729,370,10)
-c1 arcTo(729,370,531,370,10)
-c1 arcTo(531,370,531,298,10)
-c1 arcTo(531,298,729,298,10)
+c1 moveTo(535,298)
+c1 lineTo(725,298)
+c1 lineTo(725,302)
+c1 lineTo(729,302)
+c1 lineTo(729,366)
+c1 lineTo(725,366)
+c1 lineTo(725,370)
+c1 lineTo(535,370)
+c1 lineTo(535,366)
+c1 lineTo(531,366)
+c1 lineTo(531,302)
+c1 lineTo(535,302)
 c1 closePath()
 c1 clip()
-c1 createLinearGradient g372(0,298,0,370)
-c1 g372.addColorStop(0,#8fd8ff)
-c1 g372.addColorStop(1,#5fb84a)
-c1 fillStyle=g372
+c1 createLinearGradient g101(0,298,0,370)
+c1 g101.addColorStop(0,#8fd8ff)
+c1 g101.addColorStop(1,#5fb84a)
+c1 fillStyle=g101
 c1 fillRect(531,298,198,72)
 c1 drawImage([object HTMLCanvasElement],520,312.333,46.000,53.667)
 c1 drawImage([object HTMLCanvasElement],554.800,312.333,46.000,53.667)
@@ -785,11 +378,18 @@ c1 drawImage([object HTMLCanvasElement],659.200,312.333,46.000,53.667)
 c1 drawImage([object HTMLCanvasElement],694,312.333,46.000,53.667)
 c1 restore()
 c1 beginPath()
-c1 moveTo(541,298)
-c1 arcTo(729,298,729,370,10)
-c1 arcTo(729,370,531,370,10)
-c1 arcTo(531,370,531,298,10)
-c1 arcTo(531,298,729,298,10)
+c1 moveTo(535,298)
+c1 lineTo(725,298)
+c1 lineTo(725,302)
+c1 lineTo(729,302)
+c1 lineTo(729,366)
+c1 lineTo(725,366)
+c1 lineTo(725,370)
+c1 lineTo(535,370)
+c1 lineTo(535,366)
+c1 lineTo(531,366)
+c1 lineTo(531,302)
+c1 lineTo(535,302)
 c1 closePath()
 c1 strokeStyle=rgba(255,240,190,0.35)
 c1 lineWidth=1.500
@@ -812,180 +412,94 @@ c1 restore()
 c1 save()
 c1 translate(0,0)
 c1 save()
-c1 beginPath()
-c1 moveTo(775,258)
-c1 arcTo(973,258,973,408,16)
-c1 arcTo(973,408,759,408,16)
-c1 arcTo(759,408,759,258,16)
-c1 arcTo(759,258,973,258,16)
-c1 closePath()
-c1 createLinearGradient g373(0,258,0,408)
-c1 g373.addColorStop(0,rgba(40,44,96,0.93))
-c1 g373.addColorStop(1,rgba(14,16,46,0.95))
-c1 fillStyle=g373
-c1 fill()
-c1 save()
-c1 beginPath()
-c1 moveTo(775,258)
-c1 arcTo(973,258,973,408,16)
-c1 arcTo(973,408,759,408,16)
-c1 arcTo(759,408,759,258,16)
-c1 arcTo(759,258,973,258,16)
-c1 closePath()
-c1 clip()
-c1 createLinearGradient g374(0,258,0,378)
-c1 g374.addColorStop(0,rgba(170,190,255,0.18))
-c1 g374.addColorStop(1,rgba(255,255,255,0))
-c1 fillStyle=g374
-c1 fillRect(759,258,214,120)
-c1 restore()
-c1 beginPath()
-c1 moveTo(775,258)
-c1 arcTo(973,258,973,408,16)
-c1 arcTo(973,408,759,408,16)
-c1 arcTo(759,408,759,258,16)
-c1 arcTo(759,258,973,258,16)
-c1 closePath()
-c1 createLinearGradient g375(0,258,0,408)
-c1 g375.addColorStop(0,#fff6c8)
-c1 g375.addColorStop(0.300,#f0c552)
-c1 g375.addColorStop(0.650,#b07a1c)
-c1 g375.addColorStop(1,#ffe08a)
-c1 strokeStyle=g375
-c1 lineWidth=3.500
-c1 stroke()
-c1 beginPath()
-c1 moveTo(775,263)
-c1 arcTo(968,263,968,403,11)
-c1 arcTo(968,403,764,403,11)
-c1 arcTo(764,403,764,263,11)
-c1 arcTo(764,263,968,263,11)
-c1 closePath()
-c1 strokeStyle=rgba(255,240,190,0.22)
-c1 lineWidth=1.500
-c1 stroke()
+c1 fillStyle=#06070f
+c1 fillRect(756,255,220,156)
+c1 createLinearGradient g102(0,258,0,408)
+c1 g102.addColorStop(0,rgba(40,44,84,0.95))
+c1 g102.addColorStop(1,rgba(20,22,48,0.96))
+c1 fillStyle=g102
+c1 fillRect(759,258,214,150)
+c1 fillStyle=rgba(160,170,240,0.5)
+c1 fillRect(759,258,211,3)
+c1 fillRect(759,258,3,147)
+c1 fillStyle=rgba(0,0,0,0.55)
+c1 fillRect(762,405,211,3)
+c1 fillRect(970,261,3,147)
 c1 restore()
 c1 save()
 c1 beginPath()
-c1 moveTo(777,298)
-c1 arcTo(965,298,965,370,10)
-c1 arcTo(965,370,767,370,10)
-c1 arcTo(767,370,767,298,10)
-c1 arcTo(767,298,965,298,10)
+c1 moveTo(771,298)
+c1 lineTo(961,298)
+c1 lineTo(961,302)
+c1 lineTo(965,302)
+c1 lineTo(965,366)
+c1 lineTo(961,366)
+c1 lineTo(961,370)
+c1 lineTo(771,370)
+c1 lineTo(771,366)
+c1 lineTo(767,366)
+c1 lineTo(767,302)
+c1 lineTo(771,302)
 c1 closePath()
 c1 clip()
-c1 createLinearGradient g376(0,298,0,370)
-c1 g376.addColorStop(0,#2a3a78)
-c1 g376.addColorStop(1,#141c40)
-c1 fillStyle=g376
+c1 createLinearGradient g103(0,298,0,370)
+c1 g103.addColorStop(0,#2a3a78)
+c1 g103.addColorStop(1,#141c40)
+c1 fillStyle=g103
 c1 fillRect(767,298,198,72)
 c1 save()
 c1 globalAlpha=0.695
-c1 translate(779,306)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(778.500,303.500,1,5)
+c1 fillRect(776.500,305.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.993
-c1 translate(826,329)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(825.500,326.500,1,5)
+c1 fillRect(823.500,328.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.838
-c1 translate(873,322)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(872.500,319.500,1,5)
+c1 fillRect(870.500,321.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.372
-c1 translate(920,315)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(919.500,312.500,1,5)
+c1 fillRect(917.500,314.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.024
-c1 translate(783,308)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(782.500,305.500,1,5)
+c1 fillRect(780.500,307.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.114
-c1 translate(830,331)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(829.500,328.500,1,5)
+c1 fillRect(827.500,330.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.558
-c1 translate(877,324)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(876.500,321.500,1,5)
+c1 fillRect(874.500,323.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.949
-c1 translate(924,317)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(923.500,314.500,1,5)
+c1 fillRect(921.500,316.500,5,1)
 c1 restore()
 c1 save()
 c1 globalAlpha=0.927
-c1 translate(787,310)
-c1 beginPath()
-c1 moveTo(0,-2.200)
-c1 quadraticCurveTo(0,0,2.200,0)
-c1 quadraticCurveTo(0,0,0,2.200)
-c1 quadraticCurveTo(0,0,-2.200,0)
-c1 quadraticCurveTo(0,0,0,-2.200)
 c1 fillStyle=#ffffff
-c1 fill()
+c1 fillRect(786.500,307.500,1,5)
+c1 fillRect(784.500,309.500,5,1)
 c1 restore()
 c1 fillStyle=#fff4c8
 c1 beginPath()
@@ -1003,11 +517,18 @@ c1 drawImage([object HTMLCanvasElement],895.200,312.333,46.000,53.667)
 c1 drawImage([object HTMLCanvasElement],930,312.333,46.000,53.667)
 c1 restore()
 c1 beginPath()
-c1 moveTo(777,298)
-c1 arcTo(965,298,965,370,10)
-c1 arcTo(965,370,767,370,10)
-c1 arcTo(767,370,767,298,10)
-c1 arcTo(767,298,965,298,10)
+c1 moveTo(771,298)
+c1 lineTo(961,298)
+c1 lineTo(961,302)
+c1 lineTo(965,302)
+c1 lineTo(965,366)
+c1 lineTo(961,366)
+c1 lineTo(961,370)
+c1 lineTo(771,370)
+c1 lineTo(771,366)
+c1 lineTo(767,366)
+c1 lineTo(767,302)
+c1 lineTo(771,302)
 c1 closePath()
 c1 strokeStyle=rgba(255,240,190,0.35)
 c1 lineWidth=1.500
@@ -1028,179 +549,125 @@ c1 fillStyle=#c8d4ff
 c1 fillText(僵尸 × 46  ·  夜战,866,387)
 c1 restore()
 c1 save()
-c1 beginPath()
-c1 moveTo(248,456)
-c1 arcTo(402,456,402,508,26)
-c1 arcTo(402,508,222,508,26)
-c1 arcTo(222,508,222,456,26)
-c1 arcTo(222,456,402,456,26)
-c1 closePath()
-c1 fillStyle=#0c3a72
-c1 fill()
-c1 beginPath()
-c1 moveTo(248,450)
-c1 arcTo(402,450,402,502,26)
-c1 arcTo(402,502,222,502,26)
-c1 arcTo(222,502,222,450,26)
-c1 arcTo(222,450,402,450,26)
-c1 closePath()
-c1 createLinearGradient g377(0,450,0,502)
-c1 g377.addColorStop(0,#a8e4ff)
-c1 g377.addColorStop(0.500,#3aa6f0)
-c1 g377.addColorStop(1,#1a6ac0)
-c1 fillStyle=g377
-c1 fill()
-c1 strokeStyle=#06224a
-c1 lineWidth=2.500
-c1 stroke()
-c1 save()
-c1 beginPath()
-c1 moveTo(248,450)
-c1 arcTo(402,450,402,502,26)
-c1 arcTo(402,502,222,502,26)
-c1 arcTo(222,502,222,450,26)
-c1 arcTo(222,450,402,450,26)
-c1 closePath()
-c1 clip()
-c1 createLinearGradient g378(0,450,0,476)
-c1 g378.addColorStop(0,rgba(255,255,255,0.75))
-c1 g378.addColorStop(1,rgba(255,255,255,0.05))
-c1 fillStyle=g378
-c1 beginPath()
-c1 moveTo(238.920,453)
-c1 arcTo(396,453,396,474.840,10.920)
-c1 arcTo(396,474.840,228,474.840,10.920)
-c1 arcTo(228,474.840,228,453,10.920)
-c1 arcTo(228,453,396,453,10.920)
-c1 closePath()
-c1 fill()
-c1 restore()
+c1 fillStyle=#000000
+c1 fillRect(220,448,184,58)
+c1 fillStyle=#0c2a58
+c1 fillRect(222,500,180,4)
+c1 createLinearGradient g104(0,450,0,502)
+c1 g104.addColorStop(0,#3a8ad8)
+c1 g104.addColorStop(1,#1f5aa0)
+c1 fillStyle=g104
+c1 fillRect(222,450,180,50)
+c1 fillStyle=rgba(0,0,0,0.08)
+c1 fillRect(226,454,4,2)
+c1 fillRect(263,477,4,2)
+c1 fillRect(300,460,4,2)
+c1 fillRect(337,483,4,2)
+c1 fillRect(374,466,4,2)
+c1 fillRect(241,489,4,2)
+c1 fillRect(278,472,4,2)
+c1 fillRect(315,455,4,2)
+c1 fillRect(352,478,4,2)
+c1 fillRect(389,461,4,2)
+c1 fillRect(256,484,4,2)
+c1 fillRect(293,467,4,2)
+c1 fillStyle=rgba(255,255,255,0.45)
+c1 fillRect(222,450,178,2)
+c1 fillRect(222,450,2,48)
+c1 fillStyle=rgba(0,0,0,0.35)
+c1 fillRect(224,498,178,2)
+c1 fillRect(400,452,2,48)
 c1 restore()
 c1 font=900 22px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=center
 c1 textBaseline=middle
-c1 lineWidth=4.840
-c1 strokeStyle=#06224a
-c1 lineJoin=round
-c1 strokeText(操作说明,312,477)
+c1 fillStyle=#3f3f3f
+c1 fillText(操作说明,314,478)
+c1 font=900 22px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
+c1 textAlign=center
+c1 textBaseline=middle
 c1 fillStyle=#ffffff
-c1 fillText(操作说明,312,477)
+c1 fillText(操作说明,312,476)
 c1 save()
-c1 beginPath()
-c1 moveTo(448,456)
-c1 arcTo(602,456,602,508,26)
-c1 arcTo(602,508,422,508,26)
-c1 arcTo(422,508,422,456,26)
-c1 arcTo(422,456,602,456,26)
-c1 closePath()
-c1 fillStyle=#8a3404
-c1 fill()
-c1 beginPath()
-c1 moveTo(448,450)
-c1 arcTo(602,450,602,502,26)
-c1 arcTo(602,502,422,502,26)
-c1 arcTo(422,502,422,450,26)
-c1 arcTo(422,450,602,450,26)
-c1 closePath()
-c1 createLinearGradient g379(0,450,0,502)
-c1 g379.addColorStop(0,#ffd36a)
-c1 g379.addColorStop(0.500,#ff9a1e)
-c1 g379.addColorStop(1,#e0620e)
-c1 fillStyle=g379
-c1 fill()
-c1 strokeStyle=#5a2002
-c1 lineWidth=2.500
-c1 stroke()
-c1 save()
-c1 beginPath()
-c1 moveTo(448,450)
-c1 arcTo(602,450,602,502,26)
-c1 arcTo(602,502,422,502,26)
-c1 arcTo(422,502,422,450,26)
-c1 arcTo(422,450,602,450,26)
-c1 closePath()
-c1 clip()
-c1 createLinearGradient g380(0,450,0,476)
-c1 g380.addColorStop(0,rgba(255,255,255,0.75))
-c1 g380.addColorStop(1,rgba(255,255,255,0.05))
-c1 fillStyle=g380
-c1 beginPath()
-c1 moveTo(438.920,453)
-c1 arcTo(596,453,596,474.840,10.920)
-c1 arcTo(596,474.840,428,474.840,10.920)
-c1 arcTo(428,474.840,428,453,10.920)
-c1 arcTo(428,453,596,453,10.920)
-c1 closePath()
-c1 fill()
-c1 restore()
+c1 fillStyle=#000000
+c1 fillRect(420,448,184,58)
+c1 fillStyle=#5a2c04
+c1 fillRect(422,500,180,4)
+c1 createLinearGradient g105(0,450,0,502)
+c1 g105.addColorStop(0,#e8901e)
+c1 g105.addColorStop(1,#b0600e)
+c1 fillStyle=g105
+c1 fillRect(422,450,180,50)
+c1 fillStyle=rgba(0,0,0,0.08)
+c1 fillRect(426,454,4,2)
+c1 fillRect(463,477,4,2)
+c1 fillRect(500,460,4,2)
+c1 fillRect(537,483,4,2)
+c1 fillRect(574,466,4,2)
+c1 fillRect(441,489,4,2)
+c1 fillRect(478,472,4,2)
+c1 fillRect(515,455,4,2)
+c1 fillRect(552,478,4,2)
+c1 fillRect(589,461,4,2)
+c1 fillRect(456,484,4,2)
+c1 fillRect(493,467,4,2)
+c1 fillStyle=rgba(255,255,255,0.45)
+c1 fillRect(422,450,178,2)
+c1 fillRect(422,450,2,48)
+c1 fillStyle=rgba(0,0,0,0.35)
+c1 fillRect(424,498,178,2)
+c1 fillRect(600,452,2,48)
 c1 restore()
 c1 font=900 22px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=center
 c1 textBaseline=middle
-c1 lineWidth=4.840
-c1 strokeStyle=#5a2002
-c1 lineJoin=round
-c1 strokeText(音乐：开,512,477)
+c1 fillStyle=#3f3f3f
+c1 fillText(音乐：开,514,478)
+c1 font=900 22px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
+c1 textAlign=center
+c1 textBaseline=middle
 c1 fillStyle=#ffffff
-c1 fillText(音乐：开,512,477)
+c1 fillText(音乐：开,512,476)
 c1 save()
-c1 beginPath()
-c1 moveTo(648,456)
-c1 arcTo(802,456,802,508,26)
-c1 arcTo(802,508,622,508,26)
-c1 arcTo(622,508,622,456,26)
-c1 arcTo(622,456,802,456,26)
-c1 closePath()
-c1 fillStyle=#38166e
-c1 fill()
-c1 beginPath()
-c1 moveTo(648,450)
-c1 arcTo(802,450,802,502,26)
-c1 arcTo(802,502,622,502,26)
-c1 arcTo(622,502,622,450,26)
-c1 arcTo(622,450,802,450,26)
-c1 closePath()
-c1 createLinearGradient g381(0,450,0,502)
-c1 g381.addColorStop(0,#e0b8ff)
-c1 g381.addColorStop(0.500,#9a5ae8)
-c1 g381.addColorStop(1,#6430b8)
-c1 fillStyle=g381
-c1 fill()
-c1 strokeStyle=#220a48
-c1 lineWidth=2.500
-c1 stroke()
-c1 save()
-c1 beginPath()
-c1 moveTo(648,450)
-c1 arcTo(802,450,802,502,26)
-c1 arcTo(802,502,622,502,26)
-c1 arcTo(622,502,622,450,26)
-c1 arcTo(622,450,802,450,26)
-c1 closePath()
-c1 clip()
-c1 createLinearGradient g382(0,450,0,476)
-c1 g382.addColorStop(0,rgba(255,255,255,0.75))
-c1 g382.addColorStop(1,rgba(255,255,255,0.05))
-c1 fillStyle=g382
-c1 beginPath()
-c1 moveTo(638.920,453)
-c1 arcTo(796,453,796,474.840,10.920)
-c1 arcTo(796,474.840,628,474.840,10.920)
-c1 arcTo(628,474.840,628,453,10.920)
-c1 arcTo(628,453,796,453,10.920)
-c1 closePath()
-c1 fill()
-c1 restore()
+c1 fillStyle=#000000
+c1 fillRect(620,448,184,58)
+c1 fillStyle=#2a0c58
+c1 fillRect(622,500,180,4)
+c1 createLinearGradient g106(0,450,0,502)
+c1 g106.addColorStop(0,#8a4ad8)
+c1 g106.addColorStop(1,#5a28a0)
+c1 fillStyle=g106
+c1 fillRect(622,450,180,50)
+c1 fillStyle=rgba(0,0,0,0.08)
+c1 fillRect(626,454,4,2)
+c1 fillRect(663,477,4,2)
+c1 fillRect(700,460,4,2)
+c1 fillRect(737,483,4,2)
+c1 fillRect(774,466,4,2)
+c1 fillRect(641,489,4,2)
+c1 fillRect(678,472,4,2)
+c1 fillRect(715,455,4,2)
+c1 fillRect(752,478,4,2)
+c1 fillRect(789,461,4,2)
+c1 fillRect(656,484,4,2)
+c1 fillRect(693,467,4,2)
+c1 fillStyle=rgba(255,255,255,0.45)
+c1 fillRect(622,450,178,2)
+c1 fillRect(622,450,2,48)
+c1 fillStyle=rgba(0,0,0,0.35)
+c1 fillRect(624,498,178,2)
+c1 fillRect(800,452,2,48)
 c1 restore()
 c1 font=900 18px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=center
 c1 textBaseline=middle
-c1 lineWidth=3.960
-c1 strokeStyle=#220a48
-c1 lineJoin=round
-c1 strokeText(全部关卡：关,712,477)
+c1 fillStyle=#3f3f3f
+c1 fillText(全部关卡：关,714,478)
+c1 font=900 18px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
+c1 textAlign=center
+c1 textBaseline=middle
 c1 fillStyle=#ffffff
-c1 fillText(全部关卡：关,712,477)
+c1 fillText(全部关卡：关,712,476)
 c1 font=700 12.5px "PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif
 c1 textAlign=center
 c1 textBaseline=middle
@@ -1211,8 +678,8 @@ c1 strokeText(同人复刻 · 3D 模型、贴图与音乐均为程序生成 · �
 c1 fillStyle=rgba(252,248,236,0.95)
 c1 fillText(同人复刻 · 3D 模型、贴图与音乐均为程序生成 · 仅供个人学习娱乐,512,624)
 c1 restore()
-c1 createRadialGradient g383(512,320,320,512,320,640)
-c1 g383.addColorStop(0,rgba(0,0,0,0))
-c1 g383.addColorStop(1,rgba(0,10,8,0.32))
-c1 fillStyle=g383
+c1 createRadialGradient g107(512,320,320,512,320,640)
+c1 g107.addColorStop(0,rgba(0,0,0,0))
+c1 g107.addColorStop(1,rgba(0,10,8,0.32))
+c1 fillStyle=g107
 c1 fillRect(0,0,1024,640)

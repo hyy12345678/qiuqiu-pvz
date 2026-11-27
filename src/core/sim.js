@@ -6,7 +6,7 @@ import { CH, COLS, CW, LX, LY, ROWS, W } from './constants.js';
 import { clamp, easeOut, lerp, rand } from './util.js';
 import { ZTYPES } from './data/zombies.js';
 import { LEVELS } from './data/levels.js';
-import { damageZombie, explode, explodeMissile, findEatTarget, removePlant, spawnSun, spawnZombie, triggerMower } from './entities.js';
+import { damageZombie, explode, explodeMissile, findEatTarget, removePlant, spawnSun, spawnZombie, triggerMower, cellFY } from './entities.js';
 import { addDirtPuff, addFlamePuff, addLeafBurst, addPeaSplat } from './particles.js';
 
 // 出怪 → 植物 → 弹丸 → 僵尸（可能判负并中断本帧）→ 小推车 → 阳光 → 表现 → 结算。
@@ -16,7 +16,17 @@ const FIRST_SPAWN_HINT = {
   // E28：原文「豌豆打不动，换火豌豆或炸弹」与规则不符——E23 起弹道是削到 1/4 而不是无效，
   // 火豌豆直击同样是弹道（只有溅射穿门）。提示必须和 SCREEN_BALLISTIC_MULT 说同一件事。
   screen: '铁门僵尸来了！豌豆伤害只剩 1/4，快用炸弹！',
+  // E30：射手僵尸。远程拆防对第一次见的玩家是"植物莫名其妙掉了血"，
+  // 首见必须把"远处放箭 + 坚果挡箭"这个反制说出来。
+  archer: '射手僵尸来了！它在远处放箭，快种坚果墙挡住！',
 };
+
+// E30：射手的规则数值。平衡旋钮都在这里。
+const ARCHER_RANGE = CW * 4.25;   // 停下放箭的距离：够远拆防线，又躲不开豌豆（射程整行）
+const ARCHER_DMG = 55;            // 一箭：豌豆射手 300 血吃 6 箭，是持续放血不是秒杀
+const ARCHER_INTERVAL = 2.4;      // 放箭间隔：与啃食完全不同的伤害节奏
+const ARCHER_WINDUP = 1.0;        // 进入射击后的第一箭蓄力，给玩家反应时间
+const ARROW_VX = -300;           // 箭速：比豌豆慢一点，看得清轨迹
 
 export function updatePlay(world, dt){
   world.t += dt;
@@ -211,6 +221,25 @@ function stepProjectiles(world, dt){
     const pea = world.peas[i];
     pea.prevX = pea.x;
     pea.x += pea.vx * dt;
+    // E30：箭是僵尸→植物的弹道，语义与豌豆相反：不碰火炬、不碰僵尸，
+    // 越过本行植物的右缘那一刻命中（与火炬点燃同一条区间穿越判定）。
+    // 土豆雷不接箭——它贴地，和不会被啃是同一条理由。
+    if(pea.type === 'arrow'){
+      let hit = false;
+      for(const p of world.plants){
+        if(p.row !== pea.row || p.type === 'potato') continue;
+        const front = p.cx + 26;
+        if(pea.prevX > front && pea.x <= front){
+          p.hp -= pea.dmg;
+          addPeaSplat(world, front, pea.y, 'arrow');
+          world.ports.sound('bulletHit');
+          hit = true;
+          break;
+        }
+      }
+      if(hit || pea.x < LX - 80) world.peas.splice(i,1);
+      continue;
+    }
     if(pea.type==='fire' && world.fxRng()<0.6){
       v.parts.push({ x:pea.x-8, y:pea.y+rand(world.fxRng,-3,3), vx:rand(world.fxRng,-30,-10), vy:rand(world.fxRng,-25,5), g:-60, life:rand(world.fxRng,0.15,0.3), max:0.3, size:rand(world.fxRng,2,4), color:'#ffb347' });
     }
@@ -260,6 +289,20 @@ function stepProjectiles(world, dt){
   }
 }
 
+// E30：射手的目标——本行前方射程内最靠前的植物。
+// 与 findEatTarget 同构但方向相反：找的是"要拆的那株"而不是"要啃的那株"。
+// 土豆雷不算（贴地，不接箭也不被它瞄准）；每帧重算，不存引用。
+function archerTarget(world, z){
+  let best = null;
+  for(const p of world.plants){
+    if(p.row !== z.row || p.type === 'potato') continue;
+    if(p.cx >= z.x - 20) continue;               // 太近：留给啃食分支
+    if(p.cx < z.x - ARCHER_RANGE) continue;      // 太远：够不着，继续走
+    if(!best || p.cx > best.cx) best = p;
+  }
+  return best;
+}
+
 // 僵尸。返回 true 表示本帧已判负——调用方必须中断后续步骤，与拆分前一致。
 function stepZombies(world, dt){
   const t = world.t;
@@ -304,6 +347,29 @@ function stepZombies(world, dt){
       if(food){
         z.state = 'eat'; z.eatT = 0; z.eatPlant = food;
         z.x = Math.max(z.x, food.cx + 40);
+      } else if(z.type === 'archer'){
+        // E30：本行前方射程内有植物就停下放箭。不存目标引用——
+        // shoot 态每帧重算，目标死了/被铲了自然回 walk，不会悬挂。
+        if(archerTarget(world, z)){
+          z.state = 'shoot';
+          z.fireT = ARCHER_WINDUP;
+          world.ports.sound('groan');
+        }
+      }
+    } else if(z.state==='shoot'){
+      // E30：射手的固定炮位。减速不只拖脚步，也拖放箭（寒冰射手的反制位）。
+      z.animT += dt * slowMul;
+      z.fireT -= dt * slowMul;
+      const food = findEatTarget(world, z);
+      if(food){
+        z.state = 'eat'; z.eatT = 0; z.eatPlant = food; z.x = Math.max(z.x, food.cx + 40);
+      } else if(!archerTarget(world, z)){
+        z.state = 'walk';                     // 防线没了：接着走
+      } else if(z.fireT <= 0){
+        z.fireT = ARCHER_INTERVAL;
+        // 箭从胸口高度出发，飞向本行最靠前的植物；土豆雷例外见 stepProjectiles
+        world.peas.push({ x:z.x-14, y:cellFY(z.row)-58, row:z.row, type:'arrow', dmg:ARCHER_DMG, vx:ARROW_VX, prevX:z.x-14 });
+        world.ports.sound('arrow');
       }
     } else if(z.state==='vault'){
       z.vt += dt / 0.55;

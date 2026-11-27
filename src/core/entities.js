@@ -148,6 +148,7 @@ export function spawnZombie(world, type){
     hp: def.hp, acc: def.acc, maxHp: def.hp + def.acc,
     state:'walk', animT: rand(world.fxRng,0,TAU), eatT:0, slowT:0,
     poleLost:false, vt:0, fromX:0, toX:0, vy:0, deathT:0, eatPlant:null, dustT:0,
+    fireT:0,            // E30：射手的放箭冷却（别的僵尸恒为 0，不参与任何分支）
     paper: type==='newspaper' ? ZTYPES.newspaper.acc : 0, angry:false,
     screen: !!def.screen, screenHitT: 0,
   });

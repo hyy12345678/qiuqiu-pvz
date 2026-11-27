@@ -20,6 +20,12 @@
 '.........',
 '.........',
 '.........',
+'.........',
+'.........',
+'.........',
+'.........',
+'.........',
+'.........',
 '.........', '.........', 'ggggggggg', 'g...gg..g', 'ggggggggg',
 '..........',
 '..........',
@@ -31,6 +37,7 @@
 '.....hhh',
 '.....kbk...',
 '....d....',
+'....k....',
 '....k....',
 '...hhhhh',
 '...mmm...',
@@ -51,6 +58,8 @@
 '..pppp..',
 '.bbb..bb.',
 '.bk.kb.',
+'.kk...kk.',
+'.kk...kk.',
 '.kk...kk.',
 '.kk...kk.',
 '.kkk..kk.',
@@ -94,8 +103,10 @@
 (p.add ? add : normal).push(p.x, p.y, p.z, p.r, p.gg, p.b, p.size, alpha);
 (pv.foreB || pv.root).getWorldPosition(v3);
 );
+);
 + sh.fragmentShader.replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 : ['#8fd44a','#b8e88a'];
+: type==='arrow' ? ['#e8e2d2','#b0a892']
 : type==='ball' ? ['#e8483c','#ffd23e']
 : type==='beam' ? ['#dff6ff','#8fd8ff']
 : type==='bullet' ? ['#e8edf2','#8d949c']
@@ -120,6 +131,7 @@ M.window.color.set('#ffffff');
 M.window.color.setRGB(2.2, 1.6, 0.8);
 MeshBasicMaterial, NormalBlending, Points, RingGeometry, ShaderMaterial, SphereGeometry, SRGBColorSpace,
 MeshStandardMaterial, Object3D, PlaneGeometry, PointLight, Points, ShaderMaterial, SphereGeometry, Vector3, DoubleSide,
+P.arrow = mk(
 P.ball = mk(m(makeStd('#e8483c', 0.5), 0.14));
 P.bullet = mk(m(basic('#fff0a0', 2.8), [0.22, 0.035, 0.035], [-0.06, 0, 0]), m(basic('#ffffff', 2.6), 0.05));
 P.fire = mk(m(basic('#ffd040', 2.6), 0.12), m(basic('#ff6a10', 2.0, true), [0.26, 0.15, 0.15], [-0.07, 0, 0]));
@@ -141,8 +153,8 @@ ZOMBIE_MODELS[type].animate(inst, { type, row: 0, x: 0, state: 'walk', animT: 0.
 ZOMBIE_MODELS[z.type] ? ZOMBIE_MODELS[z.type].animate(v.inst, z, t, e) : ZOMBIE_MODELS.normal.animate(v.inst, z, t, e);
 ['plant', 'qiuqiu', 3.6, 6.5, 1.35], ['plant', 'tiga', 0.4, 4.9, 1.1], ['plant', 'cherry', 2.25, 7.1, 1.0],
 ['plant', 'sunflower', 0.9, 6.3, 1.25], ['plant', 'peashooter', 1.75, 6.55, 1.2], ['plant', 'wallnut', 2.6, 6.2, 1.15],
+['zombie', 'archer', 4.7, 5.3, 1.05], ['zombie', 'screen', 5.6, 6.4, 1.05], ['zombie', 'newspaper', 6.6, 6.0, 1.05], ['zombie', 'bucket', 7.4, 6.6, 1.1],
 ['zombie', 'cone', 8.3, 6.1, 1.1], ['zombie', 'normal', 9.1, 6.7, 1.15], ['zombie', 'flag', 8.9, 5.0, 1.0],
-['zombie', 'screen', 5.6, 6.4, 1.05], ['zombie', 'newspaper', 6.6, 6.0, 1.05], ['zombie', 'bucket', 7.4, 6.6, 1.1],
 ['⌨', '数字键 1-8 可快速选卡，P 暂停，Esc 取消，M 切音乐'],
 ['☀', '点击天上掉落的阳光或向日葵产出的阳光，收集阳光资源'],
 ['☕', '蘑菇夜里直接开工；白天种下会打盹，用咖啡豆唤醒'],
@@ -151,6 +163,7 @@ ZOMBIE_MODELS[z.type] ? ZOMBIE_MODELS[z.type].animate(v.inst, z, t, e) : ZOMBIE_
 ['🌱', '点上方卡片选植物，再点草坪格子种下（再点一次卡片取消）'],
 ['🍄', '小喷菇免费但射程只有两格；阳光菇 25 阳光，产量减半'],
 ['🏁', '小推车是最后防线，消灭全部僵尸即可过关'],
+['🏹', '射手僵尸：停在远处朝植物放箭，用坚果墙挡箭'],
 ['👦', '球球是核心输出：加特林扫射，还有概率发射范围导弹'],
 ['💣', '樱桃炸弹 / 土豆雷威力巨大，但土豆雷需要时间成长'],
 ['📰', '报纸僵尸：打掉报纸它会暴怒加速冲过来！'],
@@ -170,7 +183,8 @@ ZOMBIE_MODELS[z.type] ? ZOMBIE_MODELS[z.type].animate(v.inst, z, t, e) : ZOMBIE_
 ], { k: '#140a04', w: '#ffffff', m: '#2a1004', r: '#ff8fa0' })) };
 ], { k: '#1a0a02' }, -1)) };
 ], { k: '#1e2a14', w: '#f3f0cf', b: '#3a3a28', d: SKIN_D }), L.glasses ? sprite([
-], { k: '#3a1a14', w: '#f0ead0' })) };
+], { k: '#26241e' })) };
+], { k: '#3a1a14', w: '#f0ead0' })) });
 ], { p: T_PURPLE, s: '#8c949e' })) };
 ], { w: '#ffffff', k: '#141414' }, -2)) };
 ];
@@ -195,6 +209,7 @@ addHotspot(ui, x, y, w, h, id, action);
 addLeafBurst(world, p.cx, p.fy-30);
 addLeafBurst(world, p.cx, p.fy-30);
 addPaperShreds(world, z.x, LY + (z.row+1)*CH - 76);
+addPeaSplat(world, front, pea.y, 'arrow');
 addPeaSplat(world, pea.x, pea.y, 'beam');
 addPeaSplat(world, pea.x, pea.y, pea.type);
 afterglows.push({ mesh, age: 0 });
@@ -209,9 +224,15 @@ animate: shroomAnimate,
 animate: shroomAnimate,
 ans = a + b;
 ans = a - b;
-arm: { build: rig => rig.box('root', 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND('#6b4a2f', 'debris'), top: '#6b4a2f', bottom: SKIN }) },
+archer: '停在远处放箭，坚果墙挡箭',
+archer: '射手僵尸来了！它在远处放箭，快种坚果墙挡住！',
+archer: [0.5, +1],
+archer: { coat: '#7d7a6a', pants: '#5a5850', tie: null, shirt: '#ded9c8', skin: '#e6e2d2', skull: true },
+archer:{ name:'射手僵尸', hp:200, acc:0, speed:16, ranged:true },
+arm: { build: rig => rig.box('root', 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND('#6b4a2f', SKIN, 'debris'), top: '#6b4a2f', bottom: SKIN }) },
 armed: true, armT: 14, fuse: 1.05, sunT: 5 + Math.sin(t) * 4, lifeT: 20, maxLifeT: 25, asleep: false };
 armed:false, armT:0, fuse: type==='cherry' ? 1.05 : 0,
+arrow(){ this.noise(0.05, 0.06, 3200); this.tone(1200, 480, 0.07, 'sawtooth', 0.035); },
 asleep: !!def.mushroom && !isNight(world),
 attribute float size; attribute float alpha; attribute vec3 color;
 audio.click();
@@ -264,6 +285,7 @@ booms.length = 0;
 booms.push({ g, core, ring, age: 0, radius, big });
 booms.splice(i, 1);
 box(pv, key, size, at, faces, o = {}){
+break;
 break;
 break;
 break;
@@ -394,6 +416,11 @@ const A = { top: { key: 'lawn:a', paint: GRASS_TOP }, sides: { key: 'lawn:side:a
 const AC = window.AudioContext || window.webkitAudioContext;
 const ANGRY = new Color(1.15, 0.62, 0.55), FROZEN = new Color(0.62, 0.85, 1.25), ASH = new Color(0.12, 0.11, 0.1);
 const ANSWER_COLORS = ['green', 'blue', 'orange', 'purple'];
+const ARCHER_DMG = 55;
+const ARCHER_INTERVAL = 2.4;
+const ARCHER_RANGE = CW * 4.25;
+const ARCHER_WINDUP = 1.0;
+const ARROW_VX = -300;
 const ATLAS_SIZE = 1024;
 const B = { top: { key: 'lawn:b', paint: GRASS_TOP_B }, sides: { key: 'lawn:side:b', paint: grassSide('#5aae33') }, bottom: { key: 'dirt', paint: DIRT } };
 const BANK_Y = 8, BANK_H = 88;
@@ -438,7 +465,7 @@ const GRAVEL = (p, w, h, R) => { noise('#7c7a78', 0.14)(p, w, h, R); spots('#5a5
 const GREEN = '#5cc23a', GREEN_D = '#3a8a24', LEAF = '#3f9a2a';
 const HUMANOID_YAW = { qiuqiu: -0.85, tiga: -0.85 };
 const IW = 168, IH = 196;
-const JAW_FRONT = { key: 'zjaw', paint: layers(noise(SKIN, 0.09), sprite([
+const JAW_FRONT = (L) => ({ key: 'zjaw:' + (L.skin || SKIN), paint: layers(noise(L.skin || SKIN, 0.09), sprite([
 const L = LOOKS[type];
 const LAWN_W = COLS, LAWN_D = ROWS * ROW_D;
 const LEAF = { key: 'leaf', paint: leaves('#3f8a2c', 0.08) };
@@ -495,10 +522,14 @@ const SFX = {
 const SHOVEL_ROWS = [
 const SHOVEL_TINT = new Color(1.25, 0.55, 0.45);
 const SILENT = {
+const SK = L.skin || SKIN;
+const SK = L.skin || SKIN;
+const SK = L.skin || SKIN;
+const SK = L.skin || SKIN;
 const SKIN = '#8fb57a', SKIN_D = '#6f9a5c';
 const SKIN = '#ffcfa4', HAIR = '#2a1c12', SHIRT = '#ff7a1c', SHORTS = '#2f62c8', SHOE = '#e8463a';
 const SLEEP_TINT = new Color(0.62, 0.62, 0.78);
-const SLEEVE_HAND = (coat, id) => ({ key: 'zarm:' + id, paint: (p, w, h, R) => {
+const SLEEVE_HAND = (coat, skin, id) => ({ key: 'zarm:' + id, paint: (p, w, h, R) => {
 const SOFTWARE_GPU = /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i;
 const SPAWN_GATE = {
 const STONE_BRICK = bricks('#8f8f8f', '#5c5c5c');
@@ -625,7 +656,7 @@ const c = document.createElement('canvas');
 const c = frame.view3d.draw(mode, world, ui, frame.t, frame.now);
 const c = hex('#3a2008');
 const c = hex('#9aa6b0');
-const c = hex(coat), s = hex(SKIN);
+const c = hex(coat), s = hex(skin);
 const c = hex(color), m = hex(mortar);
 const c = hex(color), r = hex(ringColor);
 const c = hex(color);
@@ -715,6 +746,7 @@ const dmg = isMissile ? 90 : 15;
 const done = i < q.idx || (i === q.idx && q.feedback > 0 && q.correct);
 const door = new Mesh(new BoxGeometry(0.08, 2.0, 1.0), new MeshStandardMaterial({ map: T.doorTex, roughness: 0.9 }));
 const dr = Math.exp(-p.drag * dt);
+const draw = Math.max(0, Math.min(1, 1 - (z.fireT || 0) / 1.4));
 const drawRng = mulberry32((SEED ^ DRAW_SEED_XOR) >>> 0);
 const drop = Math.max(0, 1 - age / 0.7);
 const dx = x - cx, dy = y - cy, r = Math.hypot(dx, dy), a = Math.atan2(dy, dx);
@@ -759,6 +791,7 @@ const flies = buildFireflies(); group.add(flies);
 const flower = (id, c, cc) => ({ key: 'flower:' + id, paint: (p, w, h) => { p.clear(); p.rect(7, 7, 2, 9, '#3a8a2a'); p.rect(5, 10, 2, 1, '#3a8a2a'); p.rect(9, 12, 2, 1, '#3a8a2a'); sprite(['.cc.', 'cxxc', 'cxxc', '.cc.'], { c, x: cc }, 6, 3)(p); } });
 const flyTarget = new Vector3();
 const food = findEatTarget(world, z);
+const food = findEatTarget(world, z);
 const forced = /[?&]gfx=(low|high)\b/.exec(search || '');
 const found = tiledBox(1.5, 0.5, zl, T.cobble); found.position.set(-4.2, 0.0, zc); g.add(found);
 const fp = fakePlant(gshow, t, 0);
@@ -766,6 +799,7 @@ const frac = s.cool / def.cool;
 const frame = tiledBox(0.16, 1.4, 1.4, null, '#f4efe4'); frame.position.set(-3.44, 1.9, wz); g.add(frame);
 const frameFlags = { shovel: null, coffee: null };
 const frameState = { t: 0, rng: drawRng, musicOn: SFX.musicOn, view3d, now: 0 };
+const front = p.cx + 26;
 const front = z.x - 24;
 const fx = createFx(scene);
 const fx = ix + iw * (1 - frac);
@@ -1293,7 +1327,7 @@ const y = 12, h = 30;
 const y = BANK_Y + 2;
 const y = Math.max(0.03, heightIn(meta.row, p.y));
 const y = cy + Math.round(Math.sin(t * 2.4 + i * 0.7) * size * 0.05 / scale) * scale;
-const y = py + 62 + i * 27;
+const y = py + 60 + i * 25;
 const z = world.zombies[i];
 const z0 = -2.2, z1 = LAWN_D + 1.6, zl = z1 - z0, zc = (z0 + z1) / 2;
 const z0 = -6, z1 = LAWN_D + 4, zl = z1 - z0, zc = (z0 + z1) / 2;
@@ -1303,6 +1337,7 @@ const zx = 640, zy = 254;
 const zx = toX(world.loseZombie.x), zz = rowZ(world.loseZombie.row);
 const { scene, camera } = view;
 const { sun: sunDisc, moon } = buildSunMoon(); group.add(sunDisc, moon);
+continue;
 continue;
 continue;
 continue;
@@ -1587,7 +1622,7 @@ drawButton(ui, W / 2 - 90, py + ph - 66, 180, 48, '知道啦', 'back', { type: '
 drawIntro(t, world);
 drawNoWebGL();
 drawProgressBar(world);
-drawRow(px + 26, y - 12, pw - 52, 25, g);
+drawRow(px + 26, y - 12, pw - 52, 23, g);
 drawSeedBank(t, world, ui);
 drawText('僵尸 × ' + lv.count + (lv.night ? ' · 夜战' : ' · 白天'), x + cardW / 2, y + 129, 14, lv.night ? '#c8d4ff' : '#c8f0b0', null, 0, 'center', '800');
 drawText('关卡进度', x0 - 48, y + h / 2 + 1, 13, '#fff8e0', 'rgba(0,0,0,0.75)', 4, 'center', '900');
@@ -1700,6 +1735,7 @@ fill.position.set(COLS + 10, 6, LAWN_D + 10);
 finally { ctx = prev; }
 finish(){
 fireT: rand(world.rng,0.5,1.3), sunT: rand(world.rng,6,9), recoil:0, flash:0,
+fireT:0,
 flag: '总攻的领头人',
 flag: { coat: '#5f4632', pants: '#3a4568', tie: '#c0262d', shirt: '#e9e3d0' },
 flag: { name:'旗帜僵尸', hp:200, acc:0, speed:21 },
@@ -1758,6 +1794,8 @@ for(const name in v.inst.pv) if(name[0] === 'w') v.inst.pv[name].rotation.z = -t
 for(const name of Object.keys(pv)){
 for(const p of previewInsts){
 for(const p of previewInsts){ preview.remove(p.g); p.inst.mats.dispose(); }
+for(const p of world.plants){
+for(const p of world.plants){
 for(const p of world.plants){
 for(const p of world.visual.parts){
 for(const pv of [inst.pv.c1, inst.pv.c2]){
@@ -1942,6 +1980,7 @@ function addPaperShreds(world, x, y){
 function addPeaSplat(world,x,y,type){
 function answerQuiz(world, a){
 function applyCoffee(world, p){
+function archerTarget(world, z){
 function atlasStats(){ return { regions: regions.size, height: shelfY + shelfH }; }
 function atlasTexture(){
 function bakeStatic(root){
@@ -1958,6 +1997,7 @@ function boxGeometry(size, faces){
 function breathe(inst, t, ph, amp = 1){
 function bricks(color = '#9a4a3a', mortar = '#bdb3a4'){
 function buildBackyard(){
+function buildBow(rig, pv){
 function buildBucket(rig, pv){
 function buildClouds(){
 function buildCone(rig, pv){
@@ -2355,6 +2395,7 @@ heroTitle('关卡完成！', W / 2, py - 6, 54, t);
 heroTitle('球球的植物大战僵尸', W / 2, 100, 72, t);
 hit = true;
 hit = true;
+hit = true;
 hl.material.color.set(r.ok ? '#fffbd0' : '#ff3a2a');
 hl.material.opacity = pulse + (r.ok ? 0.08 : 0.06);
 hl.position.set(hc.col + 0.5, 0.02, rowZ(hc.row));
@@ -2392,6 +2433,7 @@ if(!AC) return false;
 if(!Number.isInteger(li) || li < 0 || li >= LEVELS.length) return { ok:false, reason:'bad-level' };
 if(!active) shovelIcon(sx + 32, sy + 32, hoverS ? 1.1 : 1);
 if(!applyCoffee(world, world.grid[row][col])) return { ok:false, reason:'invalid-target', def };
+if(!best || p.cx > best.cx) best = p;
 if(!best || p.cx > best.cx) best = p;
 if(!bin.has(key)) bin.set(key, []);
 if(!bins.has(pv)) bins.set(pv, new Map());
@@ -2444,6 +2486,8 @@ if((p.recoil || 0) > 0.05) fx.light(v.g.position.x + 0.4, 1.2, v.g.position.z + 
 if((z.slowT || 0) > 0) fx.emit('ice', X + fx.rand(-0.15, 0.15), 0.3 + fx.rand(0, 0.9), Z, 1, { spMin: 0.05, spMax: 0.2, g: 0.5, lifeMin: 0.4, lifeMax: 0.7, sizeMin: 0.03, sizeMax: 0.05, colors: [[0.7, 0.9, 1]] });
 if(Array.isArray(spec)) return region('n:' + spec[0] + ':' + spec[1] + ':' + w + 'x' + h, w, h, noise(spec[0], spec[1]));
 if(L.band) rig.box('head', 'm', [8.4, 1.5, 8.4], [0, 7, 0], L.band);
+if(L.skull) return { key: 'zface:' + type, paint: layers(noise(SK, 0.09), spots(SKIN_D, 5, 1), sprite([
+if(L.skull) return;
 if(L.stripe){ for(let y = 0; y < h; y++) p.px(Math.floor(w / 2), y, hex(L.stripe)); }
 if(L.tie){ const t = hex(L.tie); const cx = Math.floor(w / 2); p.rect(cx - 1, 0, 2, 1, t); for(let y = 1; y < h * 0.6; y++) p.px(cx - (y > 4 ? 0 : 1), y, t); p.rect(cx - 1, Math.floor(h * 0.6), 2, 1, t); }
 if(Math.abs(dx) === rad && Math.abs(dz) === rad && (dy !== -1 || r() < 0.5)) continue;
@@ -2459,6 +2503,7 @@ if(action.ensure) audio.ensure();
 if(age < 0.8) fx.emit('spark', v.g.position.x, 0.2 + (0.8 - age) * 2, v.g.position.z, 3, { spMin: 0.5, spMax: 1.5, g: 0, lifeMin: 0.2, lifeMax: 0.4, colors: [[0.6, 0.9, 1], [1, 1, 1]] });
 if(ahead < this.lastBeat - 0.5) this.lastBeat = -1;
 if(alive){
+if(archerTarget(world, z)){
 if(asleep){
 if(b > this.lastBeat && b <= ahead){
 if(beam){
@@ -2504,6 +2549,7 @@ if(flags.shovel === p){ tint = SHOVEL_TINT; flash = Math.max(flash, 0.18 + Math.
 if(flash === lastFlash && tk === lastTint && fade === lastFade) return;
 if(flies.visible){
 if(food){
+if(food){
 if(forced) return forced[1];
 if(frame.view3d){
 if(gate){
@@ -2515,6 +2561,7 @@ if(haloTex){
 if(has && p.fireT <= 0 && t > 0){
 if(has && p.fireT <= 0 && t > 0){
 if(health < v.last - 0.5){
+if(hit || pea.x < LX - 80) world.peas.splice(i,1);
 if(hit || pea.x > W+60) world.peas.splice(i,1);
 if(hit) return hit.uv;
 if(hits.length && hits[0].distance < bestD){ bestD = hits[0].distance; best = p; }
@@ -2584,6 +2631,8 @@ if(p.armT >= 14){ p.armed = true; addDirtPuff(world, p.cx, p.fy); }
 if(p.asleep) continue;
 if(p.asleep){
 if(p.cx < z.x - 92) continue;
+if(p.cx < z.x - ARCHER_RANGE) continue;
+if(p.cx >= z.x - 20) continue;
 if(p.cx >= z.x - 26) continue;
 if(p.fuse <= 0){
 if(p.g) p.vy += p.g*dt;
@@ -2595,6 +2644,8 @@ if(p.length > 3) a = p[3];
 if(p.life <= 0){ parts.splice(i, 1); continue; }
 if(p.life <= 0){ v.parts.splice(i,1); continue; }
 if(p.lifeT <= 0){
+if(p.row !== pea.row || p.type === 'potato') continue;
+if(p.row !== z.row || p.type === 'potato') continue;
 if(p.sunT <= 0){
 if(p.type === 'potato' && e.lamp > 0.5) fx.light(v.g.position.x, 0.35, v.g.position.z, '#ff3020', 1.5, 1.2);
 if(p.type === 'sunshroom' && !asleep){
@@ -2609,6 +2660,8 @@ if(p.type==='torch' && p.row===pea.row && pea.prevX < p.cx && pea.x >= p.cx){
 if(p.x>=h.x && p.x<=h.x+h.w && p.y>=h.y && p.y<=h.y+h.h) return h;
 if(p.y < 0.02){ p.y = 0.02; p.vy *= -0.3; p.vx *= 0.6; p.vz *= 0.6; }
 if(pea.prevX < front && pea.x >= front){
+if(pea.prevX > front && pea.x <= front){
+if(pea.type === 'arrow'){
 if(pea.type === 'beam'){
 if(pea.type === 'fire') fx.emit('ember', X - 0.06, Y, Z, 1, { spMin: 0.2, spMax: 0.6, g: -1, lifeMin: 0.15, lifeMax: 0.3, sizeMin: 0.04, sizeMax: 0.07, colors: [[1, 0.6, 0.15], [1, 0.85, 0.3]] });
 if(pea.type === 'fire') fx.light(X, Y, Z, '#ff8a2a', 2.5, 1.6);
@@ -2632,6 +2685,7 @@ if(pv.acc && z.type !== 'vault'){
 if(pv.acc && z.type !== 'vault'){
 if(pv.acc && z.type === 'vault') pv.acc.visible = !z.poleLost;
 if(pv.acc) pv.acc.rotation.z = 1.2 + k * 1.6;
+if(pv.bow) pv.bow.rotation.z = -1.5 + draw * 0.12;
 if(pv.rage) pv.rage.visible = !!z.angry;
 if(q){ l.position.set(q.x, q.y, q.z); l.color.set(q.color); l.intensity = q.intensity; l.distance = q.dist; }
 if(q.correct && q.idx < 2){ q.idx++; q.feedback = 0; }
@@ -2694,6 +2748,7 @@ if(texture) return texture;
 if(texture) texture.needsUpdate = true;
 if(this.ctx) return true;
 if(triedCanvas) return g;
+if(type === 'archer'){ rig.pivot('bow', 'foreF', [0.5, -6, 0], [0, 0, -1.5]); buildBow(rig, 'bow'); }
 if(type === 'bucket'){ rig.pivot('acc', 'hat', [0, -1, 0]); buildBucket(rig, 'acc'); }
 if(type === 'cone'){ rig.pivot('acc', 'hat'); buildCone(rig, 'acc'); }
 if(type === 'flag'){
@@ -2808,6 +2863,7 @@ if(z.state==='dying') continue;
 if(z.state==='dying') continue;
 if(z.state==='dying'){
 if(z.state==='walk'){
+if(z.type === 'archer' && st === 'shoot'){
 if(z.type === 'bucket'){ pv.acc.rotation.x = dmg * 0.12; pv.acc.scale.set(1 + dmg * 0.04, 1 - dmg * 0.1, 1); }
 if(z.type === 'cone'){ pv.acc.rotation.z = -dmg * 0.18; pv.acc.scale.set(1, 1 - dmg * 0.12, 1); }
 if(z.type === 'flag'){
@@ -2884,6 +2940,7 @@ let alpha = 1, scale = 1;
 let best = null, bestD = Infinity;
 let best = null, bestD = Infinity;
 let best = null;
+let best = null;
 let c = PIXEL_CACHE.get(key);
 let c = s;
 let canvas = null, g = null, texture = null, triedCanvas = false;
@@ -2904,6 +2961,7 @@ let guard = 0;
 let h = 2166136261 >>> 0;
 let has = false;
 let has = false;
+let hit = false;
 let hit = false;
 let hovered = null;
 let iconsReady = false;
@@ -2956,7 +3014,10 @@ lifeT: def.life || 0, maxLifeT: def.life || 0,
 lightReq = [];
 lightReq.sort((a, b) => b.intensity - a.intensity);
 lose(){ const seq=[392,329.63,261.63,196]; seq.forEach((f,i)=>this.tone(f,f*0.94,0.4,'sawtooth',0.06,i*0.3)); },
+m(basic('#e8e2d2', 1.4), [0.08, 0.09, 0.05], [0.16, 0, 0]),
 m(basic('#ff8a20', 2.4, true), [0.1, 0.06, 0.06], [-0.15, 0, 0]),
+m(makeStd('#9aa0a8', 0.4), [0.07, 0.075, 0.075], [-0.19, 0, 0]),
+m(makeStd('#c8a86a', 0.55), [0.34, 0.03, 0.03]),
 m(makeStd('#e8302a', 0.5), [0.05, 0.16, 0.03], [-0.09, 0, 0]),
 m(makeStd('#e8302a', 0.5), [0.07, 0.07, 0.07], [0.14, 0, 0]),
 m(makeStd('#f2f2f0', 0.5), [0.22, 0.08, 0.08]),
@@ -3062,6 +3123,7 @@ p.fireT = 6.5; p.recoil = 1; p.flash = 0.4;
 p.flash = Math.max(0, (p.flash||0) - dt);
 p.fuse -= dt;
 p.hp -= 100 * dt;
+p.hp -= pea.dmg;
 p.inst.mats.set(0, null, 1);
 p.life -= dt;
 p.life -= dt;
@@ -3161,6 +3223,7 @@ pv.acc.visible = alive;
 pv.armB.rotation.x = lerp(0, -0.9, fire);
 pv.armB.rotation.z = 0.8; pv.foreB.rotation.z = 0.9;
 pv.armB.rotation.z = 1.15; pv.foreB.rotation.z = 0.5;
+pv.armB.rotation.z = 1.35 + draw * 0.5;
 pv.armB.rotation.z = 1.5 + Math.cos(e * 9) * 0.1;
 pv.armB.rotation.z = 1.8 - Math.sin(ph * 2) * 0.5;
 pv.armB.rotation.z = 2.5 + Math.sin(ph) * 0.06;
@@ -3170,6 +3233,7 @@ pv.armF.rotation.x = lerp(0.1, 0.3, fire);
 pv.armF.rotation.z = 0.7; pv.foreF.rotation.z = 0.9;
 pv.armF.rotation.z = 1.3 - fall * 1.0; pv.armB.rotation.z = 1.2 - fall * 0.9;
 pv.armF.rotation.z = 1.3; pv.foreF.rotation.z = 0.4;
+pv.armF.rotation.z = 1.5; pv.foreF.rotation.z = -0.08;
 pv.armF.rotation.z = 1.6 + Math.sin(e * 9) * 0.1;
 pv.armF.rotation.z = 2.0 + Math.sin(ph * 2) * 0.5;
 pv.armF.rotation.z = 2.6; pv.armB.rotation.z = 2.5;
@@ -3177,12 +3241,14 @@ pv.armF.rotation.z = armBase + Math.sin(ph + 0.6) * 0.1;
 pv.armF.rotation.z = lerp(0.1, 1.45, fire);
 pv.body.position.y += Math.sin(t * 2 + ph) * 0.012;
 pv.foreB.rotation.z = 0.2;
+pv.foreB.rotation.z = 0.9 - draw * 0.55;
 pv.foreB.visible = bodyFrac > 0.5 || z.type === 'flag';
 pv.foreF.rotation.z = 0.35; pv.foreB.rotation.z = 0.35;
 pv.foreF.rotation.z = 0.9; pv.foreB.rotation.z = 0.9;
 pv.foreF.rotation.z = lerp(0.1, 1.6, fire);
 pv.head.position.x -= hk * 0.25;
 pv.head.position.y += hk * 0.25 - hk * hk * 0.55;
+pv.head.rotation.x = -0.06;
 pv.head.rotation.x = Math.sin(ph * 0.5 + 1) * 0.08;
 pv.head.rotation.z += Math.sin(ph * 0.5) * 0.07;
 pv.head.rotation.z += hk * 2.2;
@@ -3193,9 +3259,11 @@ pv.hips.position.y += Math.abs(sw) * 0.02;
 pv.hips.rotation.y = sw * 0.06;
 pv.jaw.position.y -= Math.abs(Math.sin(t * 1.7 + (z.row || 0))) * 0.025;
 pv.jaw.position.y -= bite * 0.06;
+pv.kneeF.rotation.z = -0.1; pv.kneeB.rotation.z = -0.15;
 pv.kneeF.rotation.z = -1.2; pv.kneeB.rotation.z = -1.0;
 pv.kneeF.rotation.z = -Math.max(0, -cw) * 0.5; pv.kneeB.rotation.z = -Math.max(0, cw) * 0.5;
 pv.legF.rotation.z = 0.08; pv.legB.rotation.z = -0.1;
+pv.legF.rotation.z = 0.12; pv.legB.rotation.z = -0.2;
 pv.legF.rotation.z = 0.15; pv.legB.rotation.z = -0.25;
 pv.legF.rotation.z = 0.9; pv.legB.rotation.z = 0.5;
 pv.legF.rotation.z = sw * legA; pv.legB.rotation.z = -sw * legA;
@@ -3300,6 +3368,7 @@ return bakeStatic(rig.finish());
 return best ? { x: best.x, y: best.y } : null;
 return best;
 return best;
+return best;
 return c;
 return cam;
 return canvas;
@@ -3378,9 +3447,9 @@ return { key: 'crack:' + id, paint: (p, w, h, R) => {
 return { key: 'face:' + (o.id || base) , paint: layers(noise(base, 0.08), (p, w, h) => {
 return { key: 'petal:' + id, paint: (p, w, h, R) => {
 return { key: 'side:' + id, paint: layers(noise(base, 0.08), (p, w, h) => {
-return { key: 'zface:' + type, paint: layers(noise(SKIN, 0.09), spots(SKIN_D, 5, 1), sprite([
-return { key: 'zside:' + type + (far ? ':f' : ''), paint: layers(noise(SKIN, 0.09), spots(SKIN_D, 4, 1), (p, w) => {
-return { key: 'ztop:' + type, paint: layers(noise(SKIN, 0.09), spots(L.hair || '#2e2a20', 7, 1)) };
+return { key: 'zface:' + type, paint: layers(noise(SK, 0.09), spots(SKIN_D, 5, 1), sprite([
+return { key: 'zside:' + type + (far ? ':f' : ''), paint: layers(noise(SK, 0.09), spots(SKIN_D, 4, 1), (p, w) => {
+return { key: 'ztop:' + type, paint: layers(noise(SK, 0.09), spots(L.skull ? SK : (L.hair || '#2e2a20'), 7, 1)) };
 return { key: 'ztorso:' + type, paint: (p, w, h, R) => {
 return { m };
 return { ok:false, reason:'cooling' };
@@ -3439,7 +3508,7 @@ rig.box('eyes', 't', [0.4, 2, o.stemW], [fx, ey - 2.2, 0], { front: { key: 'smil
 rig.box('eyes', 't', [0.4, 3, o.stemW], [fx, ey, 0], { front: { key: 'eyes:' + o.id, paint: (p, w, h) => { p.clear(); sprite(['wk.kw', 'kk.kk'], { w: '#ffffff', k: '#141414' }, Math.floor((w - 5) / 2), 0)(p); } }, back: 'clear', sides: 'clear', top: 'clear', bottom: 'clear' });
 rig.box('f1', 'e', [1.5, 1.5, 1.5], [-3, 13, 2], null, { tint: '#ffb030' });
 rig.box('f1', 'e', [2, 2, 2], [3, 11, -2], null, { tint: '#ff8a1a' });
-rig.box('fore' + s, 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND(L.coat, type), top: L.coat, bottom: SKIN });
+rig.box('fore' + s, 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND(L.coat, SK, type), top: L.coat, bottom: SK });
 rig.box('gun', 'm', [2, 2, 2], [-2, -0.5, -1.5], SKIN);
 rig.box('gun', 'm', [6, 1, 3.2], [0, 1.6, 0], SHIRT);
 rig.box('gun', 'x', [3, 3, 3], [-1, -2.5, 0], '#d9a521');
@@ -3449,7 +3518,7 @@ rig.box('head', 'g', [10, 9, 9], [0, 0, 0], {
 rig.box('head', 'm', [11, 11, 3], [0, 0, 0], { all: ['#5d3514', 0.1], near: SUNFACE });
 rig.box('head', 'm', [3, 2, 2], [-2, 8.5, 0], HAIR, { r: [0, 0, 0.4] });
 rig.box('head', 'm', [4, 1, 5], [-6, 3.5, 0], o.leaf, { r: [0, 0, 0.6] });
-rig.box('jaw', 'm', [3.5, 2.6, 6.4], [0, -1, 0], { all: SKIN, front: JAW_FRONT });
+rig.box('jaw', 'm', [3.5, 2.6, 6.4], [0, -1, 0], { all: SK, front: JAW_FRONT(L) });
 rig.box('knee' + s, 'g', [5, 1.6, 3.8], [0.8, -4.4, 0], { all: '#3a2a1e', top: '#4a3626' });
 rig.box('knee' + s, 'm', [3.4, 5, 3.4], [0, -2.5, 0], pants);
 rig.box('lamp', 'e', [2.4, 2.4, 2.4], [0, 0, 0], null, { tint: '#ff2a1a' });
@@ -3479,8 +3548,15 @@ rig.box(a, 'x', [3, 6, 3], [0, -2.5, 0], { sides: TIGA_LIMB(c, a), top: T_SILVER
 rig.box(f, 'x', [2.8, 6, 2.8], [0, -3, 0], T_SILVER);
 rig.box(name, 'g', [5, 5, 1.6], [0, 0, 0], { near: WHEEL, far: WHEEL, sides: '#1e1e22', top: '#1e1e22', bottom: '#1e1e22' });
 rig.box(name, 'm', [0.6, 8, 3], [0, 0, -1.5], { near: FLAG_TEX, far: FLAG_TEX, sides: '#b02228', top: '#b02228', bottom: '#b02228' });
+rig.box(pv, 'm', [0.16, 8.6, 0.16], [-0.1, 0, 0], '#e8e4d8');
+rig.box(pv, 'm', [0.5, 4.5, 0.5], [0.6, -3.4, 0], '#8a6a3a', { r: [0, 0, -0.3] });
+rig.box(pv, 'm', [0.5, 4.5, 0.5], [0.6, 3.4, 0], '#8a6a3a', { r: [0, 0, 0.3] });
+rig.box(pv, 'm', [0.7, 1.4, 0.7], [1.15, 0, 0], '#a8845a');
+rig.box(pv, 'm', [0.8, 0.7, 0.7], [-3.1, 0, 0], '#9aa0a8');
+rig.box(pv, 'm', [1.1, 1.1, 0.4], [3.0, 0, 0], '#d8d4c4');
 rig.box(pv, 'm', [48, 1.2, 1.2], [0, 0, 0], { key: 'pole', paint: (p, w, h, R) => { for(let x = 0; x < w; x++) p.rect(x, 0, 1, h, x % 6 < 3 ? '#d4a24e' : '#e8c070'); } });
 rig.box(pv, 'm', [6, 1, 3], [x, 1.5, z], color, { r: [0, a, -0.25] });
+rig.box(pv, 'm', [6.5, 0.3, 0.3], [0.3, 0, 0], '#c8a86a');
 rig.box(pv, 't', [0.4, 28, 17], [0, 0, 0], { front: DOOR_MESH, back: DOOR_MESH, sides: 'clear', top: 'clear', bottom: 'clear' });
 rig.box(pv, 'x', [1, 1, 9], [4.9, 1, 0], '#7d868e');
 rig.box(pv, 'x', [1, 1.6, 1.6], [1, 0, -6.5], '#e0b040');
@@ -3558,7 +3634,7 @@ rig.stand('f3', 'e', [4, 8, 4], [0, 1, 0.8], flame('#fff0a0', '#ffffff'));
 rig.stand('head', 'g', [2, h, 2], [x, 4.5, z], '#effcff');
 rig.stand('head', 'g', [5, 2, 1.4], [-0.5, 7, 0], T_PURPLE);
 rig.stand('head', 'm', [8, 8, 8], [0, 0, 0], { front: QQ_FACE, near: QQ_SIDE, far: QQ_SIDE_F, back: HAIR, top: { key: 'qq:hairtop', paint: noise(HAIR, 0.15) }, bottom: SKIN });
-rig.stand('head', 'm', [8, 9, 8], [0, 0, 0], { front: faceTex(type, L), near: headSide(type, L, false), far: headSide(type, L, true), top: headTop(type, L), back: headSide(type, L, true), bottom: SKIN });
+rig.stand('head', 'm', [8, 9, 8], [0, 0, 0], { front: faceTex(type, L), near: headSide(type, L, false), far: headSide(type, L, true), top: headTop(type, L), back: headSide(type, L, true), bottom: SK });
 rig.stand('head', 'x', [6, 7, 6], [0, 0, 0], { all: T_SILVER, front: TIGA_FACE });
 rig.stand('mound', 'm', [14, 3, 13], [0, 0, 0], { all: [DIRT, 0.14], top: { key: 'mound:top', paint: layers(noise(DIRT, 0.14), spots('#5a3c20', 10)) } });
 rig.stand('root', 'g', [4, 2, 3], [0.5, 0, z], { all: SHOE, top: '#fbfbf2' });
@@ -3970,12 +4046,15 @@ world.peas.push({ x:p.cx+14, y:py, row:p.row, type:'spore', dmg:20, vx:300, prev
 world.peas.push({ x:p.cx+30, y:py, row:p.row, type:kind, dmg:20, vx:340, prevX:p.cx+30 });
 world.peas.push({ x:p.cx+52, y:py, row:p.row, type, dmg, vx, prevX:p.cx+52 });
 world.peas.push({ x:p.cx-30, y:p.fy-58, row:p.row, type:'beam', dmg:400, vx:720, prevX:p.cx-30 });
+world.peas.push({ x:z.x-14, y:cellFY(z.row)-58, row:z.row, type:'arrow', dmg:ARCHER_DMG, vx:ARROW_VX, prevX:z.x-14 });
 world.plants.push(p);
 world.plants=[]; world.zombies=[]; world.peas=[]; world.suns=[];
 world.ports.saveUnlockAll(world.unlockAll);
 world.ports.sound('angry');
+world.ports.sound('arrow');
 world.ports.sound('boom');
 world.ports.sound('boom');
+world.ports.sound('bulletHit');
 world.ports.sound('chomp');
 world.ports.sound('click');
 world.ports.sound('click');
@@ -3993,6 +4072,7 @@ world.ports.sound('error');
 world.ports.sound('error');
 world.ports.sound('error');
 world.ports.sound('error');
+world.ports.sound('groan');
 world.ports.sound('groan');
 world.ports.sound('hop');
 world.ports.sound('hop');
@@ -4064,10 +4144,14 @@ y += n ? -1 : 1;
 z.acc -= d;
 z.angry = true;
 z.animT += dt * slowMul * animMul;
+z.animT += dt * slowMul;
 z.deathT += dt;
 z.dustT = (z.dustT||0) + dt;
 z.dustT = 0;
 z.eatT += dt;
+z.fireT -= dt * slowMul;
+z.fireT = ARCHER_INTERVAL;
+z.fireT = ARCHER_WINDUP;
 z.hp -= d;
 z.screenHitT = 0.12;
 z.slowT = 0;
@@ -4075,7 +4159,10 @@ z.speed = 34 * rand(world.rng,0.94,1.08);
 z.speed = ZTYPES.normal.speed * rand(world.rng,0.92,1.08);
 z.state = 'dying'; z.deathT = 0;
 z.state = 'eat'; z.eatT = 0; z.eatPlant = food;
+z.state = 'eat'; z.eatT = 0; z.eatPlant = food; z.x = Math.max(z.x, food.cx + 40);
+z.state = 'shoot';
 z.state = 'vault'; z.vt = 0; z.fromX = z.x;
+z.state = 'walk';
 z.state = 'walk'; z.eatPlant = null;
 z.state = 'walk'; z.eatPlant = null;
 z.toX = Math.max(target.cx - CW + 18, LX - 10);
@@ -4093,8 +4180,8 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 { id: 'pause', label: world.paused ? '继续' : '暂停', action: { type: 'pause' }, color: world.paused ? 'green' : 'orange' },
 { name:'第 1 关 · 前院草坪', count:20, slots:6, types:[['normal',8],['cone',2]] },
 { name:'第 2 关 · 来者不善', count:27, slots:7, types:[['normal',5],['cone',3],['bucket',1],['vault',1],['newspaper',1]] },
-{ name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',2]] },
-{ name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',2]] },
+{ name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',2],['archer',2]] },
+{ name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',2],['archer',2]] },
 { spec: TALL, n: 300, w: 16, h: 16, s: [0.5, 0.75] },
 { spec: flower('corn', '#4a7aff', '#ffffff'), n: 14, w: 16, h: 16, s: [0.7, 0.85] },
 { spec: flower('dandelion', '#ffd23a', '#ffb020'), n: 26, w: 16, h: 16, s: [0.7, 0.85] },
@@ -4657,19 +4744,32 @@ z.x = z.toX; z.state = 'walk'; z.poleLost = true;
 }
 }
 }
+}
+}
+}
+}
+}
+}
+}
+}
+}
 } catch(e){
 } catch(e){ pixelOK = false; }
 } catch(e){ return 'high'; }
 } else battle.remove(v.g);
 } else if(!afford){
+} else if(!archerTarget(world, z)){
 } else if(check.reason === 'cooling' || check.reason === 'occupied' || check.reason === 'invalid-target'){
 } else if(hover){
 } else if(key==='Escape'){ clearSelection(ui); }
 } else if(p.type==='puff'){
 } else if(s.state==='fly'){
 } else if(s.state==='idle'){
+} else if(z.fireT <= 0){
 } else if(z.state==='eat'){
+} else if(z.state==='shoot'){
 } else if(z.state==='vault'){
+} else if(z.type === 'archer'){
 } else {
 } else {
 } else {

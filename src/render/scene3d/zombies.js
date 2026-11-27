@@ -18,11 +18,27 @@ const LOOKS = {
   vault:     { coat: '#c43a36', pants: '#c43a36', tie: null, shirt: '#f4f4f0', stripe: '#ffffff', band: '#ffd23e' },
   newspaper: { coat: '#7a6d5a', pants: '#4a4036', tie: '#7a2a6a', shirt: '#efe8d4', glasses: true, hair: '#d8d8d0' },
   screen:    { coat: '#55606e', pants: '#2f3540', tie: '#d8a020', shirt: '#e9e3d0' },
+  // E30：射手僵尸。白骨配色：它靠站位不靠肉度存在，脸必须一眼认出"这不是啃人的那种"。
+  // skull 走骷髅脸（黑眼窝、无发），皮肤色由 L.skin 参数化进 humanoid。
+  archer:    { coat: '#7d7a6a', pants: '#5a5850', tie: null, shirt: '#ded9c8', skin: '#e6e2d2', skull: true },
 };
 
 // ---- 贴图 ----
 function faceTex(type, L){
-  return { key: 'zface:' + type, paint: layers(noise(SKIN, 0.09), spots(SKIN_D, 5, 1), sprite([
+  const SK = L.skin || SKIN;
+  // E30：骷髅脸（射手）：黑眼窝 + 鼻洞，不画头发——白骨要从脸上直接读出来
+  if(L.skull) return { key: 'zface:' + type, paint: layers(noise(SK, 0.09), spots(SKIN_D, 5, 1), sprite([
+    '.........',
+    '.........',
+    '.kk...kk.',
+    '.kk...kk.',
+    '.........',
+    '....k....',
+    '.........',
+    '.........',
+    '.........',
+  ], { k: '#26241e' })) };
+  return { key: 'zface:' + type, paint: layers(noise(SK, 0.09), spots(SKIN_D, 5, 1), sprite([
     '.........',
     '.........',
     '.bbb..bb.',
@@ -40,20 +56,23 @@ function faceTex(type, L){
   }) };
 }
 function headSide(type, L, far){
-  return { key: 'zside:' + type + (far ? ':f' : ''), paint: layers(noise(SKIN, 0.09), spots(SKIN_D, 4, 1), (p, w) => {
+  const SK = L.skin || SKIN;
+  return { key: 'zside:' + type + (far ? ':f' : ''), paint: layers(noise(SK, 0.09), spots(SKIN_D, 4, 1), (p, w) => {
+    if(L.skull) return;                       // 骷髅没头发
     const hair = hex(L.hair || '#2e2a20');
     for(let x = 0; x < w; x++) if((x + 1) % 3) p.px(x, 0, hair);
     p.rect(far ? 2 : w - 4, 4, 2, 2, SKIN_D);         // 耳朵
   }) };
 }
 function headTop(type, L){
-  return { key: 'ztop:' + type, paint: layers(noise(SKIN, 0.09), spots(L.hair || '#2e2a20', 7, 1)) };
+  const SK = L.skin || SKIN;
+  return { key: 'ztop:' + type, paint: layers(noise(SK, 0.09), spots(L.skull ? SK : (L.hair || '#2e2a20'), 7, 1)) };
 }
-const JAW_FRONT = { key: 'zjaw', paint: layers(noise(SKIN, 0.09), sprite([
+const JAW_FRONT = (L) => ({ key: 'zjaw:' + (L.skin || SKIN), paint: layers(noise(L.skin || SKIN, 0.09), sprite([
   '.kkkkkk.',
   '.wkwkwk.',
   '........',
-], { k: '#3a1a14', w: '#f0ead0' })) };
+], { k: '#3a1a14', w: '#f0ead0' })) });
 function torsoFront(type, L){
   return { key: 'ztorso:' + type, paint: (p, w, h, R) => {
     const coat = hex(L.coat), shirt = hex(L.shirt);
@@ -70,12 +89,13 @@ function torsoFront(type, L){
   } };
 }
 function cloth(c, id){ return { key: 'zcloth:' + id, paint: layers(noise(c, 0.1), spots(tone(c, 0.75), 4, 1)) }; }
-const SLEEVE_HAND = (coat, id) => ({ key: 'zarm:' + id, paint: (p, w, h, R) => {
-  const c = hex(coat), s = hex(SKIN);
+const SLEEVE_HAND = (coat, skin, id) => ({ key: 'zarm:' + id, paint: (p, w, h, R) => {
+  const c = hex(coat), s = hex(skin);
   for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) p.px(x, y, shade(y < h * 0.55 ? c : s, 0.9 + R() * 0.16));
 } });
 
 function humanoid(rig, type, L){
+  const SK = L.skin || SKIN;                   // E30：骷髅（射手）从这里换肤
   rig.pivot('hips', 'root', [0, 10, 0]);
   rig.pivot('legF', 'hips', [0, 0, 2]);
   rig.pivot('kneeF', 'legF', [0, -5, 0]);
@@ -98,10 +118,10 @@ function humanoid(rig, type, L){
   rig.stand('torso', 'm', [5, 11, 8], [0, 0, 0], { all: cloth(L.coat, type + ':coat'), front: torsoFront(type, L) });
   for(const s of ['F', 'B']){
     rig.box('arm' + s, 'm', [3, 5.5, 3], [0, -2.5, 0], cloth(L.coat, type + ':coat'));
-    rig.box('fore' + s, 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND(L.coat, type), top: L.coat, bottom: SKIN });
+    rig.box('fore' + s, 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND(L.coat, SK, type), top: L.coat, bottom: SK });
   }
-  rig.stand('head', 'm', [8, 9, 8], [0, 0, 0], { front: faceTex(type, L), near: headSide(type, L, false), far: headSide(type, L, true), top: headTop(type, L), back: headSide(type, L, true), bottom: SKIN });
-  rig.box('jaw', 'm', [3.5, 2.6, 6.4], [0, -1, 0], { all: SKIN, front: JAW_FRONT });
+  rig.stand('head', 'm', [8, 9, 8], [0, 0, 0], { front: faceTex(type, L), near: headSide(type, L, false), far: headSide(type, L, true), top: headTop(type, L), back: headSide(type, L, true), bottom: SK });
+  rig.box('jaw', 'm', [3.5, 2.6, 6.4], [0, -1, 0], { all: SK, front: JAW_FRONT(L) });
   if(L.band) rig.box('head', 'm', [8.4, 1.5, 8.4], [0, 7, 0], L.band);
 }
 
@@ -154,6 +174,17 @@ export function buildFlag(rig, pv){
 export function buildPole(rig, pv){
   rig.box(pv, 'm', [48, 1.2, 1.2], [0, 0, 0], { key: 'pole', paint: (p, w, h, R) => { for(let x = 0; x < w; x++) p.rect(x, 0, 1, h, x % 6 < 3 ? '#d4a24e' : '#e8c070'); } });
 }
+// E30：像素弓。弓臂在握把两侧向后弯（rotation.z 正负各一根），弦绷在弓尖背后，一支箭搭在弦上。
+// 挂在 foreF（前小臂末端）：走路时随手拎着，shoot 态抬臂即成拉弓。
+export function buildBow(rig, pv){
+  rig.box(pv, 'm', [0.5, 4.5, 0.5], [0.6, 3.4, 0], '#8a6a3a', { r: [0, 0, 0.3] });   // 上弓臂
+  rig.box(pv, 'm', [0.5, 4.5, 0.5], [0.6, -3.4, 0], '#8a6a3a', { r: [0, 0, -0.3] });  // 下弓臂
+  rig.box(pv, 'm', [0.7, 1.4, 0.7], [1.15, 0, 0], '#a8845a');                          // 握把
+  rig.box(pv, 'm', [0.16, 8.6, 0.16], [-0.1, 0, 0], '#e8e4d8');                        // 弓弦
+  rig.box(pv, 'm', [6.5, 0.3, 0.3], [0.3, 0, 0], '#c8a86a');                           // 搭弦的箭杆
+  rig.box(pv, 'm', [0.8, 0.7, 0.7], [-3.1, 0, 0], '#9aa0a8');                          // 箭头
+  rig.box(pv, 'm', [1.1, 1.1, 0.4], [3.0, 0, 0], '#d8d4c4');                           // 尾羽
+}
 const FLAG_TEX = { key: 'flagcloth', paint: (p, w, h, R) => {
   const r = hex('#c82a30');
   for(let y = 0; y < h; y++) for(let x = 0; x < w; x++) p.px(x, y, shade(r, 0.9 + R() * 0.15));
@@ -180,6 +211,8 @@ function zombieBuild(type){
       }
     }
     if(type === 'vault'){ rig.pivot('acc', 'foreF', [0.5, -6, 0], [0, 0, 1.2]); buildPole(rig, 'acc'); }
+    // E30：射手。弓挂前手；-1.5 的枢轴角在抬臂（约 1.5）时把弓转回竖直。
+    if(type === 'archer'){ rig.pivot('bow', 'foreF', [0.5, -6, 0], [0, 0, -1.5]); buildBow(rig, 'bow'); }
     if(type === 'newspaper'){
       rig.pivot('rage', 'head');
       for(const z of [2.2, -2]) rig.box('rage', 'e', [0.6, 1.4, 1.6], [4.2, 5.2, z], null, { tint: '#ff3018' });
@@ -246,6 +279,18 @@ function zombieAnimate(inst, z, t, env){
   } else {
     pv.jaw.position.y -= Math.abs(Math.sin(t * 1.7 + (z.row || 0))) * 0.025;
   }
+  // E30：射手站桩放箭。拉弓进度从 fireT 推导（它在 sim 里本来就要倒数），
+  // 不新增渲染字段：fireT 越接近放箭弓拉得越满，放完瞬间松回。
+  if(z.type === 'archer' && st === 'shoot'){
+    const draw = Math.max(0, Math.min(1, 1 - (z.fireT || 0) / 1.4));   // 1.4s 拉满，与 sim 的间隔 2.4s 对齐
+    pv.armF.rotation.z = 1.5; pv.foreF.rotation.z = -0.08;            // 前臂平举持弓
+    pv.armB.rotation.z = 1.35 + draw * 0.5;                           // 后臂勾弦，随拉弓后摆
+    pv.foreB.rotation.z = 0.9 - draw * 0.55;
+    pv.legF.rotation.z = 0.12; pv.legB.rotation.z = -0.2;             // 前后开立的站桩
+    pv.kneeF.rotation.z = -0.1; pv.kneeB.rotation.z = -0.15;
+    pv.head.rotation.x = -0.06;                                       // 微微压低瞄准
+    if(pv.bow) pv.bow.rotation.z = -1.5 + draw * 0.12;                // 满弦时弓身略沉
+  }
   // 撑杆跳：收腿、身体前倾，撑杆竖起
   if(st === 'vault'){
     const k = Math.min(1, z.vt || 0);
@@ -309,5 +354,5 @@ export const DEBRIS_MODELS = {
   bucket: { build: rig => buildBucket(rig, 'root') },
   screen: { build: rig => buildDoor(rig, 'root') },
   newspaper: { build: rig => buildPaper(rig, 'root') },
-  arm: { build: rig => rig.box('root', 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND('#6b4a2f', 'debris'), top: '#6b4a2f', bottom: SKIN }) },
+  arm: { build: rig => rig.box('root', 'm', [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND('#6b4a2f', SKIN, 'debris'), top: '#6b4a2f', bottom: SKIN }) },
 };

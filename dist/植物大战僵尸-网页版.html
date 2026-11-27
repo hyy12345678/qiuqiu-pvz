@@ -12,7 +12,7 @@
 <body>
 <canvas id="game"></canvas>
 <script>
-/* build: v0.1.0 pretty · src 9a77ff5d */
+/* build: v0.1.0 pretty · src 4cdab7f2 */
 "use strict";
 (() => {
   // src/core/rng.js
@@ -273,6 +273,11 @@
       this.noise(0.18, 0.16, 5200);
       this.tone(1400, 420, 0.16, "sawtooth", 0.05);
     },
+    arrow() {
+      this.noise(0.05, 0.06, 3200);
+      this.tone(1200, 480, 0.07, "sawtooth", 0.035);
+    },
+    // E30：弓弦绷响 + 破空
     angry() {
       this.tone(150, 62, 0.4, "sawtooth", 0.14);
       this.noise(0.32, 0.09, 620, 0.04);
@@ -314,10 +319,13 @@
     // 放在最终决战才出现，让玩家先熟悉其他机制。
     // E24：铁门权重 1 → 2。原权重下每局只有 2.1 只，玩家既被突然袭击又没机会学会。
     // 配合 waves.js 的进度门槛（前半场不出），现在是"后半场常见"而不是"偶尔来个怪东西"。
-    { name: "第 3 关 · 最终决战", count: 44, slots: 8, types: [["normal", 4], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 2], ["screen", 2]] },
+    // E30：加入射手僵尸。权重 1 → 2 与 E24 铁门同一次修正：实测权重 1 时 40 局有 8 局一只不来，
+    // "偶尔来个怪东西"玩家学不会。权重 2 + 进度门槛后是"后半场常见"。
+    { name: "第 3 关 · 最终决战", count: 44, slots: 8, types: [["normal", 4], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 2], ["screen", 2], ["archer", 2]] },
     // E20：52 → 46。原曲线是 1.0 → 3.0 → 4.6 → 5.6，L3→L4 的台阶最陡且时长 385s（6.4 分钟）偏长。
     // 削到 46 后约 5.0×，时长降到约 340s。
-    { name: "第 4 关 · 月夜突袭", count: 46, slots: 8, night: true, types: [["normal", 3], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 3], ["screen", 2]] }
+    // E30：射手权重 2。夜战里它和铁门一起构成"换打法"的双重压力。
+    { name: "第 4 关 · 月夜突袭", count: 46, slots: 8, night: true, types: [["normal", 3], ["cone", 3], ["bucket", 2], ["vault", 2], ["newspaper", 3], ["screen", 2], ["archer", 2]] }
   ];
 
   // src/core/ports.js
@@ -367,7 +375,10 @@
   // src/core/waves.js
   var SPAWN_GATE = {
     // 类型: [首次出现的进度下限, 权重加成]
-    screen: [0.55, 2]
+    screen: [0.55, 2],
+    // E30：射手同样走"后半场登场"。远程拆防如果在铺防期出现，玩家还没建好坚果就先被拆，
+    // 和 E24 里铁门的问题同构：先"明确登场"，再"反复出现"。
+    archer: [0.5, 1]
   };
   function pickType(lv, prog, rng) {
     const pool = lv.types.map(([t, w]) => {
@@ -1196,14 +1207,15 @@
       ["☕", "蘑菇夜里直接开工；白天种下会打盹，用咖啡豆唤醒"],
       ["📰", "报纸僵尸：打掉报纸它会暴怒加速冲过来！"],
       ["🚪", "铁门僵尸：弹道伤害只剩 1/4，用炸弹、光线或堆火力"],
+      ["🏹", "射手僵尸：停在远处朝植物放箭，用坚果墙挡箭"],
       ["🌙", "夜间关卡：天上不掉太阳，开局多给 100 阳光"],
       ["🏁", "小推车是最后防线，消灭全部僵尸即可过关"]
     ];
     for (let i = 0; i < lines.length; i++) {
-      const y = py + 62 + i * 27;
+      const y = py + 60 + i * 25;
       if (i % 2 === 0) {
         const g2 = "rgba(255,255,255,0.05)";
-        drawRow(px + 26, y - 12, pw - 52, 25, g2);
+        drawRow(px + 26, y - 12, pw - 52, 23, g2);
       }
       drawText(lines[i][0], px + 50, y + 1, 16, "#ffffff", null, 0, "center", "700");
       drawText(lines[i][1], px + 74, y + 1, 15.5, "#eaf6e4", "rgba(0,0,0,0.35)", 2, "left", "700");
@@ -1249,7 +1261,10 @@
     // 樱桃/土豆雷/球球导弹/迪迦光线/小推车照常生效。它不改变血量，改变的是「你得换一套火力」。
     // E23：900 → 600。900 盾 × 4 倍削减 = 等效 3600 弹道伤害，8 株豌豆要 31.5 秒，
     // 比铁桶（11.4 秒）慢近 3 倍，太磨。600 盾后 8 株豌豆约 21 秒，是"明显更硬"而不是"卡死"。
-    screen: { name: "铁门僵尸", hp: 200, acc: 600, speed: 16, screen: true }
+    screen: { name: "铁门僵尸", hp: 200, acc: 600, speed: 16, screen: true },
+    // E30：射手僵尸。第一个远程敌人——停在中距离朝本行最靠前的植物放箭，
+    // 靠站位而不是肉度存在。反制是「让便宜的东西去接箭」：坚果墙挡箭、寒冰拖慢放箭。
+    archer: { name: "射手僵尸", hp: 200, acc: 0, speed: 16, ranged: true }
   };
 
   // src/render/scenes/select.js
@@ -1260,6 +1275,7 @@
     vault: "跑得快，会跳过第一株植物",
     newspaper: "报纸被打掉会暴怒加速",
     screen: "弹道伤害只剩 1/4，炸弹破门",
+    archer: "停在远处放箭，坚果墙挡箭",
     flag: "总攻的领头人"
   };
   function renderSelect(t, world, ui) {
@@ -1961,7 +1977,7 @@
     });
   }
   function addPeaSplat(world, x, y, type) {
-    const cols = type === "snow" ? ["#bfe9ff", "#8fd0f2"] : type === "fire" ? ["#ff9a2e", "#ffd23e"] : type === "ball" ? ["#e8483c", "#ffd23e"] : type === "bullet" ? ["#e8edf2", "#8d949c"] : type === "spore" ? ["#dcc0f0", "#b478e0"] : type === "beam" ? ["#dff6ff", "#8fd8ff"] : ["#8fd44a", "#b8e88a"];
+    const cols = type === "snow" ? ["#bfe9ff", "#8fd0f2"] : type === "fire" ? ["#ff9a2e", "#ffd23e"] : type === "ball" ? ["#e8483c", "#ffd23e"] : type === "bullet" ? ["#e8edf2", "#8d949c"] : type === "spore" ? ["#dcc0f0", "#b478e0"] : type === "beam" ? ["#dff6ff", "#8fd8ff"] : type === "arrow" ? ["#e8e2d2", "#b0a892"] : ["#8fd44a", "#b8e88a"];
     for (let k = 0; k < 9; k++) world.visual.parts.push({ x, y, vx: rand(world.fxRng, -100, 100), vy: rand(world.fxRng, -100, 45), g: 250, life: rand(world.fxRng, 0.2, 0.45), max: 0.45, size: rand(world.fxRng, 2, 5.5), color: cols[k % 2] });
   }
 
@@ -2144,6 +2160,8 @@
       deathT: 0,
       eatPlant: null,
       dustT: 0,
+      fireT: 0,
+      // E30：射手的放箭冷却（别的僵尸恒为 0，不参与任何分支）
       paper: type === "newspaper" ? ZTYPES.newspaper.acc : 0,
       angry: false,
       screen: !!def.screen,
@@ -2327,8 +2345,16 @@
   var FIRST_SPAWN_HINT = {
     // E28：原文「豌豆打不动，换火豌豆或炸弹」与规则不符——E23 起弹道是削到 1/4 而不是无效，
     // 火豌豆直击同样是弹道（只有溅射穿门）。提示必须和 SCREEN_BALLISTIC_MULT 说同一件事。
-    screen: "铁门僵尸来了！豌豆伤害只剩 1/4，快用炸弹！"
+    screen: "铁门僵尸来了！豌豆伤害只剩 1/4，快用炸弹！",
+    // E30：射手僵尸。远程拆防对第一次见的玩家是"植物莫名其妙掉了血"，
+    // 首见必须把"远处放箭 + 坚果挡箭"这个反制说出来。
+    archer: "射手僵尸来了！它在远处放箭，快种坚果墙挡住！"
   };
+  var ARCHER_RANGE = CW * 4.25;
+  var ARCHER_DMG = 55;
+  var ARCHER_INTERVAL = 2.4;
+  var ARCHER_WINDUP = 1;
+  var ARROW_VX = -300;
   function updatePlay(world, dt) {
     world.t += dt;
     if (world.visual.nightHint > 0) world.visual.nightHint -= dt;
@@ -2525,6 +2551,22 @@
       const pea = world.peas[i];
       pea.prevX = pea.x;
       pea.x += pea.vx * dt;
+      if (pea.type === "arrow") {
+        let hit2 = false;
+        for (const p of world.plants) {
+          if (p.row !== pea.row || p.type === "potato") continue;
+          const front = p.cx + 26;
+          if (pea.prevX > front && pea.x <= front) {
+            p.hp -= pea.dmg;
+            addPeaSplat(world, front, pea.y, "arrow");
+            world.ports.sound("bulletHit");
+            hit2 = true;
+            break;
+          }
+        }
+        if (hit2 || pea.x < LX - 80) world.peas.splice(i, 1);
+        continue;
+      }
       if (pea.type === "fire" && world.fxRng() < 0.6) {
         v.parts.push({ x: pea.x - 8, y: pea.y + rand(world.fxRng, -3, 3), vx: rand(world.fxRng, -30, -10), vy: rand(world.fxRng, -25, 5), g: -60, life: rand(world.fxRng, 0.15, 0.3), max: 0.3, size: rand(world.fxRng, 2, 4), color: "#ffb347" });
       }
@@ -2575,6 +2617,16 @@
       if (hit || pea.x > W + 60) world.peas.splice(i, 1);
     }
   }
+  function archerTarget(world, z) {
+    let best = null;
+    for (const p of world.plants) {
+      if (p.row !== z.row || p.type === "potato") continue;
+      if (p.cx >= z.x - 20) continue;
+      if (p.cx < z.x - ARCHER_RANGE) continue;
+      if (!best || p.cx > best.cx) best = p;
+    }
+    return best;
+  }
   function stepZombies(world, dt) {
     const t = world.t;
     const v = world.visual;
@@ -2623,6 +2675,28 @@
           z.eatT = 0;
           z.eatPlant = food;
           z.x = Math.max(z.x, food.cx + 40);
+        } else if (z.type === "archer") {
+          if (archerTarget(world, z)) {
+            z.state = "shoot";
+            z.fireT = ARCHER_WINDUP;
+            world.ports.sound("groan");
+          }
+        }
+      } else if (z.state === "shoot") {
+        z.animT += dt * slowMul;
+        z.fireT -= dt * slowMul;
+        const food = findEatTarget(world, z);
+        if (food) {
+          z.state = "eat";
+          z.eatT = 0;
+          z.eatPlant = food;
+          z.x = Math.max(z.x, food.cx + 40);
+        } else if (!archerTarget(world, z)) {
+          z.state = "walk";
+        } else if (z.fireT <= 0) {
+          z.fireT = ARCHER_INTERVAL;
+          world.peas.push({ x: z.x - 14, y: cellFY(z.row) - 58, row: z.row, type: "arrow", dmg: ARCHER_DMG, vx: ARROW_VX, prevX: z.x - 14 });
+          world.ports.sound("arrow");
         }
       } else if (z.state === "vault") {
         z.vt += dt / 0.55;
@@ -33796,10 +33870,25 @@ void main() {
     bucket: { coat: "#4f5a40", pants: "#3a3a3a", tie: "#c0262d", shirt: "#e9e3d0" },
     vault: { coat: "#c43a36", pants: "#c43a36", tie: null, shirt: "#f4f4f0", stripe: "#ffffff", band: "#ffd23e" },
     newspaper: { coat: "#7a6d5a", pants: "#4a4036", tie: "#7a2a6a", shirt: "#efe8d4", glasses: true, hair: "#d8d8d0" },
-    screen: { coat: "#55606e", pants: "#2f3540", tie: "#d8a020", shirt: "#e9e3d0" }
+    screen: { coat: "#55606e", pants: "#2f3540", tie: "#d8a020", shirt: "#e9e3d0" },
+    // E30：射手僵尸。白骨配色：它靠站位不靠肉度存在，脸必须一眼认出"这不是啃人的那种"。
+    // skull 走骷髅脸（黑眼窝、无发），皮肤色由 L.skin 参数化进 humanoid。
+    archer: { coat: "#7d7a6a", pants: "#5a5850", tie: null, shirt: "#ded9c8", skin: "#e6e2d2", skull: true }
   };
   function faceTex(type, L) {
-    return { key: "zface:" + type, paint: layers(noise(SKIN2, 0.09), spots(SKIN_D, 5, 1), sprite([
+    const SK = L.skin || SKIN2;
+    if (L.skull) return { key: "zface:" + type, paint: layers(noise(SK, 0.09), spots(SKIN_D, 5, 1), sprite([
+      ".........",
+      ".........",
+      ".kk...kk.",
+      ".kk...kk.",
+      ".........",
+      "....k....",
+      ".........",
+      ".........",
+      "........."
+    ], { k: "#26241e" })) };
+    return { key: "zface:" + type, paint: layers(noise(SK, 0.09), spots(SKIN_D, 5, 1), sprite([
       ".........",
       ".........",
       ".bbb..bb.",
@@ -33822,20 +33911,23 @@ void main() {
     }) };
   }
   function headSide(type, L, far) {
-    return { key: "zside:" + type + (far ? ":f" : ""), paint: layers(noise(SKIN2, 0.09), spots(SKIN_D, 4, 1), (p, w) => {
+    const SK = L.skin || SKIN2;
+    return { key: "zside:" + type + (far ? ":f" : ""), paint: layers(noise(SK, 0.09), spots(SKIN_D, 4, 1), (p, w) => {
+      if (L.skull) return;
       const hair = hex(L.hair || "#2e2a20");
       for (let x = 0; x < w; x++) if ((x + 1) % 3) p.px(x, 0, hair);
       p.rect(far ? 2 : w - 4, 4, 2, 2, SKIN_D);
     }) };
   }
   function headTop(type, L) {
-    return { key: "ztop:" + type, paint: layers(noise(SKIN2, 0.09), spots(L.hair || "#2e2a20", 7, 1)) };
+    const SK = L.skin || SKIN2;
+    return { key: "ztop:" + type, paint: layers(noise(SK, 0.09), spots(L.skull ? SK : L.hair || "#2e2a20", 7, 1)) };
   }
-  var JAW_FRONT = { key: "zjaw", paint: layers(noise(SKIN2, 0.09), sprite([
+  var JAW_FRONT = (L) => ({ key: "zjaw:" + (L.skin || SKIN2), paint: layers(noise(L.skin || SKIN2, 0.09), sprite([
     ".kkkkkk.",
     ".wkwkwk.",
     "........"
-  ], { k: "#3a1a14", w: "#f0ead0" })) };
+  ], { k: "#3a1a14", w: "#f0ead0" })) });
   function torsoFront(type, L) {
     return { key: "ztorso:" + type, paint: (p, w, h, R) => {
       const coat = hex(L.coat), shirt = hex(L.shirt);
@@ -33862,11 +33954,12 @@ void main() {
   function cloth(c, id) {
     return { key: "zcloth:" + id, paint: layers(noise(c, 0.1), spots(tone(c, 0.75), 4, 1)) };
   }
-  var SLEEVE_HAND = (coat, id) => ({ key: "zarm:" + id, paint: (p, w, h, R) => {
-    const c = hex(coat), s = hex(SKIN2);
+  var SLEEVE_HAND = (coat, skin, id) => ({ key: "zarm:" + id, paint: (p, w, h, R) => {
+    const c = hex(coat), s = hex(skin);
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) p.px(x, y, shade(y < h * 0.55 ? c : s, 0.9 + R() * 0.16));
   } });
   function humanoid(rig, type, L) {
+    const SK = L.skin || SKIN2;
     rig.pivot("hips", "root", [0, 10, 0]);
     rig.pivot("legF", "hips", [0, 0, 2]);
     rig.pivot("kneeF", "legF", [0, -5, 0]);
@@ -33889,10 +33982,10 @@ void main() {
     rig.stand("torso", "m", [5, 11, 8], [0, 0, 0], { all: cloth(L.coat, type + ":coat"), front: torsoFront(type, L) });
     for (const s of ["F", "B"]) {
       rig.box("arm" + s, "m", [3, 5.5, 3], [0, -2.5, 0], cloth(L.coat, type + ":coat"));
-      rig.box("fore" + s, "m", [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND(L.coat, type), top: L.coat, bottom: SKIN2 });
+      rig.box("fore" + s, "m", [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND(L.coat, SK, type), top: L.coat, bottom: SK });
     }
-    rig.stand("head", "m", [8, 9, 8], [0, 0, 0], { front: faceTex(type, L), near: headSide(type, L, false), far: headSide(type, L, true), top: headTop(type, L), back: headSide(type, L, true), bottom: SKIN2 });
-    rig.box("jaw", "m", [3.5, 2.6, 6.4], [0, -1, 0], { all: SKIN2, front: JAW_FRONT });
+    rig.stand("head", "m", [8, 9, 8], [0, 0, 0], { front: faceTex(type, L), near: headSide(type, L, false), far: headSide(type, L, true), top: headTop(type, L), back: headSide(type, L, true), bottom: SK });
+    rig.box("jaw", "m", [3.5, 2.6, 6.4], [0, -1, 0], { all: SK, front: JAW_FRONT(L) });
     if (L.band) rig.box("head", "m", [8.4, 1.5, 8.4], [0, 7, 0], L.band);
   }
   var CONE_TEX = { key: "cone", paint: (p, w, h, R) => {
@@ -33945,6 +34038,15 @@ void main() {
       for (let x = 0; x < w; x++) p.rect(x, 0, 1, h, x % 6 < 3 ? "#d4a24e" : "#e8c070");
     } });
   }
+  function buildBow(rig, pv) {
+    rig.box(pv, "m", [0.5, 4.5, 0.5], [0.6, 3.4, 0], "#8a6a3a", { r: [0, 0, 0.3] });
+    rig.box(pv, "m", [0.5, 4.5, 0.5], [0.6, -3.4, 0], "#8a6a3a", { r: [0, 0, -0.3] });
+    rig.box(pv, "m", [0.7, 1.4, 0.7], [1.15, 0, 0], "#a8845a");
+    rig.box(pv, "m", [0.16, 8.6, 0.16], [-0.1, 0, 0], "#e8e4d8");
+    rig.box(pv, "m", [6.5, 0.3, 0.3], [0.3, 0, 0], "#c8a86a");
+    rig.box(pv, "m", [0.8, 0.7, 0.7], [-3.1, 0, 0], "#9aa0a8");
+    rig.box(pv, "m", [1.1, 1.1, 0.4], [3, 0, 0], "#d8d4c4");
+  }
   var FLAG_TEX = { key: "flagcloth", paint: (p, w, h, R) => {
     const r = hex("#c82a30");
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) p.px(x, y, shade(r, 0.9 + R() * 0.15));
@@ -33984,6 +34086,10 @@ void main() {
       if (type === "vault") {
         rig.pivot("acc", "foreF", [0.5, -6, 0], [0, 0, 1.2]);
         buildPole(rig, "acc");
+      }
+      if (type === "archer") {
+        rig.pivot("bow", "foreF", [0.5, -6, 0], [0, 0, -1.5]);
+        buildBow(rig, "bow");
       }
       if (type === "newspaper") {
         rig.pivot("rage", "head");
@@ -34061,6 +34167,19 @@ void main() {
     } else {
       pv.jaw.position.y -= Math.abs(Math.sin(t * 1.7 + (z.row || 0))) * 0.025;
     }
+    if (z.type === "archer" && st === "shoot") {
+      const draw = Math.max(0, Math.min(1, 1 - (z.fireT || 0) / 1.4));
+      pv.armF.rotation.z = 1.5;
+      pv.foreF.rotation.z = -0.08;
+      pv.armB.rotation.z = 1.35 + draw * 0.5;
+      pv.foreB.rotation.z = 0.9 - draw * 0.55;
+      pv.legF.rotation.z = 0.12;
+      pv.legB.rotation.z = -0.2;
+      pv.kneeF.rotation.z = -0.1;
+      pv.kneeB.rotation.z = -0.15;
+      pv.head.rotation.x = -0.06;
+      if (pv.bow) pv.bow.rotation.z = -1.5 + draw * 0.12;
+    }
     if (st === "vault") {
       const k = Math.min(1, z.vt || 0);
       pv.legF.rotation.z = 0.9;
@@ -34134,7 +34253,7 @@ void main() {
     bucket: { build: (rig) => buildBucket(rig, "root") },
     screen: { build: (rig) => buildDoor(rig, "root") },
     newspaper: { build: (rig) => buildPaper(rig, "root") },
-    arm: { build: (rig) => rig.box("root", "m", [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND("#6b4a2f", "debris"), top: "#6b4a2f", bottom: SKIN2 }) }
+    arm: { build: (rig) => rig.box("root", "m", [2.8, 6, 2.8], [0, -3, 0], { sides: SLEEVE_HAND("#6b4a2f", SKIN2, "debris"), top: "#6b4a2f", bottom: SKIN2 }) }
   };
 
   // src/render/scene3d/props.js
@@ -34196,6 +34315,11 @@ void main() {
     P2.fire = mk(m(basic("#ffd040", 2.6), 0.12), m(basic("#ff6a10", 2, true), [0.26, 0.15, 0.15], [-0.07, 0, 0]));
     P2.spore = mk(m(basic("#c890f0", 1.3, true), 0.14), m(basic("#f4e0ff", 1.8), 0.06));
     P2.ball = mk(m(makeStd("#e8483c", 0.5), 0.14));
+    P2.arrow = mk(
+      m(makeStd("#c8a86a", 0.55), [0.34, 0.03, 0.03]),
+      m(makeStd("#9aa0a8", 0.4), [0.07, 0.075, 0.075], [-0.19, 0, 0]),
+      m(basic("#e8e2d2", 1.4), [0.08, 0.09, 0.05], [0.16, 0, 0])
+    );
     P2.bullet = mk(m(basic("#fff0a0", 2.8), [0.22, 0.035, 0.035], [-0.06, 0, 0]), m(basic("#ffffff", 2.6), 0.05));
     P2.missile = mk(
       m(makeStd("#f2f2f0", 0.5), [0.22, 0.08, 0.08]),
@@ -35520,6 +35644,8 @@ void main() {
         ["plant", "qiuqiu", 3.6, 6.5, 1.35],
         ["plant", "tiga", 0.4, 4.9, 1.1],
         ["plant", "cherry", 2.25, 7.1, 1],
+        // E30：射手站草坪中段（qiuqiu 与铁门之间的空地），E22 的教训：菜单阵容是写死的，新角色要记得登记
+        ["zombie", "archer", 4.7, 5.3, 1.05],
         ["zombie", "screen", 5.6, 6.4, 1.05],
         ["zombie", "newspaper", 6.6, 6, 1.05],
         ["zombie", "bucket", 7.4, 6.6, 1.1],

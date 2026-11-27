@@ -141,11 +141,15 @@
       "count": 8
     },
     {
+      "path": "tests/zombie-archer.test.mjs",
+      "count": 10
+    },
+    {
       "path": "tests/zombie-screen.test.mjs",
       "count": 6
     }
   ],
-  "total": 222,
+  "total": 232,
   "covered": [
     "tests/actions.test.mjs",
     "tests/fingerprint.test.mjs",
@@ -180,6 +184,7 @@
     "tests/test-inventory.test.mjs",
     "tests/waves.test.mjs",
     "tests/world-isolation.test.mjs",
+    "tests/zombie-archer.test.mjs",
     "tests/zombie-screen.test.mjs"
   ],
   "browser": [

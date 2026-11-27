@@ -377,7 +377,8 @@ export function createWorldView(opts = {}){
     const cast = [
       ['plant', 'sunflower', 0.9, 6.3, 1.25], ['plant', 'peashooter', 1.75, 6.55, 1.2], ['plant', 'wallnut', 2.6, 6.2, 1.15],
       ['plant', 'qiuqiu', 3.6, 6.5, 1.35], ['plant', 'tiga', 0.4, 4.9, 1.1], ['plant', 'cherry', 2.25, 7.1, 1.0],
-      ['zombie', 'screen', 5.6, 6.4, 1.05], ['zombie', 'newspaper', 6.6, 6.0, 1.05], ['zombie', 'bucket', 7.4, 6.6, 1.1],
+      // E30：射手站草坪中段（qiuqiu 与铁门之间的空地），E22 的教训：菜单阵容是写死的，新角色要记得登记
+      ['zombie', 'archer', 4.7, 5.3, 1.05], ['zombie', 'screen', 5.6, 6.4, 1.05], ['zombie', 'newspaper', 6.6, 6.0, 1.05], ['zombie', 'bucket', 7.4, 6.6, 1.1],
       ['zombie', 'cone', 8.3, 6.1, 1.1], ['zombie', 'normal', 9.1, 6.7, 1.15], ['zombie', 'flag', 8.9, 5.0, 1.0],
     ];
     for(const [kind, type, x, z, s] of cast){

@@ -51,6 +51,12 @@ export function buildPeaProtos(makeStd){
   P.fire = mk(m(basic('#ffd040', 2.6), 0.12), m(basic('#ff6a10', 2.0, true), [0.26, 0.15, 0.15], [-0.07, 0, 0]));
   P.spore = mk(m(basic('#c890f0', 1.3, true), 0.14), m(basic('#f4e0ff', 1.8), 0.06));
   P.ball = mk(m(makeStd('#e8483c', 0.5), 0.14));
+  // E30：射手的箭。细长箭杆朝左（-x），骨白箭头，尾羽两片——和 buildBow 里搭弦的那支同款。
+  P.arrow = mk(
+    m(makeStd('#c8a86a', 0.55), [0.34, 0.03, 0.03]),
+    m(makeStd('#9aa0a8', 0.4), [0.07, 0.075, 0.075], [-0.19, 0, 0]),
+    m(basic('#e8e2d2', 1.4), [0.08, 0.09, 0.05], [0.16, 0, 0]),
+  );
   P.bullet = mk(m(basic('#fff0a0', 2.8), [0.22, 0.035, 0.035], [-0.06, 0, 0]), m(basic('#ffffff', 2.6), 0.05));
   P.missile = mk(
     m(makeStd('#f2f2f0', 0.5), [0.22, 0.08, 0.08]),

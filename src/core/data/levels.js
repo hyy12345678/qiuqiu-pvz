@@ -9,8 +9,11 @@ export const LEVELS = [
   // 放在最终决战才出现，让玩家先熟悉其他机制。
   // E24：铁门权重 1 → 2。原权重下每局只有 2.1 只，玩家既被突然袭击又没机会学会。
   // 配合 waves.js 的进度门槛（前半场不出），现在是"后半场常见"而不是"偶尔来个怪东西"。
-  { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',2]] },
+  // E30：加入射手僵尸。权重 1 → 2 与 E24 铁门同一次修正：实测权重 1 时 40 局有 8 局一只不来，
+  // "偶尔来个怪东西"玩家学不会。权重 2 + 进度门槛后是"后半场常见"。
+  { name:'第 3 关 · 最终决战', count:44, slots:8, types:[['normal',4],['cone',3],['bucket',2],['vault',2],['newspaper',2],['screen',2],['archer',2]] },
   // E20：52 → 46。原曲线是 1.0 → 3.0 → 4.6 → 5.6，L3→L4 的台阶最陡且时长 385s（6.4 分钟）偏长。
   // 削到 46 后约 5.0×，时长降到约 340s。
-  { name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',2]] },
+  // E30：射手权重 2。夜战里它和铁门一起构成"换打法"的双重压力。
+  { name:'第 4 关 · 月夜突袭', count:46, slots:8, night:true, types:[['normal',3],['cone',3],['bucket',2],['vault',2],['newspaper',3],['screen',2],['archer',2]] },
 ];

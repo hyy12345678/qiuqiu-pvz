@@ -114,6 +114,7 @@ export const SFX = {
   horn(){ this.tone(98, 98, 0.7, 'sawtooth', 0.11); this.tone(147, 147, 0.7, 'sawtooth', 0.07, 0.02); },
   error(){ this.tone(150, 110, 0.14, 'square', 0.08); },
   paperTear(){ this.noise(0.18, 0.16, 5200); this.tone(1400, 420, 0.16, 'sawtooth', 0.05); },
+  arrow(){ this.noise(0.05, 0.06, 3200); this.tone(1200, 480, 0.07, 'sawtooth', 0.035); },   // E30：弓弦绷响 + 破空
   angry(){ this.tone(150, 62, 0.4, 'sawtooth', 0.14); this.noise(0.32, 0.09, 620, 0.04); },
   click(){ this.tone(620, 620, 0.05, 'sine', 0.08); },
   select(){ this.tone(880, 1100, 0.07, 'sine', 0.07); },
